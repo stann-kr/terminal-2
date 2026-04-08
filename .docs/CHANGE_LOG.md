@@ -17,6 +17,15 @@
 * **Lineup 이중 효과 제거:** `containerVariants`에서 `opacity 0→1` fade 제거, 각 `DecodeText`의 decode 효과만 유지.
 * **의존성 추가:** `use-scramble` 패키지 설치 및 Docker 이미지 리빌드 완료.
 
+## [2026-04-09] 폰트 최적화, ParticleField 리디자인, 전환 효과 개선
+
+* **Google Fonts 직접 import 제거 (`crt.css`, `layout.tsx`):** `@import url(...)` 방식 제거, Next.js `Space_Mono` 폰트 최적화 적용. CSS 변수 `--font-mono`에 `var(--font-space-mono)` 참조 추가로 폰트 로딩 일관성 확보.
+* **ParticleFieldDynamic 전역 배치 (`layout.tsx`):** `RootLayout`에 `ParticleFieldDynamic` 추가하여 모든 페이지에서 배경 파티클 유지.
+* **ParticleField TERMINAL 글자 파티클 렌더링 (`ParticleField.tsx`):** 기존 랜덤 부유 파티클에서 "TERMINAL" 글자 윤곽선(`LineCurve3` 기반 세그먼트)을 따라 파티클이 분포하는 방식으로 전면 재작성. 외곽 박스 포함 글자별 세그먼트 정의.
+* **DecodeText 측정 안정화 (`DecodeText.tsx`):** `useEffect` → `useLayoutEffect` 전환으로 첫 페인트 전 `minHeight` 확정, 플래시 방지. 초기 너비가 좁은(1ch) 컨테이너의 조상 탐색 로직 추가. 초기 측정을 RAF 없이 즉시 microtask로 처리.
+* **페이지 전환 효과 개선 (`PageTransition.tsx`):** 진입 시 `opacity 0→1` fade-in(0.3s) 추가. exit를 즉시(`duration: 0`)로 처리하여 이전 페이지 잔상 제거. Suspense fallback에서 `min-h-screen` 제거.
+* **ParticleFieldDynamic loading fallback 처리 (`ParticleFieldDynamic.tsx`):** `loading: () => null` 추가로 동적 import 로딩 중 빈 공간 노출 방지.
+
 ## [2026-04-09] 레이아웃 버그 수정 및 UX 개선
 
 * **`[]` 제목 위아래 배치 버그 수정 (`DirectoryLink.tsx`):** `DecodeText` 외부 `<div>`(block 요소)가 `[`와 `]` 사이에 삽입되어 위아래 배치되던 문제 해결. `[${label}]`을 text 내부로 통합하여 한 줄 렌더링.

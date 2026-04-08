@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
-
 :root {
   --crt-green: #d4920a;
   --crt-green-dim: #6a4808;
@@ -12,7 +10,7 @@
   --crt-border: rgba(212,146,10,0.22);
   --crt-text: #e8d890;
   --crt-dim: #8a7040;
-  --font-mono: 'Space Mono', monospace;
+  --font-mono: var(--font-space-mono), 'Space Mono', monospace;
 }
 
 * { box-sizing: border-box; }

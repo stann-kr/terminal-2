@@ -22,9 +22,9 @@ function Inner({ children }: { children: ReactNode }) {
         <motion.div
           key={pathname}
           className="w-full"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.15, ease: 'linear' } }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: 0.3, ease: 'linear' } }}
+          exit={{ opacity: 0, transition: { duration: 0 } }}
         >
           {children}
         </motion.div>
@@ -35,7 +35,7 @@ function Inner({ children }: { children: ReactNode }) {
 
 export default function PageTransition({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0c0904]" />}>
+    <Suspense fallback={<div className="bg-[#0c0904]" />}>
       <Inner>{children}</Inner>
     </Suspense>
   );

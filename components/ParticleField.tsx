@@ -3,118 +3,230 @@ import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-function Particles() {
-  const meshRef = useRef<THREE.Points>(null);
-  const count = 320;
+const W = 0.30;
+const H = 0.72;
 
-  const { positions, velocities, sizes } = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const velocities = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      positions[i * 3 + 0] = (Math.random() - 0.5) * 14;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 8;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 6;
-      velocities[i * 3 + 0] = (Math.random() - 0.5) * 0.003;
-      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.002 + 0.0005;
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.001;
-      sizes[i] = Math.random() * 2.5 + 0.5;
-    }
-    return { positions, velocities, sizes };
-  }, []);
+const cx = (n: number) => -2.87 + n * 0.82;
 
-  const posRef = useRef(positions.slice());
+function seg(x1: number, y1: number, x2: number, y2: number): THREE.LineCurve3 {
+  return new THREE.LineCurve3(
+    new THREE.Vector3(x1, y1, 0),
+    new THREE.Vector3(x2, y2, 0)
+  );
+}
 
-  useFrame(() => {
-    if (!meshRef.current) return;
-    const pos = posRef.current;
-    for (let i = 0; i < count; i++) {
-      pos[i * 3 + 0] += velocities[i * 3 + 0];
-      pos[i * 3 + 1] += velocities[i * 3 + 1];
-      pos[i * 3 + 2] += velocities[i * 3 + 2];
-      if (pos[i * 3 + 1] > 4.5) {
-        pos[i * 3 + 1] = -4.5;
-        pos[i * 3 + 0] = (Math.random() - 0.5) * 14;
+function buildCurves(): THREE.LineCurve3[] {
+  const curves: THREE.LineCurve3[] = [];
+
+  const bx = 4.0, by = 1.12;
+  curves.push(seg(-bx, by, bx, by));
+  curves.push(seg(bx, by, bx, -by));
+  curves.push(seg(bx, -by, -bx, -by));
+  curves.push(seg(-bx, -by, -bx, by));
+
+  // T
+  const t = cx(0);
+  curves.push(seg(t - W, H, t + W, H));
+  curves.push(seg(t, H, t, -H));
+
+  // E
+  const e = cx(1);
+  curves.push(seg(e - W, -H, e - W, H));
+  curves.push(seg(e - W, H, e + W, H));
+  curves.push(seg(e - W, 0, e + W * 0.72, 0));
+  curves.push(seg(e - W, -H, e + W, -H));
+
+  // R
+  const r = cx(2);
+  curves.push(seg(r - W, -H, r - W, H));
+  curves.push(seg(r - W, H, r + W, H));
+  curves.push(seg(r + W, H, r + W, 0));
+  curves.push(seg(r - W, 0, r + W, 0));
+  curves.push(seg(r + W * 0.15, 0, r + W, -H));
+
+  // M
+  const m = cx(3);
+  curves.push(seg(m - W, -H, m - W, H));
+  curves.push(seg(m - W, H, m, 0));
+  curves.push(seg(m, 0, m + W, H));
+  curves.push(seg(m + W, H, m + W, -H));
+
+  // I
+  const i4 = cx(4);
+  const iw = W * 0.55;
+  curves.push(seg(i4 - iw, H, i4 + iw, H));
+  curves.push(seg(i4, H, i4, -H));
+  curves.push(seg(i4 - iw, -H, i4 + iw, -H));
+
+  // N
+  const n5 = cx(5);
+  curves.push(seg(n5 - W, -H, n5 - W, H));
+  curves.push(seg(n5 - W, H, n5 + W, -H));
+  curves.push(seg(n5 + W, H, n5 + W, -H));
+
+  // A
+  const a = cx(6);
+  curves.push(seg(a - W, -H, a, H));
+  curves.push(seg(a, H, a + W, -H));
+  curves.push(seg(a - W * 0.5, H * 0.1, a + W * 0.5, H * 0.1));
+
+  // L
+  const l = cx(7);
+  curves.push(seg(l - W, H, l - W, -H));
+  curves.push(seg(l - W, -H, l + W, -H));
+
+  return curves;
+}
+
+const MIN_PER_CURVE = 4;
+
+// D안: 동일 로고를 z-depth 달리해 렌더링 (원근 효과)
+function LogoLayer({
+  zOffset,
+  opacity,
+  speedMult,
+  density = 8,
+}: {
+  zOffset: number;
+  opacity: number;
+  speedMult: number;
+  density?: number;
+}) {
+  const pointsRef = useRef<THREE.Points>(null);
+
+  const { curves, particleCounts, positions, progress, speeds } = useMemo(() => {
+    const allCurves = buildCurves();
+    const particleCounts = allCurves.map(c =>
+      Math.max(MIN_PER_CURVE, Math.round(c.v1.distanceTo(c.v2) * density))
+    );
+    const total = particleCounts.reduce((a, b) => a + b, 0);
+    const positions = new Float32Array(total * 3);
+    const progress = new Float32Array(total);
+    const speeds = new Float32Array(total);
+
+    let idx = 0;
+    for (let ci = 0; ci < allCurves.length; ci++) {
+      const n = particleCounts[ci];
+      for (let p = 0; p < n; p++) {
+        const t = zOffset === 0 ? p / n : Math.random(); // 레이어간 변화 위해 뒤/앞은 랜덤 시작
+        progress[idx] = t;
+        speeds[idx] = (0.003 + Math.random() * 0.005) * speedMult;
+        const pt = allCurves[ci].getPoint(Math.min(t, 0.9999));
+        positions[idx * 3] = pt.x;
+        positions[idx * 3 + 1] = pt.y;
+        positions[idx * 3 + 2] = zOffset; // z 고정
+        idx++;
       }
-      if (Math.abs(pos[i * 3 + 0]) > 7.5) pos[i * 3 + 0] *= -0.98;
     }
-    const geo = meshRef.current.geometry;
-    (geo.attributes.position as THREE.BufferAttribute).set(pos);
-    geo.attributes.position.needsUpdate = true;
+
+    return { curves: allCurves, particleCounts, positions, progress, speeds };
+  }, [zOffset, speedMult, density]);
+
+  useFrame((_, delta) => {
+    if (!pointsRef.current) return;
+    const dt = Math.min(delta, 0.05);
+
+    let idx = 0;
+    for (let ci = 0; ci < curves.length; ci++) {
+      const n = particleCounts[ci];
+      const curve = curves[ci];
+      for (let p = 0; p < n; p++) {
+        progress[idx] = (progress[idx] + speeds[idx] * dt * 60) % 1;
+        const pt = curve.getPoint(progress[idx]);
+        positions[idx * 3] = pt.x;
+        positions[idx * 3 + 1] = pt.y;
+        // positions[idx * 3 + 2] 는 zOffset으로 고정 유지
+        idx++;
+      }
+    }
+
+    (pointsRef.current.geometry.attributes.position as THREE.BufferAttribute).needsUpdate = true;
   });
 
   return (
-    <points ref={meshRef}>
+    <points ref={pointsRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          args={[sizes, 1]}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.045}
         color="#d4920a"
+        size={0.028}
         transparent
-        opacity={0.55}
-        sizeAttenuation
+        opacity={opacity}
+        blending={THREE.AdditiveBlending}
         depthWrite={false}
+        sizeAttenuation
       />
     </points>
   );
 }
 
-function DimParticles() {
-  const meshRef = useRef<THREE.Points>(null);
-  const count = 180;
+// B안: 위아래 빈 공간을 채우는 희미한 산발 파티클
+function AmbientParticles() {
+  const pointsRef = useRef<THREE.Points>(null);
+  const count = 260;
 
   const { positions, velocities } = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const velocities = new Float32Array(count * 3);
+
     for (let i = 0; i < count; i++) {
-      positions[i * 3 + 0] = (Math.random() - 0.5) * 16;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 9;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 4 - 2;
-      velocities[i * 3 + 0] = (Math.random() - 0.5) * 0.001;
-      velocities[i * 3 + 1] = Math.random() * 0.0008 + 0.0002;
+      // 로고 밖 위아래 영역(|y| > 1.3)에 60% 집중 배치
+      let y: number;
+      if (Math.random() < 0.6) {
+        y = Math.random() < 0.5
+          ? -(1.4 + Math.random() * 2.0)  // 하단: -1.4 ~ -3.4
+          : (1.4 + Math.random() * 2.0);  // 상단: 1.4 ~ 3.4
+      } else {
+        y = (Math.random() - 0.5) * 7.0;  // 전체 영역
+      }
+
+      positions[i * 3] = (Math.random() - 0.5) * 13.0;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 3.0 - 1.0;
+
+      velocities[i * 3] = (Math.random() - 0.5) * 0.002;
+      velocities[i * 3 + 1] = Math.random() * 0.0008 + 0.0002; // 완만한 상승
       velocities[i * 3 + 2] = 0;
     }
+
     return { positions, velocities };
   }, []);
 
   const posRef = useRef(positions.slice());
 
   useFrame(() => {
-    if (!meshRef.current) return;
+    if (!pointsRef.current) return;
     const pos = posRef.current;
+
     for (let i = 0; i < count; i++) {
-      pos[i * 3 + 0] += velocities[i * 3 + 0];
+      pos[i * 3] += velocities[i * 3];
       pos[i * 3 + 1] += velocities[i * 3 + 1];
-      if (pos[i * 3 + 1] > 5) {
-        pos[i * 3 + 1] = -5;
-        pos[i * 3 + 0] = (Math.random() - 0.5) * 16;
+      if (pos[i * 3 + 1] > 4.5) {
+        pos[i * 3 + 1] = -4.5;
+        pos[i * 3] = (Math.random() - 0.5) * 13.0;
       }
+      if (Math.abs(pos[i * 3]) > 7.0) pos[i * 3] *= -0.98;
     }
-    const geo = meshRef.current.geometry;
+
+    const geo = pointsRef.current.geometry;
     (geo.attributes.position as THREE.BufferAttribute).set(pos);
     geo.attributes.position.needsUpdate = true;
   });
 
   return (
-    <points ref={meshRef}>
+    <points ref={pointsRef}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.025}
         color="#c8a030"
+        size={0.018}
         transparent
-        opacity={0.25}
-        sizeAttenuation
+        opacity={0.08}
+        blending={THREE.AdditiveBlending}
         depthWrite={false}
+        sizeAttenuation
       />
     </points>
   );
@@ -128,8 +240,12 @@ export default function ParticleField() {
         gl={{ antialias: false, alpha: true }}
         style={{ background: 'transparent' }}
       >
-        <Particles />
-        <DimParticles />
+        {/* D안: 멀티 깊이 로고 레이어 — 뒤(작게/느리게) → 메인 → 앞(크게/빠르게) */}
+        <LogoLayer zOffset={-2.0} opacity={0.06} speedMult={0.65} density={5} />
+        <LogoLayer zOffset={0}    opacity={0.18} speedMult={1.0}  density={8} />
+        <LogoLayer zOffset={1.5}  opacity={0.04} speedMult={1.4}  density={4} />
+        {/* B안: 엠비언트 파티클 — 위아래 빈 공간 채움 */}
+        <AmbientParticles />
       </Canvas>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, memo, type CSSProperties } from "react";
+import { useRef, useEffect, useLayoutEffect, useCallback, memo, type CSSProperties } from "react";
 import { useScramble } from "use-scramble";
 import { prepare, layout } from "@chenglou/pretext";
 
@@ -110,7 +110,9 @@ const DecodeText = memo(function DecodeText({
   }, [text, scrambleOnUpdate]);
 
   // pretext 레이아웃 측정: measureRef 사용 (scrambleRef 독립)
-  useEffect(() => {
+  // useLayoutEffect: React commit 후 브라우저 페인트 전 동기 실행
+  // → fonts.ready microtask가 페인트 전에 처리되어 minHeight를 첫 페인트에 반영 → 플래시 방지
+  useLayoutEffect(() => {
     let animationFrameId: number;
 
     const measureAndLayout = () => {
@@ -118,7 +120,19 @@ const DecodeText = memo(function DecodeText({
       const textNode = measureRef.current;
       if (!container || !textNode) return;
 
-      const width = container.offsetWidth;
+      let width = container.offsetWidth;
+      // 컨테이너가 auto-sizing span 안에 있어 초기 너비가 매우 좁은 경우(1ch 등),
+      // DOM 조상을 탐색하여 실제 레이아웃 너비를 가진 첫 번째 조상 사용
+      if (width < 50) {
+        let el: HTMLElement | null = container.parentElement;
+        while (el && el.tagName !== 'BODY') {
+          if (el.offsetWidth > 100) {
+            width = el.offsetWidth;
+            break;
+          }
+          el = el.parentElement;
+        }
+      }
       if (width <= 10) return;
 
       let activeFont = explicitFont;
@@ -157,9 +171,9 @@ const DecodeText = memo(function DecodeText({
       resizeObserver.observe(containerRef.current);
     }
 
-    animationFrameId = requestAnimationFrame(() => {
-      document.fonts.ready.then(measureAndLayout);
-    });
+    // 초기 측정: RAF 없이 즉시 microtask로 처리
+    // fonts.ready가 이미 resolved면 microtask로 즉시 실행 → 페인트 전 minHeight 확정
+    document.fonts.ready.then(measureAndLayout);
 
     return () => {
       resizeObserver.disconnect();
