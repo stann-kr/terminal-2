@@ -79,7 +79,6 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
     );
     const completeTimer = setTimeout(() => {
       setDone(true);
-      setTimeout(() => onCompleteRef.current(), 600);
     }, 3200);
     return () => { timers.forEach(clearTimeout); clearTimeout(completeTimer); };
   }, [powering]);
@@ -117,10 +116,32 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-4 text-xs tracking-widest"
-            style={{ color: '#d4920a', textShadow: '0 0 8px rgba(212,146,10,0.6)', fontFamily: 'var(--font-mono)' }}
+            className="mt-6"
           >
-            [PRESS ANY KEY OR WAIT...] LOADING TERMINAL...
+            <button
+              onClick={() => onCompleteRef.current()}
+              className="px-6 py-2.5 text-xs tracking-widest border transition-all duration-200 cursor-pointer"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                color: '#d4920a',
+                borderColor: 'rgba(212,146,10,0.5)',
+                background: 'transparent',
+                textShadow: '0 0 8px rgba(212,146,10,0.6)',
+                boxShadow: '0 0 12px rgba(212,146,10,0.1)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(212,146,10,0.08)';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(212,146,10,0.9)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 20px rgba(212,146,10,0.25)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(212,146,10,0.5)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 12px rgba(212,146,10,0.1)';
+              }}
+            >
+              [ ENTER TERMINAL ]
+            </button>
           </motion.div>
         )}
       </div>

@@ -43,7 +43,7 @@ export default function HomePage() {
         <div className="mb-6 text-center">
           <motion.div
             variants={itemVariants}
-            className="text-xs tracking-widest mb-3 overflow-hidden truncate"
+            className="text-[8px] sm:text-xs tracking-widest mb-3"
             style={{ color: '#3a2a10' }}
           >
             <DecodeText text="╔══════════════════════════════════════════╗" speed={0.8} scramble={3} />
@@ -51,7 +51,7 @@ export default function HomePage() {
 
           <motion.h1
             variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-[0.3em] mb-2"
+            className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-[0.15em] sm:tracking-[0.3em] mb-2"
           >
             <DecodeText
               text="TERMINAL"
@@ -74,7 +74,7 @@ export default function HomePage() {
 
           <motion.div
             variants={itemVariants}
-            className="text-xs tracking-widest mt-3 overflow-hidden truncate"
+            className="text-[8px] sm:text-xs tracking-widest mt-3"
             style={{ color: '#3a2a10' }}
           >
             <DecodeText text="╚══════════════════════════════════════════╝" speed={0.8} scramble={3} />

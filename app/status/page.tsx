@@ -119,10 +119,10 @@ export default function StatusPage() {
 
                     {/* Desktop */}
                     <div className="hidden md:grid grid-cols-12 gap-2 items-center text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
-                      <span className="col-span-3 font-bold" style={{ color: '#e8d890' }}>
+                      <span className="col-span-2 font-bold" style={{ color: '#e8d890' }}>
                         <DecodeText text={s.name} speed={0.6} scramble={4} delay={i * 20} />
                       </span>
-                      <span className="col-span-4 truncate" style={{ color: '#6a5030' }}>
+                      <span className="col-span-3 truncate" style={{ color: '#6a5030' }}>
                         <DecodeText text={s.sector} speed={0.5} scramble={5} delay={i * 20} />
                       </span>
                       <span className="col-span-2" style={{ color: '#3a9880' }}>
@@ -142,9 +142,9 @@ export default function StatusPage() {
                           <span style={{ color: '#2a1a08' }}>—</span>
                         )}
                       </div>
-                      <span className="col-span-1 font-bold tracking-wider" style={{ color: statusColor }}>
-                        <span className="status-pulse mr-1">●</span>
-                        <DecodeText text={s.status} speed={0.6} scramble={4} style={{ display: 'inline' }} delay={i * 20} />
+                      <span className="col-span-3 font-bold tracking-wider flex items-center gap-1" style={{ color: statusColor }}>
+                        <span className="status-pulse flex-shrink-0">●</span>
+                        <DecodeText text={s.status} speed={0.6} scramble={4} delay={i * 20} />
                       </span>
                     </div>
                   </div>

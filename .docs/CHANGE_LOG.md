@@ -17,6 +17,16 @@
 * **Lineup 이중 효과 제거:** `containerVariants`에서 `opacity 0→1` fade 제거, 각 `DecodeText`의 decode 효과만 유지.
 * **의존성 추가:** `use-scramble` 패키지 설치 및 Docker 이미지 리빌드 완료.
 
+## [2026-04-09] 레이아웃 버그 수정 및 UX 개선
+
+* **`[]` 제목 위아래 배치 버그 수정 (`DirectoryLink.tsx`):** `DecodeText` 외부 `<div>`(block 요소)가 `[`와 `]` 사이에 삽입되어 위아래 배치되던 문제 해결. `[${label}]`을 text 내부로 통합하여 한 줄 렌더링.
+* **Status 페이지 데스크탑 레이아웃 수정 (`status/page.tsx`):** `grid-cols-12` col-span 재분배(name 3→2, sector 4→3, status 1→3)로 ONLINE/STANDBY 텍스트 overflow 해소. status 셀을 `flex items-center gap-1` 구조로 변경하여 `●` 아이콘과 텍스트 수평 정렬.
+* **모바일 가로 스크롤 방지 (`PageLayout.tsx`):** 루트 div에 `overflow-x-hidden` 추가. 좌우 패딩 `px-4 sm:px-6` 반응형 적용.
+* **PageLayout 상하 패딩 균형 조정 (`PageLayout.tsx`):** 모바일 `pt-14 pb-14`, 데스크탑 `pt-20 pb-20`으로 통일.
+* **홈 로고 박스 라인 모바일 대응 (`home/page.tsx`):** `╔══╗`/`╚══╝` 박스 문자를 모바일에서 `text-[8px]`로 축소 표시, `overflow-hidden` 클리핑 제거로 전체 박스 라인 노출.
+* **TERMINAL 로고 letter-spacing 반응형 (`home/page.tsx`):** `tracking-[0.3em]` 고정 → `tracking-[0.15em] sm:tracking-[0.3em]`으로 모바일 overflow 방지.
+* **BootSequence 진입 방식 변경 (`BootSequence.tsx`):** 부팅 완료 후 자동 진입 및 "PRESS ANY KEY" 텍스트 제거. `[ ENTER TERMINAL ]` 버튼으로 대체, 호버 글로우 효과 적용.
+
 ## [2026-04-08] Cipher 애니메이션 전역 적용 및 성능 최적화
 * **전역 일관성 확보:** `Home`, `About`, `Gate`, `Lineup`, `Status`, `Transmit` 등 모든 주요 페이지의 정적/동적 텍스트를 `<DecodeText>`로 전면 전환하여 일관된 터미널 Cipher 미학 수립.
 * **동적 텍스트 최적화:** 카운트다운 숫자가 매초 뒤섞이는 현상을 방지하기 위해 `scrambleOnUpdate` 프롭을 도입하고 적용 완료.

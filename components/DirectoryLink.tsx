@@ -40,7 +40,7 @@ export default function DirectoryLink({ href, label, description, index, accent 
                 textShadow: hovered ? `0 0 8px ${accent}99` : 'none',
               }}
             >
-              [<DecodeText text={label} speed={0.65} scramble={8} style={{ display: 'inline', color: 'inherit', textShadow: 'inherit' }} />]
+              <DecodeText text={`[${label}]`} speed={0.65} scramble={8} style={{ color: 'inherit', textShadow: 'inherit' }} />
             </span>
             {hovered && (
               <motion.span initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }} className="text-xs" style={{ color: accent }}>
