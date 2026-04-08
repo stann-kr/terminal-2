@@ -8,8 +8,8 @@ import ArtistRow from './ArtistRow';
 import { EVENTS, UPCOMING_EVENT } from '@/lib/eventData';
 
 const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
 };
 
 const itemVariants = {

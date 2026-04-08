@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 export default function CRTWrapper({ children }: { children: React.ReactNode }) {
+  const ENABLE_VIGNETTE = false; // 비네팅 효과 활성화 여부
   const [isPoweringOn, setIsPoweringOn] = useState(true);
   const [flicker, setFlicker] = useState(false);
 
@@ -66,7 +67,9 @@ export default function CRTWrapper({ children }: { children: React.ReactNode }) 
       <div
         className="pointer-events-none fixed inset-0 z-50"
         style={{
-          background: 'radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.85) 100%)',
+          background: ENABLE_VIGNETTE 
+            ? 'radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.85) 100%)'
+            : 'transparent',
           borderRadius: '0',
         }}
       />
@@ -100,7 +103,9 @@ export default function CRTWrapper({ children }: { children: React.ReactNode }) 
       <div
         className="pointer-events-none fixed inset-0 z-30"
         style={{
-          boxShadow: 'inset 0 0 100px rgba(0,0,0,0.7), inset 1px 0 rgba(200,80,32,0.04), inset -1px 0 rgba(58,152,128,0.04)',
+          boxShadow: ENABLE_VIGNETTE
+            ? 'inset 0 0 100px rgba(0,0,0,0.7), inset 1px 0 rgba(200,80,32,0.04), inset -1px 0 rgba(58,152,128,0.04)'
+            : 'inset 1px 0 rgba(200,80,32,0.04), inset -1px 0 rgba(58,152,128,0.04)',
         }}
       />
 

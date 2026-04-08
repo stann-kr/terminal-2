@@ -4,6 +4,28 @@
 
 ---
 
+### [2026-04-08] DecodeText 버그 다발 및 레이아웃 grow 방향 역전 이슈
+
+* **발생 상황:**
+  * `DecodeText` 전면 도입 후 `className` 이중 적용(border 2겹), flex 정렬 무효화, `scrambleOnUpdate=false` 초기 애니메이션 미실행, `delay` stagger 효과 미작동 등 다수 버그 발생.
+  * 페이지 진입 시 레이아웃이 큰 상태에서 시작하여 콘텐츠에 맞게 줄어드는 방향으로 렌더링(의도와 반대).
+  * 페이지 전환 시 스크롤이 이전 페이지 위치에서 점프하는 현상.
+* **원인 분석:**
+  * 외부 containerRef div에도 `className`이 전달되어 시각 클래스 이중 적용.
+  * `scrambleOnUpdate=false` 시 `scrambleRef`가 null → `measureRef` 미분리로 pretext 측정 실패 → `minHeight` 미설정 → 레이아웃 점프.
+  * `delay` prop이 선언만 되고 `useScramble`에 미전달.
+  * `PageTransition.Inner`와 `PageLayout` 두 계층에 `min-h-screen` 중첩 → 초기부터 100vh 점유 → "큰 상태에서 시작" 현상.
+  * `PageTransition.tsx`에 scroll reset 로직 없음 → 이전 페이지 스크롤 위치 유지.
+* **해결 방법:**
+  * `DecodeText.tsx` 전면 리팩토링: `measureRef` 분리(Tag에 항상 연결), `animationSettledRef`+`frozenTextRef`로 scramble 제어, `effectivePlayOnMount`+`setTimeout(replay, delay)`로 delay 구현.
+  * `home/CountdownBlock.tsx`: border/padding을 부모 div로 이동, gate 구조와 통일.
+  * `lineup/page.tsx`: `containerVariants`에서 `opacity 0→1` fade 제거.
+  * `PageTransition.tsx`: `Inner` div에서 `min-h-screen` 제거, pathname 변경 시 `window.scrollTo({ top:0, behavior:'instant' })` 추가.
+  * `PageLayout.tsx`: `min-h-screen` 제거 — CRTWrapper의 `min-h-screen`만 유지.
+  * `use-scramble` 패키지 미설치 상태 → `docker compose run --rm web npm install use-scramble` 후 `docker compose build web` 이미지 리빌드.
+
+---
+
 ### [2026-04-08] Cipher 애니메이션 전역 적용 실패 및 레이아웃 불안정 이슈
 * **발생 상황 및 에러 로그:** 
   * Cipher 페이지 전환(`pretext` 등 사용)을 시도했으나 모든 페이지가 기존에 설정된 투명도 페이드인/페이드아웃 효과로 전환됨.

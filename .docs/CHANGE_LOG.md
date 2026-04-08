@@ -9,6 +9,14 @@
 * **문서화 구조:** 전역 지침에 따라 `.docs/` 폴더 구성 및 AI 도구(Claude Code, Antigravity Gemini) 통합 지침용 스킬 파일 추가 완료.
 * **페이지 전환 시각화 (Cipher / Decode):** 각 컴포넌트에 적용되어 있던 기존의 페이드 애니메이션을 제거하고, `use-scramble` 기반의 `<DecodeText>` 인라인 컴포넌트를 설계/적용하여 텍스트 복호화(Ciper/Decode) 시각 연출 및 레이아웃 유지 구현.
 
+## [2026-04-08] DecodeText 버그 수정 및 페이지 전환 안정화
+
+* **DecodeText 구조 리팩토링:** `measureRef` 분리(`scrambleRef` 독립), `scrambleOnUpdate=false` 초기 애니메이션 복원, `delay` prop 구현(stagger 효과 정상화), `className` 이중 적용 제거.
+* **홈/게이트 카운트다운 수정:** border·padding을 부모 div로 이동하여 이중 적용 해소, `display:flex` 숫자 중앙 정렬 복원.
+* **페이지 전환 스크롤 점프 해결:** `PageTransition.tsx`에 pathname 변경 시 `window.scrollTo({ top:0, behavior:'instant' })` 추가.
+* **Lineup 이중 효과 제거:** `containerVariants`에서 `opacity 0→1` fade 제거, 각 `DecodeText`의 decode 효과만 유지.
+* **의존성 추가:** `use-scramble` 패키지 설치 및 Docker 이미지 리빌드 완료.
+
 ## [2026-04-08] Cipher 애니메이션 전역 적용 및 성능 최적화
 * **전역 일관성 확보:** `Home`, `About`, `Gate`, `Lineup`, `Status`, `Transmit` 등 모든 주요 페이지의 정적/동적 텍스트를 `<DecodeText>`로 전면 전환하여 일관된 터미널 Cipher 미학 수립.
 * **동적 텍스트 최적화:** 카운트다운 숫자가 매초 뒤섞이는 현상을 방지하기 위해 `scrambleOnUpdate` 프롭을 도입하고 적용 완료.
