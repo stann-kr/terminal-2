@@ -9,7 +9,7 @@
 * **wrangler.toml 업데이트:** `main = ".open-next/worker.js"`, `assets`, `nodejs_compat_v2` 플래그 적용.
 * **Drizzle 스키마 작성:** `lib/db/schema.ts` (events, artists, transmit_logs 3개 테이블), `lib/db/client.ts`, `drizzle.config.ts` 생성.
 * **마이그레이션 생성:** `drizzle/migrations/0000_special_legion.sql` 자동 생성 완료.
-* **초기 시드 SQL:** `drizzle/seed.sql` 생성 (기존 eventData.ts 데이터 기반).
+* **초기 시드 SQL:** `migrations/seed.sql` 생성 (기존 eventData.ts 데이터 기반).
 * **API Routes 신규 작성:** `app/api/events/route.ts`, `app/api/artists/route.ts`, `app/api/transmit/route.ts` (GET/POST).
 * **클라이언트 마이그레이션:** `app/transmit/page.tsx` (localStorage 제거 → API), `app/gate/page.tsx`, `app/lineup/page.tsx`, `app/home/page.tsx` (하드코딩 제거 → API fetch).
 * **CI/CD:** `.github/workflows/deploy.yml` 작성 (main 브랜치 push → Cloudflare Workers 자동 배포).

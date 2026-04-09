@@ -203,10 +203,10 @@ docker compose run --rm web npx wrangler d1 migrations apply terminal-db --remot
 
 ```bash
 # 로컬
-docker compose run --rm web npx wrangler d1 execute terminal-db --local --file=drizzle/seed.sql
+docker compose run --rm web npx wrangler d1 execute terminal-db --local --file=migrations/seed.sql
 
 # 프로덕션
-docker compose run --rm web npx wrangler d1 execute terminal-db --remote --file=drizzle/seed.sql
+docker compose run --rm web npx wrangler d1 execute terminal-db --remote --file=migrations/seed.sql
 ```
 
 ### 7-4. 로컬 Workers 에뮬레이션
