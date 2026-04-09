@@ -15,47 +15,53 @@ interface LogEntry {
   ts: string;
 }
 
-const SEED_LOGS: LogEntry[] = [
-  { id: 'a1', handle: 'SYS_ADMIN', message: 'External data received. Analog noise filtered. Thank you ;)', ts: '2026.04.09 / 14:40' },
-  { id: 'a2', handle: 'STANN_LUMO', message: 'Database connected. Ready for Sector 02.', ts: '2026.04.09 / 14:12' },
-  { id: 'a3', handle: 'GUEST_09', message: 'System operating normally.', ts: '2026.04.09 / 13:55' },
-];
-
 export default function TransmitPage() {
-  const [logs, setLogs] = useState<LogEntry[]>(SEED_LOGS);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const logRef = useRef<HTMLDivElement>(null);
 
+  // 페이지 진입 시 DB에서 방명록 목록 로드
   useEffect(() => {
-    const stored = localStorage.getItem('terminal_transmit');
-    if (stored) {
-      try { setLogs([...JSON.parse(stored), ...SEED_LOGS]); } catch {}
-    }
+    fetch('/api/transmit')
+      .then(res => res.json() as Promise<LogEntry[]>)
+      .then((data) => setLogs(data))
+      .catch(() => setError('SIGNAL LINK UNSTABLE.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!handle.trim() || !message.trim()) { setError('ALIAS AND MESSAGE REQUIRED.'); return; }
     if (message.length > 280) { setError('MESSAGE EXCEEDS 280 CHARS.'); return; }
-    const entry: LogEntry = {
-      id: Date.now().toString(),
-      handle: handle.trim().toUpperCase().replace(/\s+/g, '_'),
-      message: message.trim(),
-      ts: new Date().toISOString().slice(0, 16).replace('T', ' / '),
-    };
-    const newLogs = [entry, ...logs];
-    setLogs(newLogs);
-    const toStore = newLogs.filter(l => !SEED_LOGS.find(s => s.id === l.id));
-    localStorage.setItem('terminal_transmit', JSON.stringify(toStore));
-    setHandle('');
-    setMessage('');
-    setError('');
-    setSent(true);
-    setTimeout(() => setSent(false), 2500);
-    logRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const res = await fetch('/api/transmit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ handle: handle.trim(), message: message.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        setError(data.error ?? 'TRANSMISSION FAILED.');
+        return;
+      }
+
+      const entry = await res.json() as LogEntry;
+      setLogs(prev => [entry, ...prev]);
+      setHandle('');
+      setMessage('');
+      setError('');
+      setSent(true);
+      setTimeout(() => setSent(false), 2500);
+      logRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      setError('TRANSMISSION FAILED. CHECK CONNECTION.');
+    }
   };
 
   return (
@@ -117,9 +123,13 @@ export default function TransmitPage() {
 
         {/* Log */}
         <motion.div variants={itemVariants}>
-          <TerminalPanel title={`SIGNAL_LOG — ${logs.length} ENTRIES`} accent="green">
+          <TerminalPanel title={loading ? 'SIGNAL_LOG — SYNCING...' : `SIGNAL_LOG — ${logs.length} ENTRIES`} accent="green">
             <div ref={logRef} className="space-y-4 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-terminal-accent-amber/20">
-              {logs.map((entry, i) => (
+              {loading ? (
+                <div className="text-xs font-mono text-terminal-muted text-center py-4">
+                  <LabelText text="▸ SYNCHRONIZING WITH DATABASE..." />
+                </div>
+              ) : logs.map((entry, i) => (
                 <div
                   key={entry.id}
                   className="border-b border-terminal-accent-cyan/10 pb-4"

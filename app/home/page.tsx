@@ -1,9 +1,11 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import DirectoryLink from '@/components/DirectoryLink';
 import PageLayout, { itemVariants } from '@/components/PageLayout';
 import { TitleText, SubtitleText, HeadingText, LabelText, MetaText, BodyText } from '@/components/ui/TerminalText';
 import CountdownBlock from '@/app/home/CountdownBlock';
+import type { TerminalEvent } from '@/lib/eventData';
 
 const DIRS = [
   { href: '/about',    label: 'About',    description: 'PLATFORM MANIFESTO / SYSTEM INFORMATION', accent: 'amber' as const },
@@ -13,9 +15,26 @@ const DIRS = [
   { href: '/transmit', label: 'Transmit', description: 'VISITOR LOG / NODE SYNC',                 accent: 'purple' as const },
 ];
 
-const EVENT_DATE = new Date('2026-05-08T23:00:00');
-
 export default function HomePage() {
+  const [upcomingEvent, setUpcomingEvent] = useState<TerminalEvent | null>(null);
+
+  useEffect(() => {
+    fetch('/api/events?status=UPCOMING')
+      .then((res) => res.json() as Promise<TerminalEvent[]>)
+      .then((data) => {
+        if (data.length > 0) setUpcomingEvent(data[0]);
+      })
+      .catch(console.error);
+  }, []);
+
+  const eventDate = upcomingEvent
+    ? new Date(`${upcomingEvent.date}T${upcomingEvent.time.replace(' KST', '')}:00`)
+    : null;
+
+  const eventDateLabel = upcomingEvent
+    ? new Date(upcomingEvent.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()
+    : '—';
+
   return (
     <PageLayout>
         {/* Header */}
@@ -61,16 +80,16 @@ export default function HomePage() {
         >
           <div className="text-center mb-4">
             <div className="mb-1 text-[10px] sm:text-xs text-terminal-muted tracking-[0.1em]">
-              <BodyText text="NEXT ENTRY — MAY 08 2026" />
+              <BodyText text={`NEXT ENTRY — ${eventDateLabel}`} />
             </div>
             <div className="text-xl sm:text-2xl font-bold text-terminal-accent-amber tracking-[0.2em] drop-shadow-[0_0_16px_rgba(212,146,10,0.4)]">
-              <HeadingText text="TERMINAL [02]" as="span" />
+              <HeadingText text={upcomingEvent?.session ?? '—'} as="span" />
             </div>
             <div className="mt-1 text-[10px] sm:text-xs text-terminal-subdued tracking-[0.1em]">
-              <MetaText text="Heliopause Outskirts // Faust Seoul" />
+              <MetaText text={upcomingEvent ? `${upcomingEvent.subtitle} // ${upcomingEvent.venue}` : '—'} />
             </div>
           </div>
-          <CountdownBlock targetDate={EVENT_DATE} />
+          {eventDate && <CountdownBlock targetDate={eventDate} />}
         </motion.div>
 
         {/* Directory */}
