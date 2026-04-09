@@ -12,6 +12,7 @@ interface DirectoryLinkProps {
   description: string;
   index: number;
   accent?: AccentColor;
+  external?: boolean;
 }
 
 const accentClassMap: Record<AccentColor, { hover: string; text: string; glow: string }> = {
@@ -22,12 +23,24 @@ const accentClassMap: Record<AccentColor, { hover: string; text: string; glow: s
   purple: { hover: 'group-hover:border-terminal-accent-purple group-hover:bg-terminal-accent-purple/5 group-hover:shadow-[0_0_20px_rgba(136,104,168,0.07)]', text: 'text-terminal-accent-purple', glow: 'group-hover:drop-shadow-[0_0_8px_rgba(136,104,168,0.6)]' },
 };
 
-export default function DirectoryLink({ href, label, description, index, accent = 'amber' }: DirectoryLinkProps) {
+export default function DirectoryLink({ href, label, description, index, accent = 'amber', external = false }: DirectoryLinkProps) {
   const [hovered, setHovered] = useState(false);
   const v = accentClassMap[accent];
 
+  const Wrapper = external
+    ? ({ children }: { children: React.ReactNode }) => (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="block group cursor-pointer">
+          {children}
+        </a>
+      )
+    : ({ children }: { children: React.ReactNode }) => (
+        <Link href={href} className="block group cursor-pointer">
+          {children}
+        </Link>
+      );
+
   return (
-    <Link href={href} className="block group cursor-pointer">
+    <Wrapper>
       <motion.div
         onHoverStart={() => setHovered(true)}
         onHoverEnd={() => setHovered(false)}
@@ -55,9 +68,9 @@ export default function DirectoryLink({ href, label, description, index, accent 
           </span>
         </div>
         <span className={`text-xs shrink-0 pt-0.5 transition-colors ${hovered ? v.text : 'text-terminal-muted'}`}>
-          {hovered ? '▶ ENTER' : '○'}
+          {hovered ? (external ? '▶ OPEN' : '▶ ENTER') : '○'}
         </span>
       </motion.div>
-    </Link>
+    </Wrapper>
   );
 }
