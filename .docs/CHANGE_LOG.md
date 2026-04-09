@@ -1,5 +1,24 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-09] Cloudflare D1 DB 연동 및 Workers 배포 구현
+
+* **DB 범위 확정:** Transmit(방명록), Gate(이벤트), Lineup(아티스트) 3개 섹션을 D1으로 전환 결정. About/Home/Status 텍스트는 정적 유지.
+* **DB 명세 문서 작성:** `.docs/DB_DEPLOYMENT_PLAN.md` 신규 작성. 스키마 ERD, API 엔드포인트 명세, 배포 절차 포함.
+* **환경변수 템플릿 생성:** `.env.example` 신규 추가 (CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN).
+* **패키지 설치:** `@opennextjs/cloudflare`, `wrangler` 설치 완료.
+* **wrangler.toml 업데이트:** `main = ".open-next/worker.js"`, `assets`, `nodejs_compat_v2` 플래그 적용.
+* **Drizzle 스키마 작성:** `lib/db/schema.ts` (events, artists, transmit_logs 3개 테이블), `lib/db/client.ts`, `drizzle.config.ts` 생성.
+* **마이그레이션 생성:** `drizzle/migrations/0000_special_legion.sql` 자동 생성 완료.
+* **초기 시드 SQL:** `drizzle/seed.sql` 생성 (기존 eventData.ts 데이터 기반).
+* **API Routes 신규 작성:** `app/api/events/route.ts`, `app/api/artists/route.ts`, `app/api/transmit/route.ts` (GET/POST).
+* **클라이언트 마이그레이션:** `app/transmit/page.tsx` (localStorage 제거 → API), `app/gate/page.tsx`, `app/lineup/page.tsx`, `app/home/page.tsx` (하드코딩 제거 → API fetch).
+* **CI/CD:** `.github/workflows/deploy.yml` 작성 (main 브랜치 push → Cloudflare Workers 자동 배포).
+* **gitignore 업데이트:** `.open-next/` 추가.
+* **미완료 (수동 작업 필요):**
+  - `wrangler d1 create terminal-2-db` 실행 후 `wrangler.toml` database_id 입력
+  - D1 마이그레이션 & 시드 실행 (`--remote`)
+  - GitHub Secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) 등록
+
 프로젝트에 적용된 주요 변경 사항을 기록함. Git 커밋 내역 외에도 의미 있는 아키텍처 변화 등을 요약함.
 
 ## [2026-04-08] 초기 프로젝트 셋팅 (AI 개발 환경 및 Docker)
