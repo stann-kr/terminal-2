@@ -12,8 +12,8 @@ export const containerVariants: Variants = {
 };
 
 export const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  hidden: { y: 8 },
+  visible: { y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 // ─── DecodeText 프리셋 ────────────────────────────────────────────────────────
@@ -32,9 +32,9 @@ export const decode = {
   /** 본문 텍스트 — Manifesto 등 긴 문단 */
   body: { speed: 0.45, scramble: 6, animateTextLength: true },
   /** 라벨/경로/코드 — 메뉴명, 경로, 짧은 식별자 */
-  label: { speed: 0.6, scramble: 4, animateTextLength: false },
+  label: { speed: 0.6, scramble: 4, animateTextLength: true },
   /** 메타 정보 — 날짜, ID, 하단 상태 */
-  meta: { speed: 0.4, scramble: 4, animateTextLength: false },
+  meta: { speed: 0.4, scramble: 4, animateTextLength: true },
   /** 실시간 데이터 — 카운트다운, 메트릭 수치 (매초 업데이트, 타자기 효과 제외) */
   data: { speed: 0.3, scramble: 2, scrambleOnUpdate: false as const },
 } as const;

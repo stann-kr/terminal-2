@@ -67,9 +67,9 @@ export default function TransmitPage() {
         <TerminalPanel title="VISITOR_LOG — NODE_SYNC" accent="hot">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
+              <div className="w-full text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
                 <LabelText text="ALIAS:" />
-              </label>
+              </div>
               <input
                 value={handle}
                 onChange={e => setHandle(e.target.value)}
@@ -79,12 +79,12 @@ export default function TransmitPage() {
               />
             </div>
               <div>
-                <label className="block text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                  <span className="flex justify-between w-full">
+                <div className="flex justify-between items-center w-full text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
+                  <span className="flex-1 min-w-0">
                     <LabelText text="MESSAGE:" />
-                    <DataText text={`(${message.length}/280)`} className="inline text-terminal-muted" />
                   </span>
-                </label>
+                  <DataText text={`(${message.length}/280)`} className="shrink-0 text-terminal-muted" />
+                </div>
                 <textarea
                   value={message}
                   onChange={e => setMessage(e.target.value)}
