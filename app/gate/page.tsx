@@ -18,7 +18,7 @@ export default function GatePage() {
 
   useEffect(() => {
     fetch("/api/events")
-      .then((res) => res.json() as Promise<TerminalEvent[]>)
+      .then((res) => { if (!res.ok) throw new Error(); return res.json() as Promise<TerminalEvent[]>; })
       .then((data) => {
         setEvents(data);
         const firstArchived = data.find((e) => e.status === "ARCHIVED");

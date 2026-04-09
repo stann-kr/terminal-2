@@ -21,7 +21,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetch('/api/events?status=UPCOMING')
-      .then((res) => res.json() as Promise<TerminalEvent[]>)
+      .then((res) => { if (!res.ok) throw new Error(); return res.json() as Promise<TerminalEvent[]>; })
       .then((data) => {
         if (data.length > 0) setUpcomingEvent(data[0]);
       })
@@ -79,19 +79,8 @@ export default function HomePage() {
           variants={itemVariants}
           className="mb-8 border py-6 px-4 border-terminal-accent-amber/20 bg-terminal-bg-panel"
         >
-          <div className="text-center mb-4">
-            <div className="mb-1 text-[10px] sm:text-xs text-terminal-muted tracking-[0.1em]">
-              <BodyText text={`NEXT ENTRY — ${eventDateLabel}`} />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-terminal-accent-amber tracking-[0.2em] drop-shadow-[0_0_16px_rgba(212,146,10,0.4)]">
-              <HeadingText text={upcomingEvent?.session ?? '—'} as="span" />
-            </div>
-            <div className="mt-1 text-[10px] sm:text-xs text-terminal-subdued tracking-[0.1em]">
-              <MetaText text={upcomingEvent ? `${upcomingEvent.subtitle} // ${upcomingEvent.venue}` : '—'} />
-            </div>
-          </div>
           {eventError ? (
-            <div className="text-center py-4 space-y-1">
+            <div className="text-center py-4 space-y-2">
               <div className="text-xs font-bold tracking-widest text-terminal-accent-hot font-mono">
                 <LabelText text="⚠ SIGNAL LINK UNSTABLE" />
               </div>
@@ -99,9 +88,22 @@ export default function HomePage() {
                 <MetaText text="DATABASE UNREACHABLE — RETRY LATER" />
               </div>
             </div>
-          ) : eventDate ? (
-            <CountdownBlock targetDate={eventDate} />
-          ) : null}
+          ) : (
+            <>
+              <div className="text-center mb-4">
+                <div className="mb-1 text-[10px] sm:text-xs text-terminal-muted tracking-[0.1em]">
+                  <BodyText text={`NEXT ENTRY — ${eventDateLabel}`} />
+                </div>
+                <div className="text-xl sm:text-2xl font-bold text-terminal-accent-amber tracking-[0.2em] drop-shadow-[0_0_16px_rgba(212,146,10,0.4)]">
+                  <HeadingText text={upcomingEvent?.session ?? '—'} as="span" />
+                </div>
+                <div className="mt-1 text-[10px] sm:text-xs text-terminal-subdued tracking-[0.1em]">
+                  <MetaText text={upcomingEvent ? `${upcomingEvent.subtitle} // ${upcomingEvent.venue}` : '—'} />
+                </div>
+              </div>
+              {eventDate && <CountdownBlock targetDate={eventDate} />}
+            </>
+          )}
         </motion.div>
 
         {/* Directory */}
