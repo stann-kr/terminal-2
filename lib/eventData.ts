@@ -1,5 +1,10 @@
 export type EventStatus = "UPCOMING" | "LIVE" | "ARCHIVED";
-export type ArtistStatus = "CONFIRMED" | "CLASSIFIED" | "PENDING" | "ARCHIVED" | "AWAITING DECRYPTION";
+export type ArtistStatus =
+  | "CONFIRMED"
+  | "CLASSIFIED"
+  | "PENDING"
+  | "ARCHIVED"
+  | "AWAITING DECRYPTION";
 
 export interface Artist {
   id: string;
@@ -51,6 +56,30 @@ export const EVENTS: TerminalEvent[] = [
         id: "02-B",
         name: "[ ENCRYPTED ]",
         origin: "--",
+        dock: "1",
+        time: "TBA",
+        status: "AWAITING DECRYPTION",
+      },
+      {
+        id: "02-C",
+        name: "[ ENCRYPTED ]",
+        origin: "--",
+        dock: "1",
+        time: "TBA",
+        status: "AWAITING DECRYPTION",
+      },
+      {
+        id: "02-D",
+        name: "[ ENCRYPTED ]",
+        origin: "--",
+        dock: "2",
+        time: "TBA",
+        status: "AWAITING DECRYPTION",
+      },
+      {
+        id: "02-E",
+        name: "[ ENCRYPTED ]",
+        origin: "--",
         dock: "2",
         time: "TBA",
         status: "AWAITING DECRYPTION",
@@ -75,23 +104,23 @@ export const EVENTS: TerminalEvent[] = [
         name: "STANN LUMO",
         origin: "KR",
         dock: "1",
-        time: "02:00–04:00",
+        time: "01:00–02:30",
         status: "ARCHIVED",
       },
       {
         id: "01-B",
         name: "MARCUS L",
         origin: "KR",
-        dock: "2",
-        time: "04:00–06:00",
+        dock: "1",
+        time: "23:00–01:00",
         status: "ARCHIVED",
       },
       {
         id: "01-C",
-        name: "MARCUS L",
+        name: "NUSNOOM",
         origin: "KR",
-        dock: "2",
-        time: "04:00–06:00",
+        dock: "1",
+        time: "02:30–05:00",
         status: "ARCHIVED",
       },
     ],
