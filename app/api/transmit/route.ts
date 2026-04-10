@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { transmitLogs } from "@/lib/db/schema";
 
-export const runtime = "edge";
 
 /**
  * GET /api/transmit
