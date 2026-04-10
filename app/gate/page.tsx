@@ -8,9 +8,12 @@ import ReturnLink from "@/components/ui/ReturnLink";
 import PageHeader from "@/components/ui/PageHeader";
 import TerminalButton from "@/components/TerminalButton";
 import EventDetail from "./EventDetail";
+import { useLang } from "@/lib/langContext";
+import { gateKo, commonKo } from "@/lib/i18n";
 import type { TerminalEvent } from "@/lib/eventData";
 
 export default function GatePage() {
+  const { lang } = useLang();
   const [tab, setTab] = useState<"upcoming" | "archive">("upcoming");
   const [events, setEvents] = useState<TerminalEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +62,9 @@ export default function GatePage() {
                   : "bg-transparent text-terminal-muted border-transparent hover:text-terminal-subdued"
               }`}
             >
-              <LabelText text={t === "upcoming" ? "▶ UPCOMING" : "◼ ARCHIVE"} />
+              <LabelText text={t === "upcoming"
+                ? (lang === 'ko' ? gateKo.tabUpcoming : '▶ UPCOMING')
+                : (lang === 'ko' ? gateKo.tabArchive : '◼ ARCHIVE')} />
             </button>
           ))}
         </div>
@@ -67,15 +72,15 @@ export default function GatePage() {
 
       {loading ? (
         <motion.div variants={itemVariants} className="text-xs font-mono text-terminal-muted text-center py-8">
-          <LabelText text="▸ LOADING GATE DATA..." />
+          <LabelText text={lang === 'ko' ? gateKo.loading : '▸ LOADING GATE DATA...'} />
         </motion.div>
       ) : error ? (
         <motion.div variants={itemVariants} className="border border-terminal-accent-hot/25 bg-terminal-bg-panel px-4 py-8 text-center space-y-2">
           <div className="text-xs font-bold tracking-widest text-terminal-accent-hot font-mono">
-            <LabelText text="⚠ SIGNAL LINK UNSTABLE" />
+            <LabelText text={lang === 'ko' ? commonKo.signalUnstable : '⚠ SIGNAL LINK UNSTABLE'} />
           </div>
           <div className="text-xs text-terminal-muted font-mono">
-            <MetaText text="DATABASE UNREACHABLE — RETRY LATER" />
+            <MetaText text={lang === 'ko' ? commonKo.dbUnreachable : 'DATABASE UNREACHABLE — RETRY LATER'} />
           </div>
         </motion.div>
       ) : (
@@ -122,7 +127,7 @@ export default function GatePage() {
                   <div className="text-center pt-2">
                     <Link href="/gate/request">
                       <TerminalButton className="px-8" variant="primary">
-                        ▶ REQUEST ACCESS PASS
+                        {lang === 'ko' ? gateKo.requestBtn : '▶ REQUEST ACCESS PASS'}
                       </TerminalButton>
                     </Link>
                   </div>
@@ -160,7 +165,7 @@ export default function GatePage() {
                         </div>
                       </div>
                       <div className="text-xs tracking-wider shrink-0 text-terminal-muted">
-                        <LabelText text="◼ ARCHIVED" />
+                        <LabelText text={lang === 'ko' ? gateKo.archivedLabel : '◼ ARCHIVED'} />
                       </div>
                     </div>
                   </button>

@@ -7,6 +7,8 @@ import ReturnLink from '@/components/ui/ReturnLink';
 import TerminalPanel from '@/components/TerminalPanel';
 import TerminalButton from '@/components/TerminalButton';
 import { LabelText, MetaText, SubtitleText } from '@/components/ui/TerminalText';
+import { useLang } from '@/lib/langContext';
+import { requestKo } from '@/lib/i18n';
 import type { TerminalEvent } from '@/lib/eventData';
 
 const ACCESS_WINDOW_DAYS = 30;
@@ -30,6 +32,7 @@ interface FormState {
 }
 
 export default function RequestAccessPage() {
+  const { lang } = useLang();
   const [event, setEvent] = useState<TerminalEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -82,7 +85,7 @@ export default function RequestAccessPage() {
       const data = await res.json() as { ok?: boolean; error?: string };
 
       if (!res.ok) {
-        const errorMap: Record<string, string> = {
+        const errorMapEn: Record<string, string> = {
           ALL_FIELDS_REQUIRED: 'ALL FIELDS ARE REQUIRED.',
           PRIVACY_CONSENT_REQUIRED: 'PRIVACY CONSENT IS REQUIRED.',
           INVALID_EMAIL_FORMAT: 'INVALID EMAIL FORMAT.',
@@ -92,19 +95,29 @@ export default function RequestAccessPage() {
           EMAIL_ALREADY_REGISTERED: 'THIS EMAIL HAS ALREADY BEEN REGISTERED.',
           INTERNAL_SERVER_ERROR: 'TRANSMISSION FAILED. RETRY LATER.',
         };
-        setError(errorMap[data.error ?? ''] ?? 'TRANSMISSION FAILED.');
+        const errorMapKo = requestKo.errors;
+        const errKey = data.error ?? '';
+        if (lang === 'ko') {
+          setError(
+            errorMapKo[errKey as keyof typeof errorMapKo] ?? errorMapKo.TRANSMISSION_FAILED
+          );
+        } else {
+          setError(errorMapEn[errKey] ?? 'TRANSMISSION FAILED.');
+        }
         return;
       }
 
       setSubmitted(true);
     } catch {
-      setError('TRANSMISSION FAILED. CHECK CONNECTION.');
+      setError(lang === 'ko' ? requestKo.errors.CONNECTION_ERROR : 'TRANSMISSION FAILED. CHECK CONNECTION.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const invitationLines = event?.invitationLines ?? DEFAULT_INVITATION_LINES;
+  const invitationLines = lang === 'ko'
+    ? (event?.invitationLines ?? requestKo.invitationLines)
+    : (event?.invitationLines ?? DEFAULT_INVITATION_LINES);
 
   const inputClass =
     'w-full bg-transparent outline-none px-3 py-2 text-xs border border-terminal-accent-cyan/30 focus:border-terminal-accent-cyan/70 transition-colors font-mono text-terminal-accent-cyan caret-terminal-accent-cyan placeholder:text-terminal-muted/40';
@@ -121,7 +134,7 @@ export default function RequestAccessPage() {
 
       {loading ? (
         <motion.div variants={itemVariants} className="text-xs font-mono text-terminal-muted text-center py-8">
-          <LabelText text="▸ LOADING REQUEST DATA..." />
+          <LabelText text={lang === 'ko' ? requestKo.loading : '▸ LOADING REQUEST DATA...'} />
         </motion.div>
       ) : !isActive ? (
         /* 비활성 기간 안내 */
@@ -129,23 +142,29 @@ export default function RequestAccessPage() {
           <TerminalPanel title="REQUEST_STATUS" accent="hot">
             <div className="space-y-3 text-center py-4">
               <div className="text-sm font-bold tracking-widest font-mono text-terminal-accent-hot">
-                <LabelText text="⚠ REQUEST PERIOD INACTIVE" />
+                <LabelText text={lang === 'ko' ? requestKo.periodInactive : '⚠ REQUEST PERIOD INACTIVE'} />
               </div>
               <div className="text-xs font-mono text-terminal-muted space-y-1">
                 {event ? (
                   <>
                     <div>
-                      <MetaText text={`NEXT RESPONSE WINDOW OPENS ${ACCESS_WINDOW_DAYS} DAYS BEFORE EVENT`} />
+                      <MetaText text={lang === 'ko'
+                        ? requestKo.windowInfo(ACCESS_WINDOW_DAYS)
+                        : `NEXT RESPONSE WINDOW OPENS ${ACCESS_WINDOW_DAYS} DAYS BEFORE EVENT`} />
                     </div>
                     <div>
-                      <MetaText text={`EVENT DATE — ${event.date.replace(/-/g, '.')} · ${event.time}`} />
+                      <MetaText text={lang === 'ko'
+                        ? requestKo.eventDate(event.date.replace(/-/g, '.'), event.time)
+                        : `EVENT DATE — ${event.date.replace(/-/g, '.')} · ${event.time}`} />
                     </div>
                     <div className="pt-1 text-terminal-accent-amber">
-                      <MetaText text={`WINDOW OPENS IN T-${daysUntil - ACCESS_WINDOW_DAYS} DAYS`} />
+                      <MetaText text={lang === 'ko'
+                        ? requestKo.windowCountdown(daysUntil - ACCESS_WINDOW_DAYS)
+                        : `WINDOW OPENS IN T-${daysUntil - ACCESS_WINDOW_DAYS} DAYS`} />
                     </div>
                   </>
                 ) : (
-                  <MetaText text="NO UPCOMING EVENT SCHEDULED. CHECK BACK LATER." />
+                  <MetaText text={lang === 'ko' ? requestKo.noEvent : 'NO UPCOMING EVENT SCHEDULED. CHECK BACK LATER.'} />
                 )}
               </div>
             </div>
@@ -161,10 +180,10 @@ export default function RequestAccessPage() {
           <TerminalPanel title="REQUEST_COMMITTED" accent="cyan">
             <div className="text-center py-6 space-y-2">
               <div className="text-sm font-bold tracking-widest font-mono text-terminal-accent-cyan">
-                <LabelText text="✓ REQUEST COMMITTED — AWAIT CONFIRMATION" />
+                <LabelText text={lang === 'ko' ? requestKo.committed : '✓ REQUEST COMMITTED — AWAIT CONFIRMATION'} />
               </div>
               <div className="text-xs font-mono text-terminal-muted">
-                <MetaText text="YOUR REQUEST HAS BEEN RECORDED. FURTHER INSTRUCTIONS WILL FOLLOW." />
+                <MetaText text={lang === 'ko' ? requestKo.committedSub : 'YOUR REQUEST HAS BEEN RECORDED. FURTHER INSTRUCTIONS WILL FOLLOW.'} />
               </div>
             </div>
           </TerminalPanel>
@@ -193,13 +212,13 @@ export default function RequestAccessPage() {
                 {/* 이름 */}
                 <div>
                   <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text="NAME:" />
+                    <LabelText text={lang === 'ko' ? requestKo.labelName : 'NAME:'} />
                   </div>
                   <input
                     type="text"
                     value={form.name}
                     onChange={handleChange('name')}
-                    placeholder="FULL NAME"
+                    placeholder={lang === 'ko' ? requestKo.placeholderName : 'FULL NAME'}
                     className={inputClass}
                   />
                 </div>
@@ -207,13 +226,13 @@ export default function RequestAccessPage() {
                 {/* 이메일 */}
                 <div>
                   <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text="EMAIL:" />
+                    <LabelText text={lang === 'ko' ? requestKo.labelEmail : 'EMAIL:'} />
                   </div>
                   <input
                     type="email"
                     value={form.email}
                     onChange={handleChange('email')}
-                    placeholder="YOUR@EMAIL.COM"
+                    placeholder={lang === 'ko' ? requestKo.placeholderEmail : 'YOUR@EMAIL.COM'}
                     className={inputClass}
                   />
                 </div>
@@ -221,13 +240,13 @@ export default function RequestAccessPage() {
                 {/* 인스타그램 */}
                 <div>
                   <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text="INSTAGRAM_ID:" />
+                    <LabelText text={lang === 'ko' ? requestKo.labelInstagram : 'INSTAGRAM_ID:'} />
                   </div>
                   <input
                     type="text"
                     value={form.instagram}
                     onChange={handleChange('instagram')}
-                    placeholder="@USERNAME"
+                    placeholder={lang === 'ko' ? requestKo.placeholderInstagram : '@USERNAME'}
                     className={inputClass}
                   />
                 </div>
@@ -235,13 +254,13 @@ export default function RequestAccessPage() {
                 {/* 초대인 */}
                 <div>
                   <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text="INVITED_BY:" />
+                    <LabelText text={lang === 'ko' ? requestKo.labelInvitedBy : 'INVITED_BY:'} />
                   </div>
                   <input
                     type="text"
                     value={form.invitedBy}
                     onChange={handleChange('invitedBy')}
-                    placeholder="NAME OF YOUR INVITER"
+                    placeholder={lang === 'ko' ? requestKo.placeholderInvitedBy : 'NAME OF YOUR INVITER'}
                     className={inputClass}
                   />
                 </div>
@@ -249,13 +268,13 @@ export default function RequestAccessPage() {
                 {/* 인증 코드 */}
                 <div>
                   <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text="ACCESS_CODE:" />
+                    <LabelText text={lang === 'ko' ? requestKo.labelCode : 'ACCESS_CODE:'} />
                   </div>
                   <input
                     type="text"
                     value={form.accessCode}
                     onChange={handleChange('accessCode')}
-                    placeholder="SESSION ACCESS CODE"
+                    placeholder={lang === 'ko' ? requestKo.placeholderCode : 'SESSION ACCESS CODE'}
                     className={inputClass}
                   />
                 </div>
@@ -279,7 +298,7 @@ export default function RequestAccessPage() {
                       </div>
                     </div>
                     <span className="text-xs font-mono text-terminal-muted leading-relaxed group-hover:text-terminal-subdued transition-colors">
-                      <MetaText text="I CONSENT TO THE COLLECTION AND USE OF MY PERSONAL INFORMATION (NAME, EMAIL, INSTAGRAM ID) FOR THE PURPOSE OF EVENT GUEST MANAGEMENT. DATA WILL NOT BE SHARED WITH THIRD PARTIES." />
+                      <MetaText text={lang === 'ko' ? requestKo.privacyConsent : 'I CONSENT TO THE COLLECTION AND USE OF MY PERSONAL INFORMATION (NAME, EMAIL, INSTAGRAM ID) FOR THE PURPOSE OF EVENT GUEST MANAGEMENT. DATA WILL NOT BE SHARED WITH THIRD PARTIES.'} />
                     </span>
                   </label>
                 </div>
@@ -301,7 +320,9 @@ export default function RequestAccessPage() {
                 {/* 제출 버튼 */}
                 <div className="flex justify-end pt-2">
                   <TerminalButton type="submit" variant="primary" disabled={submitting}>
-                    {submitting ? '▸ TRANSMITTING...' : '▶ SUBMIT REQUEST'}
+                    {submitting
+                      ? (lang === 'ko' ? requestKo.submitting : '▸ TRANSMITTING...')
+                      : (lang === 'ko' ? requestKo.submitBtn : '▶ SUBMIT REQUEST')}
                   </TerminalButton>
                 </div>
               </form>

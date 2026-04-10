@@ -9,6 +9,8 @@ import { LabelText, SubtitleText, MetaText, DataText } from '@/components/ui/Ter
 import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import { getNodeId, setNodeId } from '@/lib/nodeId';
+import { useLang } from '@/lib/langContext';
+import { transmitKo } from '@/lib/i18n';
 
 interface LogEntry {
   id: string;
@@ -27,6 +29,7 @@ interface LogPage {
 }
 
 export default function TransmitPage() {
+  const { lang } = useLang();
   const [logPage, setLogPage] = useState<LogPage>({ logs: [], total: 0, page: 1, totalPages: 1 });
   const [currentPage, setCurrentPage] = useState(1);
   const [handle, setHandle] = useState('');
@@ -40,7 +43,7 @@ export default function TransmitPage() {
     fetch(`/api/transmit?page=${page}`)
       .then(res => { if (!res.ok) throw new Error(); return res.json() as Promise<LogPage>; })
       .then(data => { setLogPage(data); setCurrentPage(data.page); })
-      .catch(() => setError('SIGNAL LINK UNSTABLE.'))
+      .catch(() => setError(lang === 'ko' ? transmitKo.errors.linkUnstable : 'SIGNAL LINK UNSTABLE.'))
       .finally(() => setLoading(false));
   };
 
@@ -51,8 +54,8 @@ export default function TransmitPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!handle.trim() || !message.trim()) { setError('ALIAS AND MESSAGE REQUIRED.'); return; }
-    if (message.length > 280) { setError('MESSAGE EXCEEDS 280 CHARS.'); return; }
+    if (!handle.trim() || !message.trim()) { setError(lang === 'ko' ? transmitKo.errors.required : 'ALIAS AND MESSAGE REQUIRED.'); return; }
+    if (message.length > 280) { setError(lang === 'ko' ? transmitKo.errors.tooLong : 'MESSAGE EXCEEDS 280 CHARS.'); return; }
 
     try {
       const res = await fetch('/api/transmit', {
@@ -67,7 +70,7 @@ export default function TransmitPage() {
 
       if (!res.ok) {
         const data = await res.json() as { error?: string };
-        setError(data.error ?? 'TRANSMISSION FAILED.');
+        setError(lang === 'ko' ? (transmitKo.errors.failed) : (data.error ?? 'TRANSMISSION FAILED.'));
         return;
       }
 
@@ -78,7 +81,7 @@ export default function TransmitPage() {
       setTimeout(() => setSent(false), 2500);
       fetchPage(1);
     } catch {
-      setError('TRANSMISSION FAILED. CHECK CONNECTION.');
+      setError(lang === 'ko' ? transmitKo.errors.connection : 'TRANSMISSION FAILED. CHECK CONNECTION.');
     }
   };
 
@@ -95,12 +98,12 @@ export default function TransmitPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <div className="w-full text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                <LabelText text="ALIAS:" />
+                <LabelText text={lang === 'ko' ? transmitKo.labelAlias : 'ALIAS:'} />
               </div>
               <input
                 value={handle}
                 onChange={e => { setHandle(e.target.value); setNodeId(e.target.value); }}
-                placeholder="ENTER_ALIAS"
+                placeholder={lang === 'ko' ? transmitKo.placeholderAlias : 'ENTER_ALIAS'}
                 maxLength={24}
                 className="w-full bg-transparent outline-none px-3 py-2 text-xs border border-terminal-accent-purple/30 focus:border-terminal-accent-purple/70 transition-colors font-mono text-terminal-accent-purple caret-terminal-accent-purple"
               />
@@ -108,14 +111,14 @@ export default function TransmitPage() {
             <div>
               <div className="flex justify-between items-center w-full text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
                 <span className="flex-1 min-w-0">
-                  <LabelText text="MESSAGE:" />
+                  <LabelText text={lang === 'ko' ? transmitKo.labelMessage : 'MESSAGE:'} />
                 </span>
                 <DataText text={`(${message.length}/280)`} className="shrink-0 text-terminal-muted" />
               </div>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
-                placeholder="WRITE TO DATABASE..."
+                placeholder={lang === 'ko' ? transmitKo.placeholderMsg : 'WRITE TO DATABASE...'}
                 maxLength={280}
                 rows={3}
                 className="w-full bg-transparent outline-none px-3 py-2 text-xs border border-terminal-accent-purple/30 focus:border-terminal-accent-purple/70 resize-none transition-colors font-mono text-terminal-primary caret-terminal-accent-amber"
@@ -129,13 +132,13 @@ export default function TransmitPage() {
               )}
               {sent && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs font-mono text-terminal-accent-amber">
-                  <LabelText text="✓ SIGNAL COMMITTED TO DATABASE" />
+                  <LabelText text={lang === 'ko' ? transmitKo.committed : '✓ SIGNAL COMMITTED TO DATABASE'} />
                 </motion.div>
               )}
             </AnimatePresence>
             <div className="flex justify-end pt-2">
               <TerminalButton type="submit" variant="danger">
-                ▶ COMMIT SIGNAL
+                {lang === 'ko' ? transmitKo.submitBtn : '▶ COMMIT SIGNAL'}
               </TerminalButton>
             </div>
           </form>
@@ -145,7 +148,9 @@ export default function TransmitPage() {
       {/* Log */}
       <motion.div variants={itemVariants}>
         <TerminalPanel
-          title={loading ? 'SIGNAL_LOG — SYNCING...' : `SIGNAL_LOG — ${total} ENTRIES`}
+          title={loading
+            ? (lang === 'ko' ? transmitKo.logSyncing : 'SIGNAL_LOG — SYNCING...')
+            : (lang === 'ko' ? transmitKo.logTitle(total) : `SIGNAL_LOG — ${total} ENTRIES`)}
           accent="green"
         >
           <div className="space-y-4">
@@ -161,7 +166,7 @@ export default function TransmitPage() {
                     transition={{ duration: 0.15 }}
                     className="text-xs font-mono text-terminal-muted text-center py-4"
                   >
-                    <LabelText text="▸ SYNCHRONIZING WITH DATABASE..." />
+                    <LabelText text={lang === 'ko' ? transmitKo.syncing : '▸ SYNCHRONIZING WITH DATABASE...'} />
                   </motion.div>
                 ) : logs.length === 0 ? (
                   <motion.div
@@ -172,7 +177,7 @@ export default function TransmitPage() {
                     transition={{ duration: 0.15 }}
                     className="text-xs font-mono text-terminal-muted text-center py-4"
                   >
-                    <MetaText text="NO ENTRIES FOUND." />
+                    <MetaText text={lang === 'ko' ? transmitKo.noEntries : 'NO ENTRIES FOUND.'} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -210,7 +215,7 @@ export default function TransmitPage() {
                 disabled={currentPage <= 1 || loading}
                 className="text-xs font-mono tracking-widest text-terminal-subdued hover:text-terminal-accent-amber disabled:opacity-25 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                ◀ PREV
+                {lang === 'ko' ? transmitKo.prevBtn : '◀ PREV'}
               </button>
               <span className="text-xs font-mono text-terminal-subdued">
                 {currentPage} / {Math.max(1, totalPages)}
@@ -220,7 +225,7 @@ export default function TransmitPage() {
                 disabled={currentPage >= totalPages || loading}
                 className="text-xs font-mono tracking-widest text-terminal-subdued hover:text-terminal-accent-amber disabled:opacity-25 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                NEXT ▶
+                {lang === 'ko' ? transmitKo.nextBtn : 'NEXT ▶'}
               </button>
             </div>
           </div>
