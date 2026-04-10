@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import DirectoryLink from '@/components/DirectoryLink';
 import PageLayout, { itemVariants } from '@/components/PageLayout';
 import { TitleText, SubtitleText, HeadingText, LabelText, MetaText, BodyText } from '@/components/ui/TerminalText';
@@ -102,7 +102,20 @@ export default function HomePage() {
                   <MetaText text={upcomingEvent ? `${upcomingEvent.subtitle} // ${upcomingEvent.venue}` : '—'} />
                 </div>
               </div>
-              {eventDate && <CountdownBlock targetDate={eventDate} />}
+              <AnimatePresence>
+                {eventDate && (
+                  <motion.div
+                    key="countdown"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <CountdownBlock targetDate={eventDate} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </motion.div>
@@ -134,7 +147,7 @@ export default function HomePage() {
           className="mt-6 flex items-center justify-between text-[10px] sm:text-xs text-terminal-muted font-mono"
         >
           <span><MetaText text="KERNEL 2.2.0-heliopause_build" /></span>
-          <span suppressHydrationWarning={true}><MetaText text={new Date().toISOString().slice(0, 10)} /></span>
+          <span suppressHydrationWarning={true}><MetaText text="STATUS : ACTIVE" /></span>
         </motion.div>
     </PageLayout>
   );

@@ -12,9 +12,9 @@ interface PageLayoutProps {
 
 export default function PageLayout({ children }: PageLayoutProps) {
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center overflow-x-hidden text-terminal-primary px-4 sm:px-6 pt-14 md:pt-20 pb-14 md:pb-20">
+    <div className="relative w-full min-h-screen flex flex-col items-center overflow-x-hidden text-terminal-primary px-4 sm:px-6 py-10">
       <motion.div
-        className="relative z-10 w-full sm:w-[700px] md:w-[800px] flex flex-col mx-auto shrink-0"
+        className="relative z-10 w-full sm:w-[700px] md:w-[800px] flex flex-col mx-auto shrink-0 my-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
