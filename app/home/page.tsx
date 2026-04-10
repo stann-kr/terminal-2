@@ -15,7 +15,7 @@ import {
 import CountdownBlock from "@/components/ui/CountdownBlock";
 import LangToggle from "@/components/ui/LangToggle";
 import { useLang } from "@/lib/langContext";
-import { dirDescKo } from "@/lib/i18n";
+import { dirDescKo, homeKo, commonKo } from "@/lib/i18n";
 import type { TerminalEvent } from "@/lib/eventData";
 
 export default function HomePage() {
@@ -25,13 +25,19 @@ export default function HomePage() {
     {
       href: "/about",
       label: "About",
-      description: lang === "ko" ? dirDescKo.about : "PLATFORM MANIFESTO / SYSTEM INFORMATION",
+      description:
+        lang === "ko"
+          ? dirDescKo.about
+          : "PLATFORM MANIFESTO / SYSTEM INFORMATION",
       accent: "amber" as const,
     },
     {
       href: "/gate",
       label: "Gate",
-      description: lang === "ko" ? dirDescKo.gate : "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
+      description:
+        lang === "ko"
+          ? dirDescKo.gate
+          : "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
       accent: "cyan" as const,
     },
     {
@@ -43,19 +49,24 @@ export default function HomePage() {
     {
       href: "/status",
       label: "Status",
-      description: lang === "ko" ? dirDescKo.status : "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
+      description:
+        lang === "ko"
+          ? dirDescKo.status
+          : "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
       accent: "hot" as const,
     },
     {
       href: "/transmit",
       label: "Transmit",
-      description: lang === "ko" ? dirDescKo.transmit : "VISITOR LOG / NODE SYNC",
+      description:
+        lang === "ko" ? dirDescKo.transmit : "VISITOR LOG / NODE SYNC",
       accent: "purple" as const,
     },
     {
       href: "/link",
       label: "Link",
-      description: lang === "ko" ? dirDescKo.link : "EXTERNAL CHANNELS / OFFICIAL LINKS",
+      description:
+        lang === "ko" ? dirDescKo.link : "EXTERNAL CHANNELS / OFFICIAL LINKS",
       accent: "amber" as const,
     },
   ];
@@ -157,17 +168,31 @@ export default function HomePage() {
         {eventError ? (
           <div className="text-center py-4 space-y-2">
             <div className="text-xs font-bold tracking-widest text-terminal-accent-hot font-mono">
-              <LabelText text="⚠ SIGNAL LINK UNSTABLE" />
+              <LabelText
+                text={
+                  lang === "ko"
+                    ? commonKo.signalUnstable
+                    : "⚠ SIGNAL LINK UNSTABLE"
+                }
+              />
             </div>
             <div className="text-xs text-terminal-muted font-mono">
-              <MetaText text="DATABASE UNREACHABLE — RETRY LATER" />
+              <MetaText
+                text={
+                  lang === "ko"
+                    ? commonKo.dbUnreachable
+                    : "DATABASE UNREACHABLE — RETRY LATER"
+                }
+              />
             </div>
           </div>
         ) : (
           <>
             <div className="text-center mb-4">
               <div className="mb-1 text-[10px] sm:text-xs text-terminal-muted tracking-[0.1em]">
-                <BodyText text={`NEXT ENTRY — ${eventDateLabel}`} />
+                <BodyText
+                  text={`${lang === "ko" ? homeKo.nextEntry : "NEXT LAUNCH —"} ${eventDateLabel}`}
+                />
               </div>
               <div className="text-xl sm:text-2xl font-bold text-terminal-accent-amber tracking-[0.2em] drop-shadow-[0_0_16px_rgba(212,146,10,0.4)]">
                 <HeadingText text={upcomingEvent?.session ?? "—"} as="span" />
@@ -196,10 +221,16 @@ export default function HomePage() {
       >
         <div className="px-4 py-2 border-b flex items-center justify-between border-terminal-accent-amber/15 bg-black/40">
           <span className="text-[10px] sm:text-xs tracking-widest text-terminal-accent-amber">
-            <LabelText text="▶ ROOT DIRECTORY — /terminal/" />
+            <LabelText
+              text={
+                lang === "ko" ? homeKo.rootDir : "▶ ROOT DIRECTORY — /terminal/"
+              }
+            />
           </span>
           <span className="text-[10px] sm:text-xs text-terminal-muted">
-            <LabelText text="6 MODULE(S)" />
+            <LabelText
+              text={lang === "ko" ? homeKo.moduleCount : "6 MODULE(S)"}
+            />
           </span>
         </div>
 
