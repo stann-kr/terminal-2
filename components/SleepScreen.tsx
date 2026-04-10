@@ -39,10 +39,8 @@ export default function SleepScreen({ onWake }: SleepScreenProps) {
 
   useEffect(() => {
     const handleKey = () => wake();
-    const handleMove = () => wake();
     window.addEventListener('keydown', handleKey);
-    window.addEventListener('mousemove', handleMove, { once: true });
-    return () => { window.removeEventListener('keydown', handleKey); window.removeEventListener('mousemove', handleMove); };
+    return () => { window.removeEventListener('keydown', handleKey); };
   }, [wake]);
 
   return (
@@ -57,7 +55,7 @@ export default function SleepScreen({ onWake }: SleepScreenProps) {
         background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.3) 3px, rgba(0,0,0,0.3) 6px)',
       }} />
 
-      <div className="relative z-10 w-full max-w-3xl text-center">
+      <div className="relative z-10 w-full max-w-3xl flex flex-col items-center text-center">
         {/* Clock */}
         <div className="text-5xl md:text-7xl font-bold mb-8 phosphor-text tracking-[0.1em] text-terminal-accent-amber drop-shadow-[0_0_20px_rgba(212,146,10,0.5)]" suppressHydrationWarning={true}>
           {time}
@@ -67,7 +65,7 @@ export default function SleepScreen({ onWake }: SleepScreenProps) {
           {SCREENSAVER_LINES.map((line, i) => (
             <motion.div
               key={i}
-              className="text-xs tracking-wider text-terminal-muted/30"
+              className="text-xs tracking-wider text-terminal-muted/60"
               animate={{ opacity: [0.4, 0.9, 0.4] }}
               transition={{ duration: 3, delay: i * 0.4, repeat: Infinity }}
             >

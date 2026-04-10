@@ -101,43 +101,46 @@ export default function LineupPage() {
 
           {/* Artist list */}
           <AnimatePresence mode="wait">
-            {selectedEvent && (
-              <motion.div
-                key={selectedId}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Header */}
-                <div className="mb-3 px-4 py-2 border-b hidden md:block border-terminal-accent-gold/30">
-                  <div className="grid grid-cols-12 gap-2 text-xs tracking-widest text-terminal-muted font-mono">
-                    <span className="col-span-1"><MetaText text="ID" /></span>
-                    <span className="col-span-3"><MetaText text="ARTIST" /></span>
-                    <span className="col-span-1"><MetaText text="ORG" /></span>
-                    <span className="col-span-3"><MetaText text="DOCK" /></span>
-                    <span className="col-span-2"><MetaText text="TIMESLOT" /></span>
-                    <span className="col-span-2"><MetaText text="STATUS" /></span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  {selectedEvent.artists.map((a) => (
-                    <div key={a.id} className="w-full">
-                      <ArtistRow artist={a} />
+            <motion.div
+              key={selectedId}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="space-y-4"
+            >
+              {selectedEvent && (
+                <>
+                  {/* Header */}
+                  <div className="px-4 py-2 border-b hidden md:block border-terminal-accent-gold/30">
+                    <div className="grid grid-cols-12 gap-2 text-xs tracking-widest text-terminal-muted font-mono">
+                      <span className="col-span-1"><MetaText text="ID" /></span>
+                      <span className="col-span-3"><MetaText text="ARTIST" /></span>
+                      <span className="col-span-1"><MetaText text="ORG" /></span>
+                      <span className="col-span-3"><MetaText text="DOCK" /></span>
+                      <span className="col-span-2"><MetaText text="TIMESLOT" /></span>
+                      <span className="col-span-2"><MetaText text="STATUS" /></span>
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                <div className="mt-6 text-xs text-center text-terminal-muted font-mono">
-                  <SubtitleText
-                    text={selectedEvent.status === 'UPCOMING'
-                      ? '— DECRYPTING ADDITIONAL ROSTER — STANDBY —'
-                      : '— SECTOR 01 COMPLETE — ANALOG DATA PURGED —'}
-                  />
-                </div>
-              </motion.div>
-            )}
+                  <div className="space-y-2">
+                    {selectedEvent.artists.map((a) => (
+                      <div key={a.id} className="w-full">
+                        <ArtistRow artist={a} />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="text-xs text-center text-terminal-muted font-mono">
+                    <SubtitleText
+                      text={selectedEvent.status === 'UPCOMING'
+                        ? '— DECRYPTING ADDITIONAL ROSTER — STANDBY —'
+                        : '— SECTOR 01 COMPLETE — ANALOG DATA PURGED —'}
+                    />
+                  </div>
+                </>
+              )}
+            </motion.div>
           </AnimatePresence>
         </>
       )}

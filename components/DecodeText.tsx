@@ -224,6 +224,7 @@ const DecodeText = memo(function DecodeText({
       style={{
         overflow: "hidden",
         minWidth: "1ch",
+        height: "0px",
         transition: "height 0.25s ease-out, min-height 0.25s ease-out"
       }}
     >
