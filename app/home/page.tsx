@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import AnimatedHeight from "@/components/ui/AnimatedHeight";
 import DirectoryLink from "@/components/DirectoryLink";
 import PageLayout, { itemVariants } from "@/components/PageLayout";
 import {
@@ -12,48 +13,53 @@ import {
   BodyText,
 } from "@/components/ui/TerminalText";
 import CountdownBlock from "@/components/ui/CountdownBlock";
+import LangToggle from "@/components/ui/LangToggle";
+import { useLang } from "@/lib/langContext";
+import { dirDescKo } from "@/lib/i18n";
 import type { TerminalEvent } from "@/lib/eventData";
 
-const DIRS = [
-  {
-    href: "/about",
-    label: "About",
-    description: "PLATFORM MANIFESTO / SYSTEM INFORMATION",
-    accent: "amber" as const,
-  },
-  {
-    href: "/gate",
-    label: "Gate",
-    description: "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
-    accent: "cyan" as const,
-  },
-  {
-    href: "/lineup",
-    label: "Lineup",
-    description: "ARTIST ROSTER / DOCK",
-    accent: "gold" as const,
-  },
-  {
-    href: "/status",
-    label: "Status",
-    description: "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
-    accent: "hot" as const,
-  },
-  {
-    href: "/transmit",
-    label: "Transmit",
-    description: "VISITOR LOG / NODE SYNC",
-    accent: "purple" as const,
-  },
-  {
-    href: "/link",
-    label: "Link",
-    description: "EXTERNAL CHANNELS / OFFICIAL LINKS",
-    accent: "amber" as const,
-  },
-];
-
 export default function HomePage() {
+  const { lang } = useLang();
+
+  const DIRS = [
+    {
+      href: "/about",
+      label: "About",
+      description: lang === "ko" ? dirDescKo.about : "PLATFORM MANIFESTO / SYSTEM INFORMATION",
+      accent: "amber" as const,
+    },
+    {
+      href: "/gate",
+      label: "Gate",
+      description: lang === "ko" ? dirDescKo.gate : "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
+      accent: "cyan" as const,
+    },
+    {
+      href: "/lineup",
+      label: "Lineup",
+      description: lang === "ko" ? dirDescKo.lineup : "ARTIST ROSTER / DOCK",
+      accent: "gold" as const,
+    },
+    {
+      href: "/status",
+      label: "Status",
+      description: lang === "ko" ? dirDescKo.status : "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
+      accent: "hot" as const,
+    },
+    {
+      href: "/transmit",
+      label: "Transmit",
+      description: lang === "ko" ? dirDescKo.transmit : "VISITOR LOG / NODE SYNC",
+      accent: "purple" as const,
+    },
+    {
+      href: "/link",
+      label: "Link",
+      description: lang === "ko" ? dirDescKo.link : "EXTERNAL CHANNELS / OFFICIAL LINKS",
+      accent: "amber" as const,
+    },
+  ];
+
   const [upcomingEvent, setUpcomingEvent] = useState<TerminalEvent | null>(
     null,
   );
@@ -176,20 +182,9 @@ export default function HomePage() {
                 />
               </div>
             </div>
-            <AnimatePresence>
-              {eventDate && (
-                <motion.div
-                  key="countdown"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  style={{ overflow: "hidden" }}
-                >
-                  <CountdownBlock targetDate={eventDate} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <AnimatedHeight show={!!eventDate}>
+              {eventDate && <CountdownBlock targetDate={eventDate} />}
+            </AnimatedHeight>
           </>
         )}
       </motion.div>
@@ -223,9 +218,7 @@ export default function HomePage() {
         <span>
           <MetaText text="KERNEL 2.2.0-heliopause_build" />
         </span>
-        <span suppressHydrationWarning={true}>
-          <MetaText text="STATUS : ACTIVE" />
-        </span>
+        <LangToggle />
       </motion.div>
     </PageLayout>
   );
