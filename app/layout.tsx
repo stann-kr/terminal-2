@@ -5,6 +5,7 @@ import "./crt.css";
 import CRTWrapper from "@/components/CRTWrapper";
 import PageTransition from "@/components/PageTransition";
 import ParticleFieldDynamic from "@/components/ParticleFieldDynamic";
+import { LangProvider } from "@/lib/langContext";
 
 const pacifico = Pacifico({
   weight: '400',
@@ -36,12 +37,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" suppressHydrationWarning={true}>
       <body className={`${pacifico.variable} ${spaceMono.variable} bg-terminal-bg-base overflow-x-hidden`}>
-        <CRTWrapper>
-          <ParticleFieldDynamic />
-          <PageTransition>
-            {children}
-          </PageTransition>
-        </CRTWrapper>
+        <LangProvider>
+          <CRTWrapper>
+            <ParticleFieldDynamic />
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </CRTWrapper>
+        </LangProvider>
       </body>
     </html>
   );
