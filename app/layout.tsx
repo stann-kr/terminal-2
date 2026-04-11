@@ -7,8 +7,13 @@ import ParticleFieldDynamic from "@/components/ParticleFieldDynamic";
 import { LangProvider } from "@/lib/langContext";
 
 export const metadata: Metadata = {
-  title: "TERMINAL — A Voyage to the Unknown Sector",
-  description: "Seoul-based techno platform designing an industrial station where audio signals and data intersect.",
+  title: "TERMINAL",
+  description:
+    "Seoul-based techno platform designing an industrial station where audio signals and data intersect.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export const viewport = {
