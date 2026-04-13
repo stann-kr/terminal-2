@@ -1,5 +1,16 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-14] 라인업 페이지 아티스트 소개글 아코디언 기능 추가
+
+* **데이터 모델 확장 (`lib/eventData.ts`):** `Artist` 인터페이스에 선택적 필드 `description` 추가. 기존 단일 문자열 외에 `{ en: string | string[], ko: string | string[] }` 형태의 이중 언어(Bilingual) 객체 구조를 지원하도록 설계 변경.
+* **아코디언 UI 적용 (`app/lineup/ArtistRow.tsx`):**
+    * 아티스트 행(Row) 클릭 이벤트를 감지하여 아코디언 형태로 열리고 닫히는 `isOpen` 상태 추가.
+    * 기존 `AnimatedHeight` 컴포넌트를 활용하여 부드러운 전개 애니메이션 구현.
+    * `DecodeText` 컴포넌트를 사용하여 소개글 텍스트 출력 시 터미널 타이핑 이펙트 적용.
+    * 전역 언어 설정(`useLang` Context)에 따라 `description.ko` 또는 `description.en`을 동적으로 렌더링. (단일 문자열 데이터와도 하위 호환 유지)
+    * `hasDescription` 여부에 따라 Hover 스타일(cursor-pointer 및 배경색) 및 토글 지시자(`[+]`/`[-]`) 조건부 렌더링을 추가하여 시각적 인지성(Discoverability) 강화.
+* **로컬 DB 시딩 스크립트 작성 (`migrations/seed_artist_description_bilingual.sql`):** 테스트를 위해 로컬 D1 데이터베이스의 아티스트 테이블에 한/영 분리형 더미 데이터를 주입.
+
 ## [2026-04-13] 심우주 모노크롬 블루프린트 테마(Deep Space Monochrome Blueprint) 리팩토링
 
 * **전역 테마 색상 재설계 (`app/globals.css`, `tailwind.config.js`):** 기존의 다채로운 레트로 터미널 색상(amber, cyan, hot, gold, purple)을 폐기하고, 포스터 미감에 맞춘 극도로 절제된 단색 쿨톤(Icy Blue: `#D6E5ED`) 기반의 시맨틱 색상 체계(`primary`, `secondary`, `tertiary`, `alert`, `warn`)로 전면 개편함.
