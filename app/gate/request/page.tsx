@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageLayout, { itemVariants } from '@/components/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
@@ -47,7 +47,8 @@ export default function RequestAccessPage() {
     accessCode: '',
     privacyConsent: false,
   });
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
@@ -73,9 +74,10 @@ export default function RequestAccessPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
+    if (submittingRef.current) return;
     setError('');
-    setSubmitting(true);
+    submittingRef.current = true;
+    setIsSubmitting(true);
 
     try {
       const res = await fetch('/api/gate/request', {
@@ -113,7 +115,8 @@ export default function RequestAccessPage() {
     } catch {
       setError(lang === 'ko' ? requestKo.errors.CONNECTION_ERROR : 'TRANSMISSION FAILED. CHECK CONNECTION.');
     } finally {
-      setSubmitting(false);
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -322,7 +325,7 @@ export default function RequestAccessPage() {
                 {/* 제출 버튼 */}
                 <div className="flex justify-end pt-2">
                   <SubmitButton
-                    isSubmitting={submitting}
+                    isSubmitting={isSubmitting}
                     variant="primary"
                     defaultText={lang === 'ko' ? requestKo.submitBtn : '▶ SUBMIT REQUEST'}
                     loadingText={lang === 'ko' ? requestKo.submitting : '▸ TRANSMITTING...'}

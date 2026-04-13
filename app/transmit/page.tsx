@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
 import TerminalPanel from '@/components/TerminalPanel';
@@ -39,6 +39,7 @@ export default function TransmitPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const fetchPage = (page: number) => {
     setLoading(true);
@@ -56,10 +57,11 @@ export default function TransmitPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (submittingRef.current) return;
     if (!handle.trim() || !message.trim()) { setError(lang === 'ko' ? transmitKo.errors.required : 'ALIAS AND MESSAGE REQUIRED.'); return; }
     if (message.length > 280) { setError(lang === 'ko' ? transmitKo.errors.tooLong : 'MESSAGE EXCEEDS 280 CHARS.'); return; }
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/transmit', {
@@ -87,6 +89,7 @@ export default function TransmitPage() {
     } catch {
       setError(lang === 'ko' ? transmitKo.errors.connection : 'TRANSMISSION FAILED. CHECK CONNECTION.');
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
