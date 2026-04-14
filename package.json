@@ -7,6 +7,7 @@
     "@react-three/fiber": "9.3.0",
     "@react-three/postprocessing": "^3.0.4",
     "@types/three": "^0.169.0",
+    "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
     "framer-motion": "12.23.12",
     "lucide-react": "0.539.0",
@@ -15,6 +16,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^3.0.2",
+    "tailwind-merge": "^3.5.0",
     "three": "0.179.1",
     "use-scramble": "^2.2.15"
   },

@@ -135,12 +135,12 @@ export default function HomePage() {
 
         <motion.h1
           variants={itemVariants}
-          className="font-bold tracking-[0.15em] sm:tracking-[0.2em] mb-2 drop-shadow-[0_0_30px_rgb(var(--color-accent-primary)/0.5)] font-pixie"
+          className="font-bold tracking-[0.15em] sm:tracking-[0.25em] mb-2 drop-shadow-[0_0_30px_rgb(var(--color-accent-primary)/0.5)] font-pixie"
         >
           <TitleText
             text="TERMINAL"
             as="span"
-            className="text-3xl sm:text-5xl md:text-6xl text-terminal-accent-primary"
+            className="text-5xl sm:text-7xl md:text-8xl text-terminal-accent-primary"
           />
         </motion.h1>
 
@@ -148,7 +148,7 @@ export default function HomePage() {
           <SubtitleText
             text="A VOYAGE TO THE UNKNOWN SECTOR"
             delay={100}
-            className="text-[4px] sm:text-[6px] text-terminal-subdued text-center tracking-[0.3em] opacity-40"
+            className="text-[9px] sm:text-[11px] md:text-[11px] text-terminal-subdued text-center tracking-[0.2em] opacity-70"
           />
         </motion.div>
 
@@ -189,16 +189,21 @@ export default function HomePage() {
         ) : (
           <>
             <div className="text-center mb-4">
-              <div className="mb-1 text-[10px] sm:text-xs text-terminal-muted tracking-[0.1em]">
+              <div className="mb-1 tracking-[0.1em]">
                 <BodyText
+                  className="text-[10px] sm:text-xs text-terminal-muted"
                   text={`${lang === "ko" ? homeKo.nextEntry : "NEXT LAUNCH —"} ${eventDateLabel}`}
                 />
               </div>
-              <div className="text-xl sm:text-2xl font-bold text-terminal-accent-primary tracking-[0.2em] drop-shadow-[0_0_16px_rgb(var(--color-accent-primary)/0.4)]">
-                <HeadingText text={upcomingEvent?.session ?? "—"} as="span" />
+              <div className="drop-shadow-[0_0_16px_rgb(var(--color-accent-primary)/0.4)]">
+                <HeadingText 
+                  className="text-xl sm:text-2xl font-bold text-terminal-accent-primary tracking-[0.2em]"
+                  text={upcomingEvent?.session ?? "—"} as="span" 
+                />
               </div>
-              <div className="mt-1 text-[10px] sm:text-xs text-terminal-subdued tracking-[0.1em]">
+              <div className="mt-1 tracking-[0.1em]">
                 <MetaText
+                  className="text-[10px] sm:text-xs text-terminal-subdued"
                   text={
                     upcomingEvent
                       ? `${upcomingEvent.subtitle} // ${upcomingEvent.venue}`
