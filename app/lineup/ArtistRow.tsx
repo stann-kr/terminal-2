@@ -29,16 +29,9 @@ export default function ArtistRow({ artist: a }: Props) {
 
   const hasDescription = !!a.description;
   
-  let currentDesc: string | string[] = '';
-  if (hasDescription) {
-    if (typeof a.description === 'object' && !Array.isArray(a.description) && ('ko' in a.description || 'en' in a.description)) {
-      // Bilingual object
-      currentDesc = lang === 'ko' ? a.description.ko : a.description.en;
-    } else {
-      // Legacy string or array
-      currentDesc = a.description as string | string[];
-    }
-  }
+  const currentDesc = (hasDescription && typeof a.description === 'object' && !Array.isArray(a.description))
+    ? (lang === 'ko' ? a.description.ko : a.description.en)
+    : (a.description || '');
   
   const descriptionText = Array.isArray(currentDesc) ? currentDesc.join('\n') : currentDesc;
 
