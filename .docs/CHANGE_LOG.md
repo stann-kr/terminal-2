@@ -1,5 +1,28 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-15] 전역 타이포그래피 시스템 구축 및 반응형 레이아웃 최적화
+
+* **시맨틱 타이포그래피 스케일 표준화 (`components/ui/TerminalText.tsx`):**
+    * `TitleText`, `HeadingText`, `SubtitleText` 등 모든 시맨틱 텍스트 컴포넌트 내부에 터미널 테마에 최적화된 기본 텍스트 크기(Typography Scale)를 내장함.
+    * `xs`, `sm`, `10px` 등 파편화되어 사용되던 크기 지정을 컴포넌트 수준에서 추상화하여 프로젝트 전반의 시각적 위계(Hierarchy)와 유지보수성을 극대화함.
+    * `MetaText`의 데스크톱 가독성을 위해 `md:text-xs` 스케일을 보강하고, 긴 문단용 `BodyText` 가독성 최적화.
+* **`tailwind-merge` 및 `clsx` 도입을 통한 클래스 충돌 방지:**
+    * `lib/utils.ts`에 `cn()` (classNames) 유틸리티 함수를 신규 구축하여 업계 표준 방식의 클래스 병합 로직 도입.
+    * 컴포넌트 내장 기본 클래스와 부모로부터 전달된 오버라이드 클래스가 충돌할 때, Tailwind CSS 우선순위에 따라 지능적으로 병합되도록 `TerminalText.tsx` 전체를 리팩토링함.
+* **반응형 레이아웃 버그 및 텍스트 렌더링 수정:**
+    * **CSS 상속 문제 해결**: 홈 페이지 및 게이트 페이지에서 래퍼(`div`)에 적용된 스타일이 자식 시맨틱 컴포넌트에 상속되지 않던 현상을 수정. 모든 스타일 속성을 컴포넌트의 `className`으로 직접 전달하도록 구조를 개선함.
+    * **카운트다운 스케일 안정화**: `CountdownBlock.tsx`의 4단계로 쪼개진 불안정한 반응형 스케일을 2~3단계로 통합하여 화면 크기 조절 시 UI 출렁임 현상 제거.
+    * **데스크톱 사이즈 점프 해결**: 특정 Breakpoint에서 기본값이 살아나 텍스트가 갑자기 커지던 현상을 명시적 Override(`md:text-[11px]` 등)를 통해 차단함.
+* **`SleepScreen` 리뉴얼 및 시각 효과 고도화 (`components/SleepScreen.tsx`):**
+    * `BootSequence`의 세련된 터미널 미학을 슬립 모드에도 적용.
+    * 실시간으로 미세하게 변동하는 동적 프로그래시브 바(`SIGNAL STRENGTH`, `DSP ENGINE LOAD`)와 `use-scramble` 기반의 텍스트 효과 도입.
+    * 'RESUME SESSION' 클릭 시 시스템 모듈을 복구하는 짧은 로딩 애니메이션 시퀀스 추가.
+* **시스템 명명 규칙 및 일관성 강화:**
+    * **GATE.SEC 통일**: 다른 페이지(`STATUS.SYS`, `LINEUP.DAT`)와의 시각적 통일성을 위해 `GATE` 페이지 타이틀을 `GATE.SEC` (Secure)로 변경함.
+    * **카운트다운 형식 통합**: 게이트 페이지의 카운트다운 섹션을 홈 페이지와 동일한 블록 레이아웃 및 컬러 시스템(`primary`)으로 통합하여 브랜드 일관성 확보.
+* **페이지 헤더 최적화 (`components/ui/PageHeader.tsx`):**
+    * 전체적인 "작은 텍스트" 미학에 맞춰 페이지 헤더 타이틀 크기를 축소(`text-3xl` -> `text-xl md:text-2xl`).
+
 ## [2026-04-14] CRT 스캔라인 및 텍스트 디코딩 애니메이션 최적화
 
 * **CRT 스캔라인 이펙트 개선 (`components/CRTWrapper.tsx`):**

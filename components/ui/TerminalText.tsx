@@ -2,6 +2,7 @@
 import type { CSSProperties } from "react";
 import DecodeText from "@/components/DecodeText";
 import { decode } from "@/lib/animationTokens";
+import { cn } from "@/lib/utils";
 
 // ─── 공통 Props ───────────────────────────────────────────────────────────────
 
@@ -31,7 +32,7 @@ export function TitleText({
     <DecodeText
       {...decode.title}
       as={as}
-      className={`text-2xl md:text-3xl ${className}`}
+      className={cn("text-2xl md:text-3xl", className)}
       {...props}
     />
   );
@@ -47,7 +48,7 @@ export function HeadingText({
     <DecodeText
       {...decode.heading}
       as={as}
-      className={`text-sm md:text-base ${className}`}
+      className={cn("text-sm md:text-base", className)}
       {...props}
     />
   );
@@ -58,7 +59,7 @@ export function SubtitleText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.subtitle}
-      className={`text-xs md:text-sm ${className}`}
+      className={cn("text-xs md:text-sm", className)}
       {...props}
     />
   );
@@ -69,7 +70,7 @@ export function BodyText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.body}
-      className={`text-xs md:text-sm leading-relaxed ${className}`}
+      className={cn("text-xs md:text-sm leading-relaxed", className)}
       {...props}
     />
   );
@@ -80,7 +81,7 @@ export function LabelText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.label}
-      className={`text-[10px] md:text-xs ${className}`}
+      className={cn("text-[10px] md:text-xs", className)}
       {...props}
     />
   );
@@ -91,7 +92,7 @@ export function MetaText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.meta}
-      className={`text-[10px] md:text-xs ${className}`}
+      className={cn("text-[10px] md:text-xs", className)}
       {...props}
     />
   );
@@ -102,7 +103,7 @@ export function DataText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.data}
-      className={`text-xs md:text-sm ${className}`}
+      className={cn("text-xs md:text-sm", className)}
       {...props}
     />
   );
