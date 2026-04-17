@@ -219,33 +219,34 @@ const DecodeText = memo(function DecodeText({
       }
 
       if (balanced && textNode) {
-        textNode.style.maxWidth = width < (container.offsetWidth - 1) ? `${width}px` : '';
+        const newMaxWidth = width < (container.offsetWidth - 1) ? `${width}px` : '';
+        if (textNode.style.maxWidth !== newMaxWidth) textNode.style.maxWidth = newMaxWidth;
       }
 
       const { height } = layout(preparedRef.current, width, activeLineHeight);
-      container.style.height = `${height}px`;
-      container.style.minHeight = `${height}px`;
+      const newHeight = `${height}px`;
+      if (container.style.height !== newHeight) container.style.height = newHeight;
+      if (container.style.minHeight !== newHeight) container.style.minHeight = newHeight;
     };
 
-    const resizeObserver = new ResizeObserver(() => {
+    // use-scramble이 타이핑하면서 container(flex item)의 content width가 증가 →
+    // ResizeObserver가 매 프레임 firing → measureAndLayout 반복 → maxWidth 진동.
+    // window resize 이벤트로 교체: 뷰포트 크기 변경 시에만 재측정.
+    const handleResize = () => {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(() => {
         document.fonts.ready.then(measureAndLayout);
       });
-    });
-
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
+    };
+    window.addEventListener('resize', handleResize);
 
     // 초기 측정: RAF 후 처리 — 레이아웃 안정화 후 너비를 측정하여 높이 오측정 방지
-    // (즉시 측정 시 flex/grid 레이아웃이 확정되기 전 너비를 읽어 과도한 높이가 설정됨)
     animationFrameId = requestAnimationFrame(() => {
       document.fonts.ready.then(measureAndLayout);
     });
 
     return () => {
-      resizeObserver.disconnect();
+      window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
     };
   }, [text, explicitFont, explicitLineHeight, autoHeight, balanced]);
