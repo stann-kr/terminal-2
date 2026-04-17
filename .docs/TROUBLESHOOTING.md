@@ -4,6 +4,52 @@
 
 ---
 
+### [2026-04-17] DecodeText 특정 텍스트 깜빡임 / 이중 렌더링 착시
+
+* **발생 상황:**
+    * `/about` 페이지 SYSINFO 항목("FAUST / SEOUL-KR", "2.2.0-HELIOPAUSE")과 `/home` 푸터("KERNEL 2.2.0-heliopause_build") 텍스트가 화면에 2번 나타나거나 계속 깜빡이는 현상.
+    * 다른 텍스트는 정상. `use-scramble` `innerHTML` → `textContent` 패치 후에도 지속.
+* **원인 분석:**
+    * **DOM 중복 아님:** `document.body.innerText.match(/SEOUL-KR/g)?.length === 1` 로 DOM 레벨 중복은 없음.
+    * **ResizeObserver 피드백 루프:**
+        1. `DecodeText`의 `useLayoutEffect`가 `containerRef`(자기 자신)를 `ResizeObserver`로 관찰.
+        2. `use-scramble`이 매 프레임 `textContent` 작성 → flex item의 content width 증가.
+        3. `ResizeObserver` 발화 → `measureAndLayout` 재실행 → `textNode.style.maxWidth` 재설정.
+        4. DevTools에서 `max-width` 속성이 초당 수십 회 설정/해제 반복 확인(진단 결정적 단서).
+        5. 텍스트가 픽셀 단위로 좌우 진동 → 잔상이 눈에 "두 개"처럼 보임.
+    * **초기 시도 실패 원인:**
+        * `containerRef` 대신 부모 요소 관찰: 부모가 content-sized inline/flex item인 경우 동일 문제 재현.
+        * `width: 100%` 추가: flex item에서 예상치 않은 레이아웃 불안정 유발.
+        * 폭 변화 임계값(0.5px) 가드: `inlineSize`가 1px 단위로 진동하는 경우 여전히 루프.
+* **해결 방법:**
+    * **`components/DecodeText.tsx`:** `ResizeObserver` 완전 제거 → `window` `'resize'` 이벤트 리스너로 교체.
+        * 뷰포트 크기 변경 시에만 재측정 — use-scramble 타이핑 중 피드백 루프 원천 차단.
+        * `maxWidth` / `height` / `minHeight` DOM 쓰기에 값 변경 가드 추가.
+    * 핵심 원칙: **컴포넌트가 자기 자신의 크기 변화를 관찰하면 안 됨**. 측정 결과로 발생한 레이아웃 변화가 다시 측정을 트리거하는 순환 구조가 됨.
+
+---
+
+### [2026-04-17] use-scramble node_modules 패치가 Docker 컨테이너에 반영되지 않는 현상
+
+* **발생 상황:**
+    * 호스트에서 `node_modules/use-scramble` 파일을 직접 수정(`innerHTML` → `textContent`)했으나, 컨테이너 내 파일은 변경되지 않음. `patch-package` 실행 시 `spawnSync git ENOENT` 오류.
+* **원인 분석:**
+    * `docker-compose.yml`의 `volumes: - /app/node_modules` (anonymous volume) 설정으로 호스트의 `node_modules` 디렉토리가 마운트되지 않고 컨테이너 전용 볼륨 사용.
+    * Docker 컨테이너에 `git`이 설치되어 있지 않아 `patch-package`가 패치 생성 시 실패.
+    * 동일 이유로 `/app/.next` 도 anonymous volume → 호스트에서 Turbopack 캐시 삭제 불가.
+* **해결 방법:**
+    1. `Dockerfile`의 `RUN npm install` 뒤에 `sed` 명령 추가 → 이미지 빌드 시 직접 패치:
+       ```dockerfile
+       RUN npm install && \
+           sed -i 's/nodeRef\.current\.innerHTML = result;/nodeRef.current.textContent = result;/g' node_modules/use-scramble/dist/use-scramble.esm.js && \
+           sed -i 's/nodeRef\.current\.innerHTML = result;/nodeRef.current.textContent = result;/g' node_modules/use-scramble/dist/use-scramble.cjs.development.js && \
+           sed -i 's/O\.current\.innerHTML=r,/O.current.textContent=r,/g' node_modules/use-scramble/dist/use-scramble.cjs.production.min.js
+       ```
+    2. `package.json` `postinstall`을 안내 echo로 변경(`patch-package` → git 의존성 제거).
+    3. `docker compose build --no-cache web` 으로 이미지 재빌드.
+
+---
+
 ### [2026-04-13] 전송 로그 페이지네이션 시 레이아웃 스래싱(높이 0 축소) 현상
 
 * **발생 상황:**

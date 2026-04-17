@@ -1,5 +1,24 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-17] DecodeText ResizeObserver 피드백 루프 제거 (텍스트 깜빡임 근본 수정)
+
+### 문제
+* `/about` SEOUL-KR, 2.2.0-HELIOPAUSE, `/home` heliopause_build 등 특정 텍스트가 2번 렌더링된 것처럼 보이고 계속 깜빡힘.
+* DOM 검증(`document.body.innerText.match(/SEOUL-KR/g)?.length === 1`) — 실제 DOM 중복은 아님.
+* 브라우저 DevTools에서 `<span>` 요소의 `max-width` 속성이 초당 수십 회 설정/해제 반복 확인.
+
+### 원인
+* `components/DecodeText.tsx`의 `useLayoutEffect` 내 `ResizeObserver`가 `containerRef`(자기 자신)를 관찰.
+* `use-scramble`이 매 프레임 `textContent` 작성 → content width 증가 → flex item 폭 변경 → `ResizeObserver` 발화 → `measureAndLayout` 재실행 → `maxWidth` 재설정 → 레이아웃 재계산 → 무한 루프 @ 60fps.
+* 결과: 텍스트가 픽셀 단위로 진동, 잔상이 "이중 렌더링"처럼 보임.
+
+### 수정
+* **`components/DecodeText.tsx`:** `ResizeObserver` 완전 제거, `window` `resize` 이벤트 리스너로 교체.
+  * 뷰포트 크기 변경 시에만 재측정 — use-scramble 타이핑 중 피드백 루프 원천 차단.
+  * `maxWidth` / `height` / `minHeight` 쓰기에 값 변경 가드 추가(불필요한 DOM write 방지).
+
+---
+
 ## [2026-04-17] use-scramble innerHTML → textContent 패치 (프로덕션 렌더링 버그 수정)
 
 ### 문제
@@ -11,8 +30,14 @@
 * **`node_modules/use-scramble/dist/use-scramble.esm.js` L175:** `innerHTML` → `textContent`
 * **`node_modules/use-scramble/dist/use-scramble.cjs.development.js` L179:** `innerHTML` → `textContent`
 * **`node_modules/use-scramble/dist/use-scramble.cjs.production.min.js`:** `O.current.innerHTML=r` → `O.current.textContent=r`
-* **`patches/use-scramble+2.2.15.patch`:** 위 변경을 patch-package 형식으로 저장 — `npm install` 후 자동 재적용.
-* **`package.json`:** `scripts.postinstall: "patch-package"` 추가 — 의존성 재설치 시 패치 자동 적용 보장.
+* **`Dockerfile`:** `RUN npm install` 뒤에 `sed` 명령으로 세 파일 직접 패치 — Docker 컨테이너 빌드 시 항상 자동 적용.
+* **`package.json`:** `postinstall: "patch-package"` → 안내 echo로 변경 (컨테이너에 git 없어 patch-package 동작 불가; Dockerfile sed로 대체).
+* **`patches/use-scramble+2.2.15.patch`:** 패치 내용 참조용으로 유지.
+
+### 근본 원인
+* `docker-compose.yml`의 `volumes: /app/node_modules` anonymous volume으로 인해 호스트의 node_modules 수정이 컨테이너에 반영되지 않음.
+* Turbopack `.next/` 캐시도 anonymous volume(`/app/.next`)으로 격리 → 호스트 파일 변경 후 재시작해도 캐시된 innerHTML 버전 사용.
+* 해결: Dockerfile 이미지 빌드 단계에서 직접 패치 적용.
 
 ---
 
