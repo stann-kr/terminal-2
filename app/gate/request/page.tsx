@@ -8,6 +8,7 @@ import TerminalPanel from '@/components/TerminalPanel';
 import TerminalButton from '@/components/TerminalButton';
 import SubmitButton from '@/components/SubmitButton';
 import { LabelText, MetaText, SubtitleText } from '@/components/ui/TerminalText';
+import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
 import { useLang } from '@/lib/langContext';
 import { requestKo } from '@/lib/i18n';
 import type { TerminalEvent } from '@/lib/eventData';
@@ -124,9 +125,6 @@ export default function RequestAccessPage() {
     ? (event?.invitationLines?.ko ?? requestKo.invitationLines)
     : (event?.invitationLines?.en ?? DEFAULT_INVITATION_LINES);
 
-  const inputClass =
-    'w-full bg-transparent outline-none px-3 py-2 text-xs border border-terminal-accent-secondary/30 focus:border-terminal-accent-secondary/70 transition-colors font-mono text-terminal-accent-secondary caret-terminal-accent-secondary placeholder:text-terminal-muted/40';
-
   return (
     <PageLayout centerContent={false}>
       <ReturnLink variants={itemVariants} />
@@ -201,7 +199,7 @@ export default function RequestAccessPage() {
             <TerminalPanel title="INVITATION_BRIEF" accent="secondary">
               <div className="space-y-1.5">
                 {invitationLines.map((line, i) => (
-                  <div key={i} className="text-xs font-mono text-terminal-subdued tracking-wide">
+                  <div key={i} className="font-mono text-terminal-subdued tracking-wide">
                     <SubtitleText text={`> ${line}`} delay={i * 40} />
                   </div>
                 ))}
@@ -215,74 +213,59 @@ export default function RequestAccessPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
 
                 {/* 이름 */}
-                <div>
-                  <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text={lang === 'ko' ? requestKo.labelName : 'NAME:'} />
-                  </div>
+                <FormField label={lang === 'ko' ? requestKo.labelName : 'NAME:'}>
                   <input
                     type="text"
                     value={form.name}
                     onChange={handleChange('name')}
                     placeholder={lang === 'ko' ? requestKo.placeholderName : 'FULL NAME'}
-                    className={inputClass}
+                    className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
-                </div>
+                </FormField>
 
                 {/* 이메일 */}
-                <div>
-                  <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text={lang === 'ko' ? requestKo.labelEmail : 'EMAIL:'} />
-                  </div>
+                <FormField label={lang === 'ko' ? requestKo.labelEmail : 'EMAIL:'}>
                   <input
                     type="email"
                     value={form.email}
                     onChange={handleChange('email')}
                     placeholder={lang === 'ko' ? requestKo.placeholderEmail : 'YOUR@EMAIL.COM'}
-                    className={inputClass}
+                    className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
-                </div>
+                </FormField>
 
                 {/* 인스타그램 */}
-                <div>
-                  <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text={lang === 'ko' ? requestKo.labelInstagram : 'INSTAGRAM_ID:'} />
-                  </div>
+                <FormField label={lang === 'ko' ? requestKo.labelInstagram : 'INSTAGRAM_ID:'}>
                   <input
                     type="text"
                     value={form.instagram}
                     onChange={handleChange('instagram')}
                     placeholder={lang === 'ko' ? requestKo.placeholderInstagram : '@USERNAME'}
-                    className={inputClass}
+                    className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
-                </div>
+                </FormField>
 
                 {/* 초대인 */}
-                <div>
-                  <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text={lang === 'ko' ? requestKo.labelInvitedBy : 'INVITED_BY:'} />
-                  </div>
+                <FormField label={lang === 'ko' ? requestKo.labelInvitedBy : 'INVITED_BY:'}>
                   <input
                     type="text"
                     value={form.invitedBy}
                     onChange={handleChange('invitedBy')}
                     placeholder={lang === 'ko' ? requestKo.placeholderInvitedBy : 'NAME OF YOUR INVITER'}
-                    className={inputClass}
+                    className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
-                </div>
+                </FormField>
 
                 {/* 인증 코드 */}
-                <div>
-                  <div className="text-xs mb-1.5 tracking-widest font-mono text-terminal-muted">
-                    <LabelText text={lang === 'ko' ? requestKo.labelCode : 'ACCESS_CODE:'} />
-                  </div>
+                <FormField label={lang === 'ko' ? requestKo.labelCode : 'ACCESS_CODE:'}>
                   <input
                     type="text"
                     value={form.accessCode}
                     onChange={handleChange('accessCode')}
                     placeholder={lang === 'ko' ? requestKo.placeholderCode : 'SESSION ACCESS CODE'}
-                    className={inputClass}
+                    className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
-                </div>
+                </FormField>
 
                 {/* 개인정보 동의 */}
                 <div>
@@ -302,7 +285,7 @@ export default function RequestAccessPage() {
                         ✓
                       </div>
                     </div>
-                    <span className="text-xs font-mono text-terminal-muted leading-relaxed group-hover:text-terminal-subdued transition-colors">
+                    <span className="font-mono text-terminal-muted leading-relaxed group-hover:text-terminal-subdued transition-colors">
                       <MetaText text={lang === 'ko' ? requestKo.privacyConsent : 'I CONSENT TO THE COLLECTION AND USE OF MY PERSONAL INFORMATION (NAME, EMAIL, INSTAGRAM ID) FOR THE PURPOSE OF EVENT GUEST MANAGEMENT. DATA WILL NOT BE SHARED WITH THIRD PARTIES.'} />
                     </span>
                   </label>
