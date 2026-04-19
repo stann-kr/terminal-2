@@ -43,7 +43,7 @@ export default function RequestAccessPage() {
   const [form, setForm] = useState<FormState>({
     name: '',
     email: '',
-    instagram: '',
+    instagram: '@',
     invitedBy: '',
     accessCode: '',
     privacyConsent: false,
@@ -72,6 +72,12 @@ export default function RequestAccessPage() {
   const handleChange = (field: keyof Omit<FormState, 'privacyConsent'>) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  const handleInstagramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const value = raw.startsWith('@') ? raw : '@' + raw.replace(/^@*/, '');
+    setForm(prev => ({ ...prev, instagram: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,7 +245,7 @@ export default function RequestAccessPage() {
                   <input
                     type="text"
                     value={form.instagram}
-                    onChange={handleChange('instagram')}
+                    onChange={handleInstagramChange}
                     placeholder={lang === 'ko' ? requestKo.placeholderInstagram : '@USERNAME'}
                     className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
