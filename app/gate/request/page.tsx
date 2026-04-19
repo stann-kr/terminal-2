@@ -10,20 +10,10 @@ import TerminalButton from '@/components/TerminalButton';
 import SubmitButton from '@/components/SubmitButton';
 import { LabelText, MetaText, SubtitleText } from '@/components/ui/TerminalText';
 import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
-import { useLang } from '@/lib/langContext';
-import { requestKo } from '@/lib/i18n';
+import { useLang, useT } from '@/lib/langContext';
 import type { TerminalEvent } from '@/lib/eventData';
 
 const ACCESS_WINDOW_DAYS = 30;
-
-const DEFAULT_INVITATION_LINES = [
-  'YOU HAVE BEEN GRANTED ACCESS TO THIS CHANNEL.',
-  'THIS INVITATION IS PERSONAL AND NON-TRANSFERABLE.',
-  'TERMINAL IS A PRIVATE EVENT — ENTRY BY AUTHORIZATION ONLY.',
-  'SUBMIT YOUR REQUEST BELOW TO BE CONSIDERED FOR ADMISSION.',
-  'AN ACCESS CODE IS REQUIRED. IF YOU DO NOT HAVE ONE,',
-  'CONTACT YOUR INVITER FOR THE CURRENT SESSION CODE.',
-];
 
 interface FormState {
   name: string;
@@ -37,6 +27,7 @@ interface FormState {
 
 function RequestAccessContent() {
   const { lang } = useLang();
+  const t = useT();
   const searchParams = useSearchParams();
   const [event, setEvent] = useState<TerminalEvent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +68,7 @@ function RequestAccessContent() {
           }
         }
       })
-      .catch(() => setError('SIGNAL LINK UNSTABLE.'))
+      .catch(() => setError(t.common.signalUnstable))
       .finally(() => setLoading(false));
   }, []);
 
@@ -91,11 +82,11 @@ function RequestAccessContent() {
     setError('');
 
     if (!form.invitedBy) {
-      setError(lang === 'ko' ? requestKo.errors.INVITER_REQUIRED : 'SELECT YOUR INVITER.');
+      setError(t.request.errors.INVITER_REQUIRED);
       return;
     }
     if (form.invitedBy === '__OTHER__' && !otherInviter.trim()) {
-      setError(lang === 'ko' ? requestKo.errors.INVITER_REQUIRED : 'ENTER INVITER NAME.');
+      setError(t.request.errors.INVITER_REQUIRED);
       return;
     }
 
@@ -116,40 +107,23 @@ function RequestAccessContent() {
       const data = await res.json() as { ok?: boolean; error?: string };
 
       if (!res.ok) {
-        const errorMapEn: Record<string, string> = {
-          ALL_FIELDS_REQUIRED: 'ALL FIELDS ARE REQUIRED.',
-          PRIVACY_CONSENT_REQUIRED: 'PRIVACY CONSENT IS REQUIRED.',
-          INVALID_EMAIL_FORMAT: 'INVALID EMAIL FORMAT.',
-          NO_UPCOMING_EVENT: 'NO UPCOMING EVENT FOUND.',
-          REQUEST_PERIOD_INACTIVE: 'REQUEST PERIOD IS NOT ACTIVE.',
-          INVALID_ACCESS_CODE: 'INVALID ACCESS CODE.',
-          EMAIL_ALREADY_REGISTERED: 'THIS EMAIL HAS ALREADY BEEN REGISTERED.',
-          INTERNAL_SERVER_ERROR: 'TRANSMISSION FAILED. RETRY LATER.',
-        };
-        const errorMapKo = requestKo.errors;
         const errKey = data.error ?? '';
-        if (lang === 'ko') {
-          setError(
-            errorMapKo[errKey as keyof typeof errorMapKo] ?? errorMapKo.TRANSMISSION_FAILED
-          );
-        } else {
-          setError(errorMapEn[errKey] ?? 'TRANSMISSION FAILED.');
-        }
+        setError(
+          t.request.errors[errKey as keyof typeof t.request.errors] ?? t.request.errors.TRANSMISSION_FAILED
+        );
         return;
       }
 
       setSubmitted(true);
     } catch {
-      setError(lang === 'ko' ? requestKo.errors.CONNECTION_ERROR : 'TRANSMISSION FAILED. CHECK CONNECTION.');
+      setError(t.request.errors.CONNECTION_ERROR);
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
 
-  const invitationLines = lang === 'ko'
-    ? (event?.invitationLines?.ko ?? requestKo.invitationLines)
-    : (event?.invitationLines?.en ?? DEFAULT_INVITATION_LINES);
+  const invitationLines = event?.invitationLines?.[lang] ?? t.request.invitationLines;
 
   return (
     <PageLayout centerContent={false}>
@@ -163,7 +137,7 @@ function RequestAccessContent() {
 
       {loading ? (
         <motion.div variants={itemVariants} className="text-xs font-mono text-terminal-muted text-center py-8">
-          <LabelText text={lang === 'ko' ? requestKo.loading : '▸ LOADING REQUEST DATA...'} />
+          <LabelText text={t.request.loading} />
         </motion.div>
       ) : !isActive ? (
         /* 비활성 기간 안내 */
@@ -171,29 +145,23 @@ function RequestAccessContent() {
           <TerminalPanel title="REQUEST_STATUS" accent="alert">
             <div className="space-y-3 text-center py-4">
               <div className="text-sm font-bold tracking-widest font-mono text-terminal-accent-alert">
-                <LabelText text={lang === 'ko' ? requestKo.periodInactive : '⚠ REQUEST PERIOD INACTIVE'} />
+                <LabelText text={t.request.periodInactive} />
               </div>
               <div className="text-xs font-mono text-terminal-muted space-y-1">
                 {event ? (
                   <>
                     <div>
-                      <MetaText text={lang === 'ko'
-                        ? requestKo.windowInfo(ACCESS_WINDOW_DAYS)
-                        : `NEXT RESPONSE WINDOW OPENS ${ACCESS_WINDOW_DAYS} DAYS BEFORE EVENT`} />
+                      <MetaText text={t.request.windowInfo(ACCESS_WINDOW_DAYS)} />
                     </div>
                     <div>
-                      <MetaText text={lang === 'ko'
-                        ? requestKo.eventDate(event.date.replace(/-/g, '.'), event.time)
-                        : `EVENT DATE — ${event.date.replace(/-/g, '.')} · ${event.time}`} />
+                      <MetaText text={t.request.eventDate(event.date.replace(/-/g, '.'), event.time)} />
                     </div>
                     <div className="pt-1 text-terminal-accent-primary">
-                      <MetaText text={lang === 'ko'
-                        ? requestKo.windowCountdown(daysUntil - ACCESS_WINDOW_DAYS)
-                        : `WINDOW OPENS IN T-${daysUntil - ACCESS_WINDOW_DAYS} DAYS`} />
+                      <MetaText text={t.request.windowCountdown(daysUntil - ACCESS_WINDOW_DAYS)} />
                     </div>
                   </>
                 ) : (
-                  <MetaText text={lang === 'ko' ? requestKo.noEvent : 'NO UPCOMING EVENT SCHEDULED. CHECK BACK LATER.'} />
+                  <MetaText text={t.request.noEvent} />
                 )}
               </div>
             </div>
@@ -209,10 +177,10 @@ function RequestAccessContent() {
           <TerminalPanel title="REQUEST_COMMITTED" accent="secondary">
             <div className="text-center py-6 space-y-2">
               <div className="text-sm font-bold tracking-widest font-mono text-terminal-accent-secondary">
-                <LabelText text={lang === 'ko' ? requestKo.committed : '✓ REQUEST COMMITTED — AWAIT CONFIRMATION'} />
+                <LabelText text={t.request.committed} />
               </div>
               <div className="text-xs font-mono text-terminal-muted">
-                <MetaText text={lang === 'ko' ? requestKo.committedSub : 'YOUR REQUEST HAS BEEN RECORDED. FURTHER INSTRUCTIONS WILL FOLLOW.'} />
+                <MetaText text={t.request.committedSub} />
               </div>
             </div>
           </TerminalPanel>
@@ -239,29 +207,29 @@ function RequestAccessContent() {
               <form onSubmit={handleSubmit} className="space-y-4">
 
                 {/* 이름 */}
-                <FormField label={lang === 'ko' ? requestKo.labelName : 'NAME:'}>
+                <FormField label={t.request.labelName}>
                   <input
                     type="text"
                     value={form.name}
                     onChange={handleChange('name')}
-                    placeholder={lang === 'ko' ? requestKo.placeholderName : 'FULL NAME'}
+                    placeholder={t.request.placeholderName}
                     className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
                 </FormField>
 
                 {/* 이메일 */}
-                <FormField label={lang === 'ko' ? requestKo.labelEmail : 'EMAIL:'}>
+                <FormField label={t.request.labelEmail}>
                   <input
                     type="email"
                     value={form.email}
                     onChange={handleChange('email')}
-                    placeholder={lang === 'ko' ? requestKo.placeholderEmail : 'YOUR@EMAIL.COM'}
+                    placeholder={t.request.placeholderEmail}
                     className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
                 </FormField>
 
                 {/* 인스타그램 */}
-                <FormField label={lang === 'ko' ? requestKo.labelInstagram : 'INSTAGRAM_ID:'}>
+                <FormField label={t.request.labelInstagram}>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none select-none font-mono text-small md:text-body text-terminal-accent-secondary">
                       @
@@ -280,22 +248,18 @@ function RequestAccessContent() {
                 </FormField>
 
                 {/* 초대인 */}
-                <FormField label={lang === 'ko' ? requestKo.labelInvitedBy : 'INVITED_BY:'}>
+                <FormField label={t.request.labelInvitedBy}>
                   <div className="relative">
                   <select
                     value={form.invitedBy}
                     onChange={e => setForm(prev => ({ ...prev, invitedBy: e.target.value }))}
                     className={`${inputClassBase} ${inputAccentClass.secondary} appearance-none`}
                   >
-                    <option value="">
-                      {lang === 'ko' ? requestKo.selectInviter : 'SELECT INVITER'}
-                    </option>
+                    <option value="">{t.request.selectInviter}</option>
                     {artistNames.map(name => (
                       <option key={name} value={name}>{name}</option>
                     ))}
-                    <option value="__OTHER__">
-                      {lang === 'ko' ? requestKo.optionOther : 'OTHER'}
-                    </option>
+                    <option value="__OTHER__">{t.request.optionOther}</option>
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-terminal-accent-secondary/70 select-none">
                     ▾
@@ -306,19 +270,19 @@ function RequestAccessContent() {
                       type="text"
                       value={otherInviter}
                       onChange={e => setOtherInviter(e.target.value)}
-                      placeholder={lang === 'ko' ? requestKo.placeholderOtherInviter : 'ENTER INVITER NAME'}
+                      placeholder={t.request.placeholderOtherInviter}
                       className={`${inputClassBase} ${inputAccentClass.secondary} mt-2`}
                     />
                   )}
                 </FormField>
 
                 {/* 인증 코드 */}
-                <FormField label={lang === 'ko' ? requestKo.labelCode : 'ACCESS_CODE:'}>
+                <FormField label={t.request.labelCode}>
                   <input
                     type="text"
                     value={form.accessCode}
                     onChange={handleChange('accessCode')}
-                    placeholder={lang === 'ko' ? requestKo.placeholderCode : 'SESSION ACCESS CODE'}
+                    placeholder={t.request.placeholderCode}
                     className={`${inputClassBase} ${inputAccentClass.secondary}`}
                   />
                 </FormField>
@@ -342,7 +306,7 @@ function RequestAccessContent() {
                       </div>
                     </div>
                     <span className="font-mono text-terminal-subdued leading-relaxed group-hover:text-terminal-primary transition-colors">
-                      <MetaText autoHeight text={lang === 'ko' ? requestKo.privacyConsent : 'I CONSENT TO THE COLLECTION AND USE OF MY PERSONAL INFORMATION (NAME, EMAIL, INSTAGRAM ID) FOR THE PURPOSE OF EVENT GUEST MANAGEMENT. DATA WILL NOT BE SHARED WITH THIRD PARTIES.'} />
+                      <MetaText autoHeight text={t.request.privacyConsent} />
                     </span>
                   </label>
                 </div>
@@ -366,7 +330,7 @@ function RequestAccessContent() {
                       </div>
                     </div>
                     <span className="font-mono text-terminal-subdued leading-relaxed group-hover:text-terminal-primary transition-colors">
-                      <MetaText autoHeight text={lang === 'ko' ? requestKo.marketingConsent : '[OPTIONAL] I AGREE TO RECEIVE FUTURE EVENT ANNOUNCEMENTS AND UPDATES VIA EMAIL OR INSTAGRAM DM.'} />
+                      <MetaText autoHeight text={t.request.marketingConsent} />
                     </span>
                   </label>
                 </div>
@@ -390,8 +354,8 @@ function RequestAccessContent() {
                   <SubmitButton
                     isSubmitting={isSubmitting}
                     variant="primary"
-                    defaultText={lang === 'ko' ? requestKo.submitBtn : '▶ SUBMIT REQUEST'}
-                    loadingText={lang === 'ko' ? requestKo.submitting : '▸ TRANSMITTING...'}
+                    defaultText={t.request.submitBtn}
+                    loadingText={t.request.submitting}
                   />
                 </div>
               </form>

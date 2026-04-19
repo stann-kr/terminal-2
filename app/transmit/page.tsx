@@ -11,8 +11,7 @@ import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
 import { getNodeId, setNodeId } from '@/lib/nodeId';
-import { useLang } from '@/lib/langContext';
-import { transmitKo } from '@/lib/i18n';
+import { useT } from '@/lib/langContext';
 
 interface LogEntry {
   id: string;
@@ -31,7 +30,7 @@ interface LogPage {
 }
 
 export default function TransmitPage() {
-  const { lang } = useLang();
+  const t = useT();
   const [logPage, setLogPage] = useState<LogPage>({ logs: [], total: 0, page: 1, totalPages: 1 });
   const [currentPage, setCurrentPage] = useState(1);
   const [handle, setHandle] = useState('');
@@ -48,7 +47,7 @@ export default function TransmitPage() {
     fetch(`/api/transmit?page=${page}`)
       .then(res => { if (!res.ok) throw new Error(); return res.json() as Promise<LogPage>; })
       .then(data => { setLogPage(data); setCurrentPage(data.page); })
-      .catch(() => setError(lang === 'ko' ? transmitKo.errors.linkUnstable : 'SIGNAL LINK UNSTABLE.'))
+      .catch(() => setError(t.transmit.errors.linkUnstable))
       .finally(() => {
         setIsInitialLoad(false);
         setIsFetching(false);
@@ -63,8 +62,8 @@ export default function TransmitPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submittingRef.current) return;
-    if (!handle.trim() || !message.trim()) { setError(lang === 'ko' ? transmitKo.errors.required : 'ALIAS AND MESSAGE REQUIRED.'); return; }
-    if (message.length > 280) { setError(lang === 'ko' ? transmitKo.errors.tooLong : 'MESSAGE EXCEEDS 280 CHARS.'); return; }
+    if (!handle.trim() || !message.trim()) { setError(t.transmit.errors.required); return; }
+    if (message.length > 280) { setError(t.transmit.errors.tooLong); return; }
 
     submittingRef.current = true;
     setIsSubmitting(true);
@@ -81,7 +80,7 @@ export default function TransmitPage() {
 
       if (!res.ok) {
         const data = await res.json() as { error?: string };
-        setError(lang === 'ko' ? (transmitKo.errors.failed) : (data.error ?? 'TRANSMISSION FAILED.'));
+        setError(t.transmit.errors.failed);
         return;
       }
 
@@ -92,7 +91,7 @@ export default function TransmitPage() {
       setTimeout(() => setSent(false), 2500);
       fetchPage(1);
     } catch {
-      setError(lang === 'ko' ? transmitKo.errors.connection : 'TRANSMISSION FAILED. CHECK CONNECTION.');
+      setError(t.transmit.errors.connection);
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
@@ -110,11 +109,11 @@ export default function TransmitPage() {
       <motion.div variants={itemVariants} className="mb-8">
         <TerminalPanel title="VISITOR_LOG — NODE_SYNC" accent="alert">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <FormField label={lang === 'ko' ? transmitKo.labelAlias : 'ALIAS:'}>
+            <FormField label={t.transmit.labelAlias}>
               <input
                 value={handle}
                 onChange={e => { setHandle(e.target.value); setNodeId(e.target.value); }}
-                placeholder={lang === 'ko' ? transmitKo.placeholderAlias : 'ENTER_ALIAS'}
+                placeholder={t.transmit.placeholderAlias}
                 maxLength={24}
                 className={`${inputClassBase} ${inputAccentClass.tertiary}`}
               />
@@ -122,14 +121,14 @@ export default function TransmitPage() {
             <div>
               <div className="flex justify-between items-center mb-1.5 tracking-widest font-mono text-terminal-muted">
                 <span className="flex-1 min-w-0">
-                  <LabelText text={lang === 'ko' ? transmitKo.labelMessage : 'MESSAGE:'} />
+                  <LabelText text={t.transmit.labelMessage} />
                 </span>
                 <DataText text={`(${message.length}/280)`} className="shrink-0 text-terminal-muted" />
               </div>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
-                placeholder={lang === 'ko' ? transmitKo.placeholderMsg : 'WRITE TO DATABASE...'}
+                placeholder={t.transmit.placeholderMsg}
                 maxLength={280}
                 rows={3}
                 className={`${inputClassBase} ${inputAccentClass.primary} resize-none`}
@@ -143,7 +142,7 @@ export default function TransmitPage() {
               )}
               {sent && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-terminal-accent-primary">
-                  <LabelText text={lang === 'ko' ? transmitKo.committed : '✓ SIGNAL COMMITTED TO DATABASE'} />
+                  <LabelText text={t.transmit.committed} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -151,8 +150,8 @@ export default function TransmitPage() {
               <SubmitButton
                 isSubmitting={isSubmitting}
                 variant="danger"
-                defaultText={lang === 'ko' ? transmitKo.submitBtn : '▶ COMMIT SIGNAL'}
-                loadingText={lang === 'ko' ? transmitKo.submitting : '▸ TRANSMITTING...'}
+                defaultText={t.transmit.submitBtn}
+                loadingText={t.transmit.submitting}
               />
             </div>
           </form>
@@ -162,9 +161,7 @@ export default function TransmitPage() {
       {/* Log */}
       <motion.div variants={itemVariants}>
         <TerminalPanel
-          title={isInitialLoad
-            ? (lang === 'ko' ? transmitKo.logSyncing : 'SIGNAL_LOG — SYNCING...')
-            : (lang === 'ko' ? transmitKo.logTitle(total) : `SIGNAL_LOG — ${total} ENTRIES`)}
+          title={isInitialLoad ? t.transmit.logSyncing : t.transmit.logTitle(total)}
           accent="primary"
         >
           <div className="space-y-4">
@@ -180,7 +177,7 @@ export default function TransmitPage() {
                     transition={{ duration: 0.15 }}
                     className="text-xs font-mono text-terminal-muted text-center py-4"
                   >
-                    <LabelText text={lang === 'ko' ? transmitKo.syncing : '▸ SYNCHRONIZING WITH DATABASE...'} />
+                    <LabelText text={t.transmit.syncing} />
                   </motion.div>
                 ) : logs.length === 0 ? (
                   <motion.div
@@ -191,7 +188,7 @@ export default function TransmitPage() {
                     transition={{ duration: 0.15 }}
                     className="text-xs font-mono text-terminal-muted text-center py-4"
                   >
-                    <MetaText text={lang === 'ko' ? transmitKo.noEntries : 'NO ENTRIES FOUND.'} />
+                    <MetaText text={t.transmit.noEntries} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -229,7 +226,7 @@ export default function TransmitPage() {
                 disabled={currentPage <= 1 || isFetching || isInitialLoad || isSubmitting}
                 className="text-small font-mono tracking-widest text-terminal-subdued hover:text-terminal-accent-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                {lang === 'ko' ? transmitKo.prevBtn : '◀ PREV'}
+                {t.transmit.prevBtn}
               </button>
               <span className="text-small font-mono text-terminal-subdued">
                 {currentPage} / {Math.max(1, totalPages)}
@@ -239,7 +236,7 @@ export default function TransmitPage() {
                 disabled={currentPage >= totalPages || isFetching || isInitialLoad || isSubmitting}
                 className="text-small font-mono tracking-widest text-terminal-subdued hover:text-terminal-accent-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                {lang === 'ko' ? transmitKo.nextBtn : 'NEXT ▶'}
+                {t.transmit.nextBtn}
               </button>
             </div>
           </div>

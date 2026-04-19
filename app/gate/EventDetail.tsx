@@ -3,8 +3,7 @@ import TerminalPanel from '@/components/TerminalPanel';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
 import CountdownBlock from '@/components/ui/CountdownBlock';
 import { LabelText, SubtitleText, MetaText } from '@/components/ui/TerminalText';
-import { useLang } from '@/lib/langContext';
-import { gateKo, homeKo } from '@/lib/i18n';
+import { useT } from '@/lib/langContext';
 import type { TerminalEvent } from '@/lib/eventData';
 
 interface Props {
@@ -13,7 +12,7 @@ interface Props {
 }
 
 export default function EventDetail({ event, showCountdown = false }: Props) {
-  const { lang } = useLang();
+  const t = useT();
   const eventDate = new Date(`${event.date}T${event.time.replace(' KST', '')}:00+09:00`);
 
   const eventDateLabel = new Date(event.date)
@@ -42,9 +41,7 @@ export default function EventDetail({ event, showCountdown = false }: Props) {
 
       {event.status === 'ARCHIVED' && (
         <div className="px-3 py-2 border tracking-widest font-mono border-terminal-accent-alert/30 text-terminal-accent-alert bg-terminal-accent-alert/5">
-          <LabelText text={lang === 'ko'
-            ? gateKo.sessionArchived(event.date.replace(/-/g, '.'))
-            : `◼ SESSION ARCHIVED — ${event.date.replace(/-/g, '.')}`} />
+          <LabelText text={t.gate.sessionArchived(event.date.replace(/-/g, '.'))} />
         </div>
       )}
 
@@ -54,7 +51,7 @@ export default function EventDetail({ event, showCountdown = false }: Props) {
             <div className="font-mono text-terminal-subdued">
               <SubtitleText
                 autoHeight
-                text={lang === 'ko' ? gateKo.locationWarning : '⚠ DETAILED LOCATION & GATE INFORMATION FOR THE SESSION.'}
+                text={t.gate.locationWarning}
                 className="text-terminal-accent-primary font-mono"
               />
             </div>

@@ -8,12 +8,11 @@ import ReturnLink from "@/components/ui/ReturnLink";
 import PageHeader from "@/components/ui/PageHeader";
 import TerminalButton from "@/components/TerminalButton";
 import EventDetail from "./EventDetail";
-import { useLang } from "@/lib/langContext";
-import { gateKo, commonKo } from "@/lib/i18n";
+import { useT } from "@/lib/langContext";
 import type { TerminalEvent } from "@/lib/eventData";
 
 export default function GatePage() {
-  const { lang } = useLang();
+  const t = useT();
   const [tab, setTab] = useState<"upcoming" | "archive">("upcoming");
   const [events, setEvents] = useState<TerminalEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,16 +51,14 @@ export default function GatePage() {
       {/* Tab switcher */}
       <motion.div variants={itemVariants} className="mb-6">
         <div className="inline-flex p-1 gap-1 bg-terminal-bg-overlay/50 border border-terminal-accent-primary/15">
-          {(["upcoming", "archive"] as const).map((t) => (
+          {(["upcoming", "archive"] as const).map((tabKey) => (
             <TerminalButton
-              key={t}
-              variant={tab === t ? "primary" : "ghost"}
+              key={tabKey}
+              variant={tab === tabKey ? "primary" : "ghost"}
               className="px-4 py-1.5 text-micro"
-              onClick={() => setTab(t)}
+              onClick={() => setTab(tabKey)}
             >
-              {t === "upcoming"
-                ? (lang === "ko" ? gateKo.tabUpcoming : "▶ UPCOMING")
-                : (lang === "ko" ? gateKo.tabArchive : "◼ ARCHIVE")}
+              {tabKey === "upcoming" ? t.gate.tabUpcoming : t.gate.tabArchive}
             </TerminalButton>
           ))}
         </div>
@@ -69,15 +66,15 @@ export default function GatePage() {
 
       {loading ? (
         <motion.div variants={itemVariants} className="text-xs font-mono text-terminal-muted text-center py-8">
-          <LabelText text={lang === 'ko' ? gateKo.loading : '▸ LOADING GATE DATA...'} />
+          <LabelText text={t.gate.loading} />
         </motion.div>
       ) : error ? (
         <motion.div variants={itemVariants} className="border border-terminal-accent-alert/25 bg-terminal-bg-panel px-4 py-8 text-center space-y-2">
           <div className="text-xs font-bold tracking-widest text-terminal-accent-alert font-mono">
-            <LabelText text={lang === 'ko' ? commonKo.signalUnstable : '⚠ SIGNAL LINK UNSTABLE'} />
+            <LabelText text={t.common.signalUnstable} />
           </div>
           <div className="text-xs text-terminal-muted font-mono">
-            <MetaText text={lang === 'ko' ? commonKo.dbUnreachable : 'DATABASE UNREACHABLE — RETRY LATER'} />
+            <MetaText text={t.common.dbUnreachable} />
           </div>
         </motion.div>
       ) : (
@@ -125,7 +122,7 @@ export default function GatePage() {
                   <div className="text-center pt-2">
                     <Link href="/gate/request">
                       <TerminalButton className="px-8" variant="primary">
-                        {lang === 'ko' ? gateKo.requestBtn : '▶ REQUEST ACCESS PASS'}
+                        {t.gate.requestBtn}
                       </TerminalButton>
                     </Link>
                   </div>
@@ -165,7 +162,7 @@ export default function GatePage() {
                       <div className="text-xs tracking-wider shrink-0 text-terminal-muted flex items-center">
                         <LabelText
                           autoHeight
-                          text={lang === 'ko' ? gateKo.archivedLabel : '◼ ARCHIVED'}
+                          text={t.gate.archivedLabel}
                         />
                       </div>
                     </div>

@@ -14,61 +14,19 @@ import {
 } from "@/components/ui/TerminalText";
 import CountdownBlock from "@/components/ui/CountdownBlock";
 import LangToggle from "@/components/ui/LangToggle";
-import { useLang } from "@/lib/langContext";
-import { dirDescKo, homeKo, commonKo } from "@/lib/i18n";
+import { useT } from "@/lib/langContext";
 import type { TerminalEvent } from "@/lib/eventData";
 
 export default function HomePage() {
-  const { lang } = useLang();
+  const t = useT();
 
   const DIRS = [
-    {
-      href: "/about",
-      label: "About",
-      description:
-        lang === "ko"
-          ? dirDescKo.about
-          : "PLATFORM MANIFESTO / SYSTEM INFORMATION",
-      accent: "primary" as const,
-    },
-    {
-      href: "/gate",
-      label: "Gate",
-      description:
-        lang === "ko"
-          ? dirDescKo.gate
-          : "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
-      accent: "primary" as const,
-    },
-    {
-      href: "/lineup",
-      label: "Lineup",
-      description: lang === "ko" ? dirDescKo.lineup : "ARTIST ROSTER / DOCK",
-      accent: "primary" as const,
-    },
-    {
-      href: "/status",
-      label: "Status",
-      description:
-        lang === "ko"
-          ? dirDescKo.status
-          : "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
-      accent: "primary" as const,
-    },
-    {
-      href: "/transmit",
-      label: "Transmit",
-      description:
-        lang === "ko" ? dirDescKo.transmit : "VISITOR LOG / NODE SYNC",
-      accent: "primary" as const,
-    },
-    {
-      href: "/link",
-      label: "Link",
-      description:
-        lang === "ko" ? dirDescKo.link : "EXTERNAL CHANNELS / OFFICIAL LINKS",
-      accent: "primary" as const,
-    },
+    { href: "/about",    label: "About",    description: t.dirDesc.about,    accent: "primary" as const },
+    { href: "/gate",     label: "Gate",     description: t.dirDesc.gate,     accent: "primary" as const },
+    { href: "/lineup",   label: "Lineup",   description: t.dirDesc.lineup,   accent: "primary" as const },
+    { href: "/status",   label: "Status",   description: t.dirDesc.status,   accent: "primary" as const },
+    { href: "/transmit", label: "Transmit", description: t.dirDesc.transmit, accent: "primary" as const },
+    { href: "/link",     label: "Link",     description: t.dirDesc.link,     accent: "primary" as const },
   ];
 
   const [upcomingEvent, setUpcomingEvent] = useState<TerminalEvent | null>(
@@ -171,21 +129,13 @@ export default function HomePage() {
             <div className="text-xs font-bold tracking-widest text-terminal-accent-alert font-mono">
               <LabelText
                 autoHeight
-                text={
-                  lang === "ko"
-                    ? commonKo.signalUnstable
-                    : "⚠ SIGNAL LINK UNSTABLE"
-                }
+                text={t.common.signalUnstable}
               />
             </div>
             <div className="text-xs text-terminal-muted font-mono">
               <MetaText
                 autoHeight
-                text={
-                  lang === "ko"
-                    ? commonKo.dbUnreachable
-                    : "DATABASE UNREACHABLE — RETRY LATER"
-                }
+                text={t.common.dbUnreachable}
               />
             </div>
           </div>
@@ -195,7 +145,7 @@ export default function HomePage() {
               <div className="mb-1 tracking-[0.1em]">
                 <BodyText
                   className="text-micro sm:text-small text-terminal-muted"
-                  text={`${lang === "ko" ? homeKo.nextEntry : "NEXT LAUNCH —"} ${eventDateLabel}`}
+                  text={`${t.home.nextEntry} ${eventDateLabel}`}
                 />
               </div>
               <div className="drop-shadow-[0_0_16px_rgb(var(--color-accent-primary)/0.4)]">
@@ -233,15 +183,13 @@ export default function HomePage() {
           <span className="text-micro sm:text-small tracking-widest text-terminal-accent-primary">
             <LabelText
               autoHeight
-              text={
-                lang === "ko" ? homeKo.rootDir : "▶ ROOT DIRECTORY — /terminal/"
-              }
+              text={t.home.rootDir}
             />
           </span>
           <span className="text-micro sm:text-small text-terminal-muted">
             <LabelText
               autoHeight
-              text={lang === "ko" ? homeKo.moduleCount : "6 MODULE(S)"}
+              text={t.home.moduleCount}
             />
           </span>
         </div>

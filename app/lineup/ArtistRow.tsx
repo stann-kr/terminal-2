@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import type { Artist } from '@/lib/eventData';
 import { LabelText, MetaText, BodyText } from '@/components/ui/TerminalText';
-import { useLang } from '@/lib/langContext';
-import { lineupKo } from '@/lib/i18n';
+import { useLang, useT } from '@/lib/langContext';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
 
 const statusClassMap: Record<string, string> = {
@@ -20,6 +19,7 @@ interface Props { artist: Artist; }
 
 export default function ArtistRow({ artist: a }: Props) {
   const { lang } = useLang();
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
 
   const statusColorClass = statusClassMap[a.status] || 'text-terminal-accent-primary';
@@ -79,7 +79,7 @@ export default function ArtistRow({ artist: a }: Props) {
             <span className="text-terminal-accent-warn"><MetaText text={a.time} autoHeight className="text-caption md:text-small" /></span>
           </div>
           <div className="flex items-center justify-between text-terminal-subdued font-mono">
-            <MetaText text={lang === 'ko' ? lineupKo.dock(a.dock) : `DOCK ${a.dock}`} autoHeight className="text-caption md:text-small" />
+            <MetaText text={t.lineup.dock(a.dock)} autoHeight className="text-caption md:text-small" />
             {hasDescription && (
               <span className="text-terminal-accent-primary/50">{isOpen ? '[-]' : '[+]'}</span>
             )}
@@ -93,7 +93,7 @@ export default function ArtistRow({ artist: a }: Props) {
             <LabelText text={a.name} className="text-small md:text-body" />
           </span>
           <span className="col-span-1 font-mono text-terminal-subdued"><MetaText text={a.origin} className="text-small md:text-body" /></span>
-          <span className="col-span-3 font-mono text-terminal-subdued"><MetaText text={lang === 'ko' ? lineupKo.dock(a.dock) : `DOCK ${a.dock}`} className="text-small md:text-body" /></span>
+          <span className="col-span-3 font-mono text-terminal-subdued"><MetaText text={t.lineup.dock(a.dock)} className="text-small md:text-body" /></span>
           <span className="col-span-2 font-mono text-terminal-accent-warn"><MetaText text={a.time} className="text-small md:text-body" /></span>
           <span className={`col-span-2 font-bold tracking-wider font-mono flex items-center justify-between ${statusColorClass}`}>
             <span className="flex items-center">

@@ -7,12 +7,11 @@ import { LabelText, SubtitleText, MetaText, HeadingText } from '@/components/ui/
 import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import ArtistRow from './ArtistRow';
-import { useLang } from '@/lib/langContext';
-import { lineupKo, commonKo } from '@/lib/i18n';
+import { useT } from '@/lib/langContext';
 import type { TerminalEvent } from '@/lib/eventData';
 
 export default function LineupPage() {
-  const { lang } = useLang();
+  const t = useT();
   const [events, setEvents] = useState<TerminalEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -39,15 +38,15 @@ export default function LineupPage() {
 
       {loading ? (
         <motion.div variants={itemVariants} className="font-mono text-terminal-muted text-center py-8">
-          <LabelText autoHeight text={lang === 'ko' ? lineupKo.loading : '▸ LOADING LINEUP DATA...'} />
+          <LabelText autoHeight text={t.lineup.loading} />
         </motion.div>
       ) : error ? (
         <motion.div variants={itemVariants} className="border border-terminal-accent-alert/25 bg-terminal-bg-panel px-4 py-8 text-center space-y-2">
           <div className="font-bold tracking-widest text-terminal-accent-alert font-mono">
-            <LabelText autoHeight text={lang === 'ko' ? commonKo.signalUnstable : '⚠ SIGNAL LINK UNSTABLE'} />
+            <LabelText autoHeight text={t.common.signalUnstable} />
           </div>
           <div className="text-terminal-muted font-mono">
-            <MetaText autoHeight text={lang === 'ko' ? commonKo.dbUnreachable : 'DATABASE UNREACHABLE — RETRY LATER'} />
+            <MetaText autoHeight text={t.common.dbUnreachable} />
           </div>
         </motion.div>
       ) : (
@@ -86,7 +85,7 @@ export default function LineupPage() {
                         </span>
                         {isUpcoming && (
                           <span className="px-1.5 py-0.5 tracking-widest text-terminal-accent-secondary border border-terminal-accent-secondary/40 bg-terminal-accent-secondary/10">
-                            <LabelText text={lang === 'ko' ? lineupKo.upcomingTag : 'UPCOMING'} />
+                            <LabelText text={t.lineup.upcomingTag} />
                           </span>
                         )}
                       </div>
@@ -95,7 +94,7 @@ export default function LineupPage() {
                       </div>
                     </div>
                     <div className="shrink-0 text-terminal-muted">
-                      <MetaText text={lang === 'ko' ? lineupKo.actCount(ev.artists.length) : `${ev.artists.length} ACTS`} className="text-small md:text-body" />
+                      <MetaText text={t.lineup.actCount(ev.artists.length)} className="text-small md:text-body" />
                     </div>
                   </div>
                 </button>
@@ -120,11 +119,11 @@ export default function LineupPage() {
                   <div className="px-4 py-2 border-b hidden md:block border-terminal-accent-warn/30">
                     <div className="grid grid-cols-12 gap-2 text-micro md:text-small tracking-widest text-terminal-muted font-mono">
                       <span className="col-span-1"><MetaText text="ID" /></span>
-                      <span className="col-span-3"><MetaText text={lang === 'ko' ? lineupKo.colArtist : 'ARTIST'} /></span>
+                      <span className="col-span-3"><MetaText text={t.lineup.colArtist} /></span>
                       <span className="col-span-1"><MetaText text="ORG" /></span>
                       <span className="col-span-3"><MetaText text="DOCK" /></span>
-                      <span className="col-span-2"><MetaText text={lang === 'ko' ? lineupKo.colTimeslot : 'TIMESLOT'} /></span>
-                      <span className={`col-span-2`}><MetaText text={lang === 'ko' ? lineupKo.colStatus : 'STATUS'} /></span>
+                      <span className="col-span-2"><MetaText text={t.lineup.colTimeslot} /></span>
+                      <span className={`col-span-2`}><MetaText text={t.lineup.colStatus} /></span>
                     </div>
                   </div>
 
@@ -138,9 +137,7 @@ export default function LineupPage() {
 
                   <div className="text-xs text-center text-terminal-muted font-mono">
                     <SubtitleText
-                      text={selectedEvent.status === 'UPCOMING'
-                        ? (lang === 'ko' ? lineupKo.footerUpcoming : '— DECRYPTING ADDITIONAL ROSTER — STANDBY —')
-                        : (lang === 'ko' ? lineupKo.footerArchived : '— SECTOR 01 COMPLETE — ANALOG DATA PURGED —')}
+                      text={selectedEvent.status === 'UPCOMING' ? t.lineup.footerUpcoming : t.lineup.footerArchived}
                     />
                   </div>
                 </>

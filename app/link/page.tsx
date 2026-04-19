@@ -5,38 +5,16 @@ import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import DirectoryLink from '@/components/DirectoryLink';
 import { LabelText } from '@/components/ui/TerminalText';
-import { useLang } from '@/lib/langContext';
-import { linkKo } from '@/lib/i18n';
-
-const LINKS_EN = [
-  {
-    href: 'https://lumo.stann.kr',
-    label: 'Stann Lumo Web',
-    description: 'OFFICIAL WEBSITE / VISUAL ARCHIVE',
-    accent: 'primary' as const,
-  },
-  {
-    href: 'https://www.instagram.com/stannlumo/',
-    label: 'Stann Lumo Instagram',
-    description: 'SOCIAL CHANNEL / UPDATES',
-    accent: 'primary' as const,
-  },
-  {
-    href: 'https://www.instagram.com/terminal_hub/',
-    label: 'Terminal Instagram',
-    description: 'EVENT FEED / SIGNAL BROADCAST',
-    accent: 'primary' as const,
-  },
-];
+import { useT } from '@/lib/langContext';
 
 export default function LinkPage() {
-  const { lang } = useLang();
+  const t = useT();
 
-  const LINKS = lang === 'ko' ? [
-    { ...LINKS_EN[0], description: linkKo.descriptions.stannWeb },
-    { ...LINKS_EN[1], description: linkKo.descriptions.stannInsta },
-    { ...LINKS_EN[2], description: linkKo.descriptions.terminalInsta },
-  ] : LINKS_EN;
+  const LINKS = [
+    { href: 'https://lumo.stann.kr',                    label: 'Stann Lumo Web',       description: t.link.descriptions.stannWeb,     accent: 'primary' as const },
+    { href: 'https://www.instagram.com/stannlumo/',     label: 'Stann Lumo Instagram', description: t.link.descriptions.stannInsta,    accent: 'primary' as const },
+    { href: 'https://www.instagram.com/terminal_hub/',  label: 'Terminal Instagram',   description: t.link.descriptions.terminalInsta, accent: 'primary' as const },
+  ];
 
   return (
     <PageLayout>
@@ -49,10 +27,10 @@ export default function LinkPage() {
       >
         <div className="px-4 py-2 border-b flex items-center justify-between border-terminal-accent-primary/15 bg-terminal-bg-overlay/40">
           <span className="text-micro sm:text-small tracking-widest text-terminal-accent-primary font-mono">
-            <LabelText text={lang === 'ko' ? linkKo.externalChannels : '▶ EXTERNAL CHANNELS — /terminal/link/'} />
+            <LabelText text={t.link.externalChannels} />
           </span>
           <span className="text-micro sm:text-small text-terminal-muted font-mono">
-            <LabelText text={lang === 'ko' ? linkKo.nodeCount : '3 NODE(S)'} />
+            <LabelText text={t.link.nodeCount} />
           </span>
         </div>
 
