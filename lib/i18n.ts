@@ -198,3 +198,199 @@ export const linkKo = {
     terminalInsta: "이벤트 피드 / 신호 방송",
   },
 };
+
+// ─────────────────────────────────────────────
+// 영문 번역 객체 (EN)
+// ─────────────────────────────────────────────
+
+/** 홈 DIRS 설명 — EN */
+export const dirDescEn: Record<string, string> = {
+  about: "PLATFORM MANIFESTO / SYSTEM INFORMATION",
+  gate: "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
+  lineup: "ARTIST ROSTER / DOCK",
+  status: "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
+  transmit: "VISITOR LOG / NODE SYNC",
+  link: "EXTERNAL CHANNELS / OFFICIAL LINKS",
+};
+
+/** About 페이지 MANIFESTO — EN */
+export const manifestoEn: string[] = [
+  "TERMINAL is a Seoul-based techno platform designing an industrial station",
+  "where audio signals and data intersect.",
+  "",
+  "[ DESIGN PRINCIPLE ]",
+  "Stripping away non-essential visual elements, we focus on constructing",
+  "a precisely controlled environment. Much like a CLI (Command Line Interface)",
+  "rendered only by essential light and text, we aim for the pure, minimal",
+  "essence of the space.",
+  "",
+  "[ AUDIO ENGINE ]",
+  "Hypnotic and futuristic techno, heavily influenced by the raw textures",
+  "of early futurism.",
+  "",
+  "[ OBJECTIVE ]",
+  "TERMINAL does not build stages for mere spectators. Our objective is total",
+  "synchronization — where every logged-in entity becomes an active node,",
+  "participating in the system's calculation to explore uncharted",
+  "trajectories together.",
+  "",
+  "TERMINAL ARCHITECT : STANN LUMO",
+];
+
+export const commonEn = {
+  signalUnstable: "⚠ SIGNAL LINK UNSTABLE",
+  dbUnreachable: "DATABASE UNREACHABLE — RETRY LATER",
+};
+
+export const homeEn = {
+  nextEntry: "NEXT LAUNCH —",
+  rootDir: "▶ ROOT DIRECTORY — /terminal/",
+  moduleCount: "6 MODULES",
+};
+
+export const gateEn = {
+  tabUpcoming: "▶ UPCOMING",
+  tabArchive: "◼ ARCHIVE",
+  loading: "▸ LOADING GATE DATA...",
+  requestBtn: "▶ REQUEST GUEST ACCESS",
+  archivedLabel: "◼ ARCHIVED",
+  locationWarning: "⚠ DETAILED LOCATION AND GATE INFORMATION FOR SESSION ENTRY.",
+  sessionArchived: (date: string) => `◼ SESSION ARCHIVED — ${date}`,
+};
+
+export const requestEn = {
+  loading: "▸ LOADING REQUEST DATA...",
+  periodInactive: "⚠ REQUEST PERIOD INACTIVE",
+  windowInfo: (days: number) => `NEXT RESPONSE WINDOW OPENS ${days} DAYS BEFORE EVENT`,
+  eventDate: (date: string, time: string) => `EVENT DATE — ${date} · ${time}`,
+  windowCountdown: (n: number) => `WINDOW OPENS IN T-${n} DAYS`,
+  noEvent: "NO UPCOMING EVENT SCHEDULED. CHECK BACK LATER.",
+  committed: "✓ REQUEST SUBMITTED — AWAITING CONFIRMATION",
+  committedSub: "Your request has been received. Further instructions will follow.",
+  invitationLines: [
+    "YOU HAVE BEEN GRANTED ACCESS TO THIS CHANNEL.",
+    "THIS INVITATION IS PERSONAL AND NON-TRANSFERABLE.",
+    "TERMINAL IS A PRIVATE EVENT — ENTRY BY AUTHORIZATION ONLY.",
+    "SUBMIT YOUR REQUEST BELOW TO BE CONSIDERED FOR ADMISSION.",
+    "AN ACCESS CODE IS REQUIRED. IF YOU DO NOT HAVE ONE,",
+    "CONTACT YOUR INVITER FOR THE CURRENT SESSION CODE.",
+  ],
+  labelName: "NAME:",
+  labelEmail: "EMAIL:",
+  labelInstagram: "INSTAGRAM ID:",
+  labelInvitedBy: "INVITED BY:",
+  selectInviter: "SELECT INVITER",
+  optionOther: "OTHER",
+  labelCode: "ACCESS CODE:",
+  placeholderName: "FULL NAME",
+  placeholderEmail: "EMAIL@ADDRESS.COM",
+  placeholderInstagram: "@USERNAME",
+  placeholderOtherInviter: "ENTER INVITER NAME",
+  placeholderCode: "SESSION ACCESS CODE",
+  privacyConsent:
+    "I consent to the collection and use of personal information (name, email, Instagram ID) for event guest management. It will not be shared with third parties.",
+  marketingConsent:
+    "[OPTIONAL] I consent to receive future event announcements via email or Instagram DM.",
+  submitting: "▸ TRANSMITTING...",
+  submitBtn: "▶ SUBMIT REQUEST",
+  errors: {
+    ALL_FIELDS_REQUIRED: "ALL FIELDS ARE REQUIRED.",
+    PRIVACY_CONSENT_REQUIRED: "PRIVACY CONSENT IS REQUIRED.",
+    INVALID_EMAIL_FORMAT: "INVALID EMAIL FORMAT.",
+    NO_UPCOMING_EVENT: "NO UPCOMING EVENT FOUND.",
+    REQUEST_PERIOD_INACTIVE: "REQUEST PERIOD IS NOT ACTIVE.",
+    INVALID_ACCESS_CODE: "INVALID ACCESS CODE.",
+    EMAIL_ALREADY_REGISTERED: "THIS EMAIL HAS ALREADY BEEN REGISTERED.",
+    INTERNAL_SERVER_ERROR: "TRANSMISSION FAILED. RETRY LATER.",
+    TRANSMISSION_FAILED: "TRANSMISSION FAILED.",
+    CONNECTION_ERROR: "TRANSMISSION FAILED. CHECK CONNECTION.",
+    INVITER_REQUIRED: "SELECT YOUR INVITER.",
+  },
+};
+
+export const lineupEn = {
+  loading: "▸ LOADING LINEUP DATA...",
+  upcomingTag: "UPCOMING",
+  actCount: (n: number) => `${n} ARTISTS`,
+  colArtist: "ARTIST",
+  colTimeslot: "TIMESLOT",
+  colStatus: "STATUS",
+  footerUpcoming: "— ADDITIONAL LINEUP DECRYPTING — STANDBY —",
+  footerArchived: "— SECTOR 01 COMPLETE — ANALOG DATA PURGED —",
+  dock: (dock: string) => `DOCK ${dock}`,
+};
+
+export const statusEn = {
+  labelActiveRelays: "ACTIVE RELAYS",
+  labelSignalUptime: "SIGNAL UPTIME",
+  labelCoreFreq: "CORE FREQUENCY",
+  unitNodes: "NODES",
+  load: (n: number) => `LOAD: ${n}%`,
+};
+
+export const transmitEn = {
+  labelAlias: "ALIAS:",
+  labelMessage: "MESSAGE:",
+  placeholderAlias: "ENTER ALIAS",
+  placeholderMsg: "WRITE TO DATABASE...",
+  committed: "✓ SIGNAL TRANSMITTED",
+  submitting: "▸ TRANSMITTING...",
+  submitBtn: "▶ TRANSMIT SIGNAL",
+  syncing: "▸ SYNCING DATABASE...",
+  noEntries: "NO ENTRIES.",
+  logTitle: (n: number) => `SIGNAL LOG — ${n} ENTRIES`,
+  logSyncing: "SIGNAL LOG — SYNCING...",
+  prevBtn: "◀ PREV",
+  nextBtn: "NEXT ▶",
+  errors: {
+    required: "ENTER ALIAS AND MESSAGE.",
+    tooLong: "MESSAGE EXCEEDS 280 CHARACTERS.",
+    failed: "TRANSMISSION FAILED.",
+    connection: "TRANSMISSION FAILED. CHECK CONNECTION.",
+    linkUnstable: "SIGNAL LINK UNSTABLE.",
+  },
+};
+
+export const linkEn = {
+  externalChannels: "▶ EXTERNAL CHANNELS — /terminal/link/",
+  nodeCount: "3 NODES",
+  descriptions: {
+    stannWeb: "OFFICIAL WEBSITE / VISUAL ARCHIVE",
+    stannInsta: "SOCIAL CHANNEL / UPDATES",
+    terminalInsta: "EVENT FEED / SIGNAL BROADCAST",
+  },
+};
+
+// ─────────────────────────────────────────────
+// 통합 i18n 객체
+// ─────────────────────────────────────────────
+
+export const i18n = {
+  ko: {
+    dirDesc: dirDescKo,
+    manifesto: manifestoKo,
+    common: commonKo,
+    home: homeKo,
+    gate: gateKo,
+    request: requestKo,
+    lineup: lineupKo,
+    status: statusKo,
+    transmit: transmitKo,
+    link: linkKo,
+  },
+  en: {
+    dirDesc: dirDescEn,
+    manifesto: manifestoEn,
+    common: commonEn,
+    home: homeEn,
+    gate: gateEn,
+    request: requestEn,
+    lineup: lineupEn,
+    status: statusEn,
+    transmit: transmitEn,
+    link: linkEn,
+  },
+} as const;
+
+export type I18nLang = keyof typeof i18n;
+export type Translations = typeof i18n["ko"];

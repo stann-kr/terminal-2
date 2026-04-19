@@ -5,31 +5,7 @@ import PageLayout, { itemVariants } from '@/components/PageLayout';
 import { BodyText, LabelText, SubtitleText } from '@/components/ui/TerminalText';
 import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
-import { useLang } from '@/lib/langContext';
-import { manifestoKo } from '@/lib/i18n';
-
-const MANIFESTO = [
-  'TERMINAL is a Seoul-based techno platform designing an industrial station',
-  'where audio signals and data intersect.',
-  '',
-  '[ DESIGN PRINCIPLE ]',
-  'Stripping away non-essential visual elements, we focus on constructing',
-  'a precisely controlled environment. Much like a CLI (Command Line Interface)',
-  'rendered only by essential light and text, we aim for the pure, minimal',
-  'essence of the space.',
-  '',
-  '[ AUDIO ENGINE ]',
-  'Hypnotic and futuristic techno, heavily influenced by the raw textures',
-  'of early futurism.',
-  '',
-  '[ OBJECTIVE ]',
-  'TERMINAL does not build stages for mere spectators. Our objective is total',
-  'synchronization — where every logged-in entity becomes an active node,',
-  'participating in the system\'s calculation to explore uncharted',
-  'trajectories together.',
-  '',
-  'TERMINAL ARCHITECT : STANN LUMO',
-];
+import { useT } from '@/lib/langContext';
 
 const SYSTEM_INFO = [
   { key: 'PLATFORM_ID',    val: 'TERMINAL-SYS' },
@@ -43,8 +19,7 @@ const SYSTEM_INFO = [
 ];
 
 export default function AboutPage() {
-  const { lang } = useLang();
-  const manifesto = lang === 'ko' ? manifestoKo : MANIFESTO;
+  const t = useT();
 
   return (
     <PageLayout>
@@ -55,7 +30,7 @@ export default function AboutPage() {
         <motion.div variants={itemVariants} className="mb-6">
           <TerminalPanel title="MANIFESTO_v1.txt" accent="green">
             <div className="space-y-1">
-              {manifesto.map((line, i) => (
+              {t.manifesto.map((line, i) => (
                 <div key={i}>
                   {line === '' ? (
                     <span className="block h-4">&nbsp;</span>
