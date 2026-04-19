@@ -93,12 +93,14 @@ export const requestKo = {
   labelEmail: "이메일:",
   labelInstagram: "인스타그램 ID:",
   labelInvitedBy: "초대인:",
+  selectInviter: "초대인 선택",
+  optionOther: "기타",
   labelCode: "인증 코드:",
   // 플레이스홀더
   placeholderName: "전체 이름",
   placeholderEmail: "이메일@주소.COM",
   placeholderInstagram: "@사용자명",
-  placeholderInvitedBy: "초대한 분의 이름",
+  placeholderOtherInviter: "초대인 이름 입력",
   placeholderCode: "세션 인증 코드",
   // 개인정보 동의
   privacyConsent:
@@ -118,6 +120,7 @@ export const requestKo = {
     INTERNAL_SERVER_ERROR: "전송 실패. 나중에 다시 시도하세요.",
     TRANSMISSION_FAILED: "전송 실패.",
     CONNECTION_ERROR: "전송 실패. 연결을 확인하세요.",
+    INVITER_REQUIRED: "초대인 이름을 입력해주세요.",
   },
 };
 

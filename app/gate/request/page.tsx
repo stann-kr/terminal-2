@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageLayout, { itemVariants } from '@/components/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
@@ -33,19 +34,22 @@ interface FormState {
   privacyConsent: boolean;
 }
 
-export default function RequestAccessPage() {
+function RequestAccessContent() {
   const { lang } = useLang();
+  const searchParams = useSearchParams();
   const [event, setEvent] = useState<TerminalEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [daysUntil, setDaysUntil] = useState(0);
+  const [artistNames, setArtistNames] = useState<string[]>([]);
+  const [otherInviter, setOtherInviter] = useState('');
 
   const [form, setForm] = useState<FormState>({
     name: '',
     email: '',
     instagram: '',
     invitedBy: '',
-    accessCode: '',
+    accessCode: searchParams.get('code') ?? '',
     privacyConsent: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,13 +60,19 @@ export default function RequestAccessPage() {
   useEffect(() => {
     fetch('/api/events?status=UPCOMING')
       .then(res => { if (!res.ok) throw new Error(); return res.json() as Promise<TerminalEvent[]>; })
-      .then(data => {
+      .then(async data => {
         if (data.length > 0) {
           const ev = data[0];
           setEvent(ev);
           const days = (new Date(ev.date).getTime() - Date.now()) / 86_400_000;
           setDaysUntil(Math.ceil(days));
           setIsActive(days >= 0 && days <= ACCESS_WINDOW_DAYS);
+
+          const artistRes = await fetch(`/api/artists?eventId=${ev.id}`);
+          if (artistRes.ok) {
+            const rows = await artistRes.json() as { name: string; status: string }[];
+            setArtistNames(rows.filter(a => a.status === 'CONFIRMED').map(a => a.name));
+          }
         }
       })
       .catch(() => setError('SIGNAL LINK UNSTABLE.'))
@@ -77,14 +87,28 @@ export default function RequestAccessPage() {
     e.preventDefault();
     if (submittingRef.current) return;
     setError('');
+
+    if (!form.invitedBy) {
+      setError(lang === 'ko' ? requestKo.errors.INVITER_REQUIRED : 'SELECT YOUR INVITER.');
+      return;
+    }
+    if (form.invitedBy === '__OTHER__' && !otherInviter.trim()) {
+      setError(lang === 'ko' ? requestKo.errors.INVITER_REQUIRED : 'ENTER INVITER NAME.');
+      return;
+    }
+
     submittingRef.current = true;
     setIsSubmitting(true);
+
+    const resolvedInvitedBy = form.invitedBy === '__OTHER__'
+      ? otherInviter.trim()
+      : form.invitedBy;
 
     try {
       const res = await fetch('/api/gate/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, invitedBy: resolvedInvitedBy }),
       });
 
       const data = await res.json() as { ok?: boolean; error?: string };
@@ -255,13 +279,35 @@ export default function RequestAccessPage() {
 
                 {/* 초대인 */}
                 <FormField label={lang === 'ko' ? requestKo.labelInvitedBy : 'INVITED_BY:'}>
-                  <input
-                    type="text"
+                  <div className="relative">
+                  <select
                     value={form.invitedBy}
-                    onChange={handleChange('invitedBy')}
-                    placeholder={lang === 'ko' ? requestKo.placeholderInvitedBy : 'NAME OF YOUR INVITER'}
-                    className={`${inputClassBase} ${inputAccentClass.secondary}`}
-                  />
+                    onChange={e => setForm(prev => ({ ...prev, invitedBy: e.target.value }))}
+                    className={`${inputClassBase} ${inputAccentClass.secondary} appearance-none`}
+                  >
+                    <option value="">
+                      {lang === 'ko' ? requestKo.selectInviter : 'SELECT INVITER'}
+                    </option>
+                    {artistNames.map(name => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                    <option value="__OTHER__">
+                      {lang === 'ko' ? requestKo.optionOther : 'OTHER'}
+                    </option>
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-terminal-accent-secondary/70 select-none">
+                    ▾
+                  </span>
+                  </div>
+                  {form.invitedBy === '__OTHER__' && (
+                    <input
+                      type="text"
+                      value={otherInviter}
+                      onChange={e => setOtherInviter(e.target.value)}
+                      placeholder={lang === 'ko' ? requestKo.placeholderOtherInviter : 'ENTER INVITER NAME'}
+                      className={`${inputClassBase} ${inputAccentClass.secondary} mt-2`}
+                    />
+                  )}
                 </FormField>
 
                 {/* 인증 코드 */}
@@ -328,5 +374,13 @@ export default function RequestAccessPage() {
         </div>
       )}
     </PageLayout>
+  );
+}
+
+export default function RequestAccessPage() {
+  return (
+    <Suspense>
+      <RequestAccessContent />
+    </Suspense>
   );
 }
