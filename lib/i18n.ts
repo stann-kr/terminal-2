@@ -1,10 +1,10 @@
 /** 홈 DIRS 설명 — KO */
 export const dirDescKo: Record<string, string> = {
   about: "플랫폼 매니페스토 / 시스템 정보",
-  gate: "다음 입장 / 카운트다운 / 입장 신청",
+  gate: "이벤트 안내 / 카운트다운 / 게스트 신청",
   lineup: "아티스트 라인업 / 도크",
   status: "시스템 진단 / 네트워크 텔레메트리",
-  transmit: "방문자 로그 / 노드 동기화",
+  transmit: "방문자 로그",
   link: "외부 채널 / 공식 링크",
 };
 
@@ -222,10 +222,10 @@ export const linkKo = {
 /** 홈 DIRS 설명 — EN */
 export const dirDescEn: Record<string, string> = {
   about: "PLATFORM MANIFESTO / SYSTEM INFORMATION",
-  gate: "NEXT ENTRY / COUNTDOWN / REQUEST ACCESS",
+  gate: "EVENT INFORMATION / COUNTDOWN / GUEST REQUEST",
   lineup: "ARTIST ROSTER / DOCK",
   status: "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
-  transmit: "VISITOR LOG / NODE SYNC",
+  transmit: "VISITOR LOG",
   link: "EXTERNAL CHANNELS / OFFICIAL LINKS",
 };
 
@@ -287,7 +287,8 @@ export const gateEn = {
   loading: "▸ LOADING GATE DATA...",
   requestBtn: "▶ REQUEST GUEST ACCESS",
   archivedLabel: "◼ ARCHIVED",
-  locationWarning: "⚠ DETAILED LOCATION AND GATE INFORMATION FOR SESSION ENTRY.",
+  locationWarning:
+    "⚠ DETAILED LOCATION AND GATE INFORMATION FOR SESSION ENTRY.",
   sessionArchived: (date: string) => `◼ SESSION ARCHIVED — ${date}`,
   eventInfoTitle: "EVENT_INFO.dec",
 };
@@ -295,12 +296,14 @@ export const gateEn = {
 export const requestEn = {
   loading: "▸ LOADING REQUEST DATA...",
   periodInactive: "⚠ REQUEST PERIOD INACTIVE",
-  windowInfo: (days: number) => `NEXT RESPONSE WINDOW OPENS ${days} DAYS BEFORE EVENT`,
+  windowInfo: (days: number) =>
+    `NEXT RESPONSE WINDOW OPENS ${days} DAYS BEFORE EVENT`,
   eventDate: (date: string, time: string) => `EVENT DATE — ${date} · ${time}`,
   windowCountdown: (n: number) => `WINDOW OPENS IN T-${n} DAYS`,
   noEvent: "NO UPCOMING EVENT SCHEDULED. CHECK BACK LATER.",
   committed: "✓ REQUEST SUBMITTED — AWAITING CONFIRMATION",
-  committedSub: "Your request has been received. Further instructions will follow.",
+  committedSub:
+    "Your request has been received. Further instructions will follow.",
   invitationLines: [
     "YOU HAVE BEEN GRANTED ACCESS TO THIS CHANNEL.",
     "THIS INVITATION IS PERSONAL AND NON-TRANSFERABLE.",
@@ -424,4 +427,4 @@ export const i18n = {
 } as const;
 
 export type I18nLang = keyof typeof i18n;
-export type Translations = typeof i18n["ko"];
+export type Translations = (typeof i18n)["ko"];
