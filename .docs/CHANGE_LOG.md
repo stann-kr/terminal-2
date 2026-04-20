@@ -1,5 +1,19 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] fix: ReturnLink 접근성 및 가시성 개선
+
+### 변경 개요
+
+페이지 상단 Return 버튼이 배경과 대비가 낮아 접근성이 떨어지는 문제 해소.
+
+#### 수정 파일
+- `components/ui/ReturnLink.tsx`
+  - 텍스트 색: `text-terminal-subdued` → `text-terminal-primary` (밝은 Icy Blue로 상향)
+  - 보더 불투명도: `/40` → `/60` (보더 가시성 강화)
+  - 호버 효과: `hover-glow`(커스텀) → `hover:text-shadow-glow-primary` (디자인 토큰 사용)
+
+---
+
 ## [2026-04-21] fix: 페이지 헤더 accent·글로우 효과 통일
 
 ### 변경 개요
