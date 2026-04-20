@@ -131,7 +131,7 @@ export default function TransmitPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="text-xs font-mono text-terminal-muted text-center py-4"
+                    className="font-mono text-terminal-muted text-center py-4"
                   >
                     <LabelText text={t.transmit.syncing} />
                   </motion.div>
@@ -142,7 +142,7 @@ export default function TransmitPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="text-xs font-mono text-terminal-muted text-center py-4"
+                    className="font-mono text-terminal-muted text-center py-4"
                   >
                     <MetaText text={t.transmit.noEntries} />
                   </motion.div>

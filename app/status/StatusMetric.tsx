@@ -47,10 +47,10 @@ export default function StatusMetric({ label, value, unit, accent = 'primary', d
       <div className={`text-2xl font-bold mb-1 font-mono ${accentClasses.split(' ').slice(1).join(' ')}`}>
         <DataText text={value} />
       </div>
-      <div className={`text-xs mb-2 font-mono ${labelColorClass}`}>
+      <div className={`text-caption md:text-small mb-2 font-mono ${labelColorClass}`}>
         <MetaText text={unit} />
       </div>
-      <div className="text-xs tracking-widest text-terminal-muted font-mono">
+      <div className="text-caption md:text-small tracking-widest text-terminal-muted font-mono">
         <MetaText text={label} />
       </div>
     </div>

@@ -13,7 +13,7 @@ export default function NotFound() {
         <div className="mb-6">
           <a
             href="/home"
-            className="text-xs tracking-widest cursor-pointer inline-block px-3 py-1.5 border transition-colors whitespace-nowrap border-terminal-bg-panel-border/40 text-terminal-subdued hover:bg-terminal-bg-panel-border/20"
+            className="text-caption tracking-widest cursor-pointer inline-block px-3 py-1.5 border transition-colors whitespace-nowrap border-terminal-bg-panel-border/40 text-terminal-subdued hover:bg-terminal-bg-panel-border/20"
           >
             ◀ RETURN /home
           </a>
@@ -21,7 +21,7 @@ export default function NotFound() {
 
         {/* Page header */}
         <div className="mb-8 font-mono">
-          <div className="text-xs tracking-widest mb-1 text-terminal-muted">/404</div>
+          <div className="text-caption tracking-widest mb-1 text-terminal-muted">/404</div>
           <h1 className="text-h2 md:text-h1 font-bold tracking-[0.2em] text-terminal-accent-alert text-shadow-glow-alert">
             ERROR: 404
           </h1>
@@ -32,7 +32,7 @@ export default function NotFound() {
           <p className="text-terminal-accent-alert text-shadow-glow-alert text-body font-mono block tracking-wider">
             REQUESTED SIGNAL NOT FOUND IN LOCAL NODE
           </p>
-          <p className="text-terminal-muted text-xs block max-w-md mx-auto leading-relaxed">
+          <p className="text-terminal-muted text-caption block max-w-md mx-auto leading-relaxed">
             The coordinate or resource you are looking for has been moved or purged from the terminal registry.
           </p>
         </div>

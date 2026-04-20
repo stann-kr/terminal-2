@@ -57,15 +57,15 @@ export default function GatePage() {
       </motion.div>
 
       {loading ? (
-        <motion.div variants={itemVariants} className="text-xs font-mono text-terminal-muted text-center py-8">
+        <motion.div variants={itemVariants} className="font-mono text-terminal-muted text-center py-8">
           <LabelText text={t.gate.loading} />
         </motion.div>
       ) : error ? (
         <motion.div variants={itemVariants} className="border border-terminal-accent-alert/25 bg-terminal-bg-panel px-4 py-8 text-center space-y-2">
-          <div className="text-xs font-bold tracking-widest text-terminal-accent-alert font-mono">
+          <div className="font-bold tracking-widest text-terminal-accent-alert font-mono">
             <LabelText text={t.common.signalUnstable} />
           </div>
-          <div className="text-xs text-terminal-muted font-mono">
+          <div className="text-terminal-muted font-mono">
             <MetaText text={t.common.dbUnreachable} />
           </div>
         </motion.div>
@@ -147,11 +147,11 @@ export default function GatePage() {
                         <div className={`font-bold tracking-wider ${effectiveArchiveId === ev.id ? "text-terminal-accent-alert" : "text-terminal-primary"}`}>
                           <SubtitleText autoHeight text={ev.session} />
                         </div>
-                        <div className="text-xs mt-0.5 text-terminal-subdued">
+                        <div className="mt-0.5 text-terminal-subdued">
                           <MetaText text={`${ev.subtitle} · ${ev.date.replace(/-/g, ".")}`} />
                         </div>
                       </div>
-                      <div className="text-xs tracking-wider shrink-0 text-terminal-muted flex items-center">
+                      <div className="tracking-wider shrink-0 text-terminal-muted flex items-center">
                         <LabelText
                           autoHeight
                           text={t.gate.archivedLabel}

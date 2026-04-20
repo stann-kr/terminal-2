@@ -1,5 +1,40 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] refactor: 콘텐츠 텍스트 크기·색상 일관성 리팩토링
+
+### 변경 개요
+
+TerminalText 시맨틱 컴포넌트 기본 크기 재조정 및 전체 사용처의 비토큰 사용·중복 override 정리.
+
+#### 핵심 문제 해소
+- `HeadingText`, `LabelText`, `MetaText` 기본 크기를 실제 사용 패턴에 맞게 재조정
+- 비토큰 `text-xs`·`text-sm` 사용처를 디자인 토큰(`text-caption`, `text-small`)으로 통일
+- 이벤트 날짜·아카이브 메타 등 중요 정보가 보조 정보보다 작게 표시되는 크기 역전 해소
+- 반응형 브레이크포인트 `sm:`·`md:` 혼용 정리
+
+#### 수정 내용
+
+**1단계: TerminalText 기본 크기 조정**
+- `HeadingText`: `text-body md:text-heading`(14/16px) → `text-h2 md:text-h1`(20/24px) — 페이지 제목·이벤트명 실사용 크기에 맞춤
+- `LabelText`: `text-micro md:text-small`(10/12px) → `text-caption md:text-small`(11/12px) — 모바일 가독성 최소 11px 보장
+- `MetaText`: 동일 적용
+
+**2단계: 사용처 정리 (12개 파일)**
+- `PageHeader.tsx` — 기본 크기와 중복인 `text-h2 md:text-h1` override 제거
+- `home/page.tsx` — 서브타이틀 `text-nano`→`text-caption`, 날짜 정보 `BodyText`→`MetaText`, 에러/풋터 `text-xs` 제거
+- `lineup/page.tsx` — 세션 카드 메타 `MetaText`→`SubtitleText`, 풋터 `text-xs` 제거
+- `ArtistRow.tsx` — 아티스트명 `LabelText`→`SubtitleText` 상향, 전체 크기 override 제거
+- `gate/page.tsx`, `gate/request/page.tsx` — 로딩/에러/아카이브 메타 `text-xs` 제거
+- `transmit/page.tsx`, `status/page.tsx` — 로딩/빈 상태 `text-xs` 제거
+- `StatusMetric.tsx` — 유닛/라벨 `text-xs`→`text-caption md:text-small` 반응형 토큰 적용
+- `DirectoryLink.tsx` — 인덱스/이름/액션 `text-xs`/`text-sm`→`text-caption`/`text-small` 토큰 교체
+- `not-found.tsx` — 전체 `text-xs`→`text-caption` 토큰 적용
+
+**3단계: PageHeader 타이틀 크기 축소**
+- `PageHeader.tsx` — `text-h2 md:text-h1`(20/24px)→`text-heading md:text-h2`(16/20px): 설명 텍스트보다 조금 더 큰 수준으로 조정
+
+---
+
 ## [2026-04-21] fix: 모바일 input 포커스 시 화면 확대 방지
 
 ### 변경 개요

@@ -82,11 +82,11 @@ export default function LineupPage() {
                         )}
                       </div>
                       <div className="mt-0.5 text-terminal-subdued">
-                        <MetaText text={`${ev.subtitle} · ${ev.date.replace(/-/g, '.')}`} className="text-small md:text-body" />
+                        <SubtitleText text={`${ev.subtitle} · ${ev.date.replace(/-/g, '.')}`} className="text-terminal-subdued" />
                       </div>
                     </div>
                     <div className="shrink-0 text-terminal-muted">
-                      <MetaText text={t.lineup.actCount(ev.artists.length)} className="text-small md:text-body" />
+                      <MetaText text={t.lineup.actCount(ev.artists.length)} />
                     </div>
                   </div>
                 </button>
@@ -127,7 +127,7 @@ export default function LineupPage() {
                     ))}
                   </div>
 
-                  <div className="text-xs text-center text-terminal-muted font-mono">
+                  <div className="text-center text-terminal-muted font-mono">
                     <SubtitleText
                       text={selectedEvent.status === 'UPCOMING' ? t.lineup.footerUpcoming : t.lineup.footerArchived}
                     />

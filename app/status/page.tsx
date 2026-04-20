@@ -77,11 +77,11 @@ export default function StatusPage() {
       <motion.div variants={itemVariants}>
         <TerminalPanel title={t.status.sessionLogTitle} accent="primary">
           {isLoading ? (
-            <div className="text-xs font-mono text-terminal-muted py-4 text-center">
+            <div className="font-mono text-terminal-muted py-4 text-center">
               <LabelText text={t.status.loading} />
             </div>
           ) : isError || events.length === 0 ? (
-            <div className="text-xs font-mono text-terminal-muted py-4 text-center">
+            <div className="font-mono text-terminal-muted py-4 text-center">
               <MetaText text={t.status.noSessions} />
             </div>
           ) : (

@@ -10,7 +10,6 @@ import {
   HeadingText,
   LabelText,
   MetaText,
-  BodyText,
 } from "@/components/ui/TerminalText";
 import CountdownBlock from "@/components/ui/CountdownBlock";
 import LangToggle from "@/components/ui/LangToggle";
@@ -87,7 +86,7 @@ export default function HomePage() {
           <SubtitleText
             text="A VOYAGE TO THE UNKNOWN SECTOR"
             delay={100}
-            className="text-nano sm:text-caption md:text-caption text-terminal-subdued text-center tracking-[0.2em] opacity-70"
+            className="text-caption md:text-small text-terminal-subdued text-center tracking-[0.2em] opacity-70"
           />
         </motion.div>
 
@@ -106,13 +105,13 @@ export default function HomePage() {
       >
         {eventError ? (
           <div className="text-center py-4 space-y-2">
-            <div className="text-xs font-bold tracking-widest text-terminal-accent-alert font-mono">
+            <div className="font-bold tracking-widest text-terminal-accent-alert font-mono">
               <LabelText
                 autoHeight
                 text={t.common.signalUnstable}
               />
             </div>
-            <div className="text-xs text-terminal-muted font-mono">
+            <div className="text-terminal-muted font-mono">
               <MetaText
                 autoHeight
                 text={t.common.dbUnreachable}
@@ -123,21 +122,21 @@ export default function HomePage() {
           <>
             <div className="text-center mb-4">
               <div className="mb-1 tracking-[0.1em]">
-                <BodyText
-                  className="text-micro sm:text-small text-terminal-muted"
+                <MetaText
+                  className="text-terminal-muted"
                   text={`${t.home.nextEntry} ${eventDateLabel}`}
                 />
               </div>
               <div className="drop-shadow-[0_0_16px_rgb(var(--color-accent-primary)/0.4)]">
                 <HeadingText
                   autoHeight
-                  className="text-h2 sm:text-h1 font-bold text-terminal-accent-primary tracking-[0.2em]"
+                  className="font-bold text-terminal-accent-primary tracking-[0.2em]"
                   text={upcomingEvent?.session ?? "—"} as="span"
                 />
               </div>
               <div className="mt-1 tracking-[0.1em]">
                 <MetaText
-                  className="text-micro sm:text-small text-terminal-subdued"
+                  className="text-terminal-subdued"
                   autoHeight
                   text={
                     upcomingEvent
@@ -184,7 +183,7 @@ export default function HomePage() {
       {/* Footer */}
       <motion.div
         variants={itemVariants}
-        className="mt-6 flex items-center justify-between text-micro sm:text-xs text-terminal-muted font-mono"
+        className="mt-6 flex items-center justify-between text-micro sm:text-caption text-terminal-muted font-mono"
       >
         <span>
           <MetaText text="KERNEL 2.2.0-heliopause_build" autoHeight />

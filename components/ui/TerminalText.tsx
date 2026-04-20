@@ -48,7 +48,7 @@ export function HeadingText({
     <DecodeText
       {...decode.heading}
       as={as}
-      className={cn("text-body md:text-heading", className)}
+      className={cn("text-h2 md:text-h1", className)}
       {...props}
     />
   );
@@ -81,7 +81,7 @@ export function LabelText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.label}
-      className={cn("text-micro md:text-small", className)}
+      className={cn("text-caption md:text-small", className)}
       {...props}
     />
   );
@@ -92,7 +92,7 @@ export function MetaText({ className = "", ...props }: TextProps) {
   return (
     <DecodeText
       {...decode.meta}
-      className={cn("text-micro md:text-small", className)}
+      className={cn("text-caption md:text-small", className)}
       {...props}
     />
   );

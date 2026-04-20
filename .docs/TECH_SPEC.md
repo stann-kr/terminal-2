@@ -17,13 +17,13 @@
 |---|---|---|---|
 | `text-pico` | `--text-pico` | 8px | 홈 ASCII 장식 |
 | `text-nano` | `--text-nano` | 9px | 카운트다운 라벨, ASCII |
-| `text-micro` | `--text-micro` | 10px | LabelText·MetaText 모바일, 배지 |
-| `text-caption` | `--text-caption` | 11px | ArtistRow 메타 |
+| `text-micro` | `--text-micro` | 10px | 배지, 홈 서브타이틀 최소값 |
+| `text-caption` | `--text-caption` | 11px | LabelText·MetaText 모바일, ArtistRow 메타, DirectoryLink |
 | `text-small` | `--text-small` | 12px | body 모바일, label 데스크톱, 입력 모바일 |
 | `text-body` | `--text-body` | 14px | body 데스크톱, heading 모바일, 입력 데스크톱 |
-| `text-heading` | `--text-heading` | 16px | HeadingText 데스크톱 |
-| `text-h2` | `--text-h2` | 20px | PageHeader 모바일 |
-| `text-h1` | `--text-h1` | 24px | TitleText 모바일, PageHeader 데스크톱 |
+| `text-heading` | `--text-heading` | 16px | PageHeader 타이틀 모바일 |
+| `text-h2` | `--text-h2` | 20px | PageHeader 타이틀 데스크톱, HeadingText 모바일 |
+| `text-h1` | `--text-h1` | 24px | TitleText 모바일, HeadingText 데스크톱 |
 | `text-title` | `--text-title` | 30px | TitleText 데스크톱 |
 | `text-hero` | `--text-hero` | 48px | 홈 TERMINAL 모바일 |
 | `text-display` | `--text-display` | 96px | 홈 TERMINAL 데스크톱 |
@@ -33,12 +33,12 @@
 | 컴포넌트 | 모바일 | 데스크톱(md+) |
 |---|---|---|
 | `TitleText` | text-h1 (24px) | text-title (30px) |
-| `HeadingText` | text-body (14px) | text-heading (16px) |
+| `HeadingText` | text-h2 (20px) | text-h1 (24px) |
 | `SubtitleText` | text-small (12px) | text-body (14px) |
 | `BodyText` | text-small (12px) | text-body (14px) |
 | `DataText` | text-small (12px) | text-body (14px) |
-| `LabelText` | text-micro (10px) | text-small (12px) |
-| `MetaText` | text-micro (10px) | text-small (12px) |
+| `LabelText` | text-caption (11px) | text-small (12px) |
+| `MetaText` | text-caption (11px) | text-small (12px) |
 
 ### FormField 컴포넌트 API (`components/ui/FormField.tsx`)
 

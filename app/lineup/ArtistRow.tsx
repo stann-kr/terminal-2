@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import type { Artist } from '@/lib/eventData';
-import { LabelText, MetaText, BodyText } from '@/components/ui/TerminalText';
+import { SubtitleText, LabelText, MetaText, BodyText } from '@/components/ui/TerminalText';
 import { useLang, useT } from '@/lib/langContext';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
 
@@ -66,20 +66,20 @@ export default function ArtistRow({ artist: a }: Props) {
         <div className={`md:hidden px-4 py-4 border transition-all duration-200 space-y-2 ${borderClass} ${hoverClass}`}>
           <div className="flex items-baseline justify-between gap-2">
             <span className={`font-bold tracking-wider leading-tight font-mono min-w-0 ${nameColorClass} ${nameGlowClass}`}>
-              <LabelText text={a.name} autoHeight className="text-small md:text-body" />
+              <SubtitleText text={a.name} autoHeight />
             </span>
             <span className={`font-bold tracking-wider whitespace-nowrap shrink-0 font-mono ${statusColorClass}`}>
               <span className="status-pulse mr-1">●</span>
-              <LabelText text={a.status} className="inline text-caption md:text-small" autoHeight />
+              <LabelText text={a.status} className="inline" autoHeight />
             </span>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono">
-            <span className="text-terminal-muted"><MetaText text={a.id} autoHeight className="text-caption md:text-small" /></span>
-            <span className="text-terminal-subdued"><MetaText text={a.origin} autoHeight className="text-caption md:text-small" /></span>
-            <span className="text-terminal-accent-warn"><MetaText text={a.time} autoHeight className="text-caption md:text-small" /></span>
+            <span className="text-terminal-muted"><MetaText text={a.id} autoHeight /></span>
+            <span className="text-terminal-subdued"><MetaText text={a.origin} autoHeight /></span>
+            <span className="text-terminal-accent-warn"><MetaText text={a.time} autoHeight /></span>
           </div>
           <div className="flex items-center justify-between text-terminal-subdued font-mono">
-            <MetaText text={t.lineup.dock(a.dock)} autoHeight className="text-caption md:text-small" />
+            <MetaText text={t.lineup.dock(a.dock)} autoHeight />
             {hasDescription && (
               <span className="text-terminal-accent-primary/50">{isOpen ? '[-]' : '[+]'}</span>
             )}
@@ -88,17 +88,17 @@ export default function ArtistRow({ artist: a }: Props) {
 
         {/* Desktop */}
         <div className={`hidden md:grid grid-cols-12 gap-2 px-4 py-4 border transition-all duration-200 ${borderClass} ${hoverClass} items-center`}>
-          <span className="col-span-1 font-mono text-terminal-muted"><MetaText text={a.id} className="text-small md:text-body" /></span>
+          <span className="col-span-1 font-mono text-terminal-muted"><MetaText text={a.id} /></span>
           <span className={`col-span-3 font-bold tracking-wider font-mono ${nameColorClass} ${nameGlowClass}`}>
-            <LabelText text={a.name} className="text-small md:text-body" />
+            <SubtitleText text={a.name} />
           </span>
-          <span className="col-span-1 font-mono text-terminal-subdued"><MetaText text={a.origin} className="text-small md:text-body" /></span>
-          <span className="col-span-3 font-mono text-terminal-subdued"><MetaText text={t.lineup.dock(a.dock)} className="text-small md:text-body" /></span>
-          <span className="col-span-2 font-mono text-terminal-accent-warn"><MetaText text={a.time} className="text-small md:text-body" /></span>
+          <span className="col-span-1 font-mono text-terminal-subdued"><MetaText text={a.origin} /></span>
+          <span className="col-span-3 font-mono text-terminal-subdued"><MetaText text={t.lineup.dock(a.dock)} /></span>
+          <span className="col-span-2 font-mono text-terminal-accent-warn"><MetaText text={a.time} /></span>
           <span className={`col-span-2 font-bold tracking-wider font-mono flex items-center justify-between ${statusColorClass}`}>
             <span className="flex items-center">
               <span className="status-pulse mr-1">●</span>
-              <LabelText text={a.status} className="inline text-small md:text-body" />
+              <LabelText text={a.status} className="inline" />
             </span>
             {hasDescription && (
               <span className="text-terminal-accent-primary/50 ml-2">{isOpen ? '[-]' : '[+]'}</span>

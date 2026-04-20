@@ -138,17 +138,17 @@ function RequestAccessContent() {
       />
 
       {loading ? (
-        <motion.div variants={itemVariants} className="text-xs font-mono text-terminal-muted text-center py-8">
+        <motion.div variants={itemVariants} className="font-mono text-terminal-muted text-center py-8">
           <LabelText text={t.request.loading} />
         </motion.div>
       ) : !isActive ? (
         <motion.div variants={itemVariants}>
           <TerminalPanel title="REQUEST_STATUS" accent="alert">
             <div className="space-y-3 text-center py-4">
-              <div className="text-sm font-bold tracking-widest font-mono text-terminal-accent-alert">
+              <div className="font-bold tracking-widest font-mono text-terminal-accent-alert">
                 <LabelText text={t.request.periodInactive} />
               </div>
-              <div className="text-xs font-mono text-terminal-muted space-y-1">
+              <div className="font-mono text-terminal-muted space-y-1">
                 {event ? (
                   <>
                     <div><MetaText text={t.request.windowInfo(ACCESS_WINDOW_DAYS)} /></div>
@@ -168,10 +168,10 @@ function RequestAccessContent() {
         <motion.div variants={itemVariants} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <TerminalPanel title="REQUEST_COMMITTED" accent="secondary">
             <div className="text-center py-6 space-y-2">
-              <div className="text-sm font-bold tracking-widest font-mono text-terminal-accent-secondary">
+              <div className="font-bold tracking-widest font-mono text-terminal-accent-secondary">
                 <LabelText text={t.request.committed} />
               </div>
-              <div className="text-xs font-mono text-terminal-muted">
+              <div className="font-mono text-terminal-muted">
                 <MetaText text={t.request.committedSub} />
               </div>
             </div>
@@ -311,7 +311,7 @@ function RequestAccessContent() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="text-xs font-mono text-terminal-accent-alert"
+                      className="font-mono text-terminal-accent-alert"
                     >
                       <LabelText text={`⚠ ERROR: ${error}`} />
                     </motion.div>
