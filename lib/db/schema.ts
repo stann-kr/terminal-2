@@ -45,7 +45,7 @@ export const accessRequests = sqliteTable("access_requests", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   instagram: text("instagram").notNull(),
-  invitedBy: text("invited_by").notNull(),
+  artistId: text("artist_id").references(() => artists.id),
   privacyConsent: integer("privacy_consent", { mode: "boolean" }).notNull(),
   marketingConsent: integer("marketing_consent", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull(),

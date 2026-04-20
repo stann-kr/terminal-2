@@ -32,12 +32,11 @@ export async function GET(request: Request) {
       .where(eq(artists.eventId, eventId))
       .all();
 
-    // data JSON 파싱 후 Artist 형태로 변환
-    const result = rows.map((row) => ({
-      id: row.id,
-      eventId: row.eventId,
-      ...JSON.parse(row.data),
-    }));
+    // data JSON 파싱 후 Artist 형태로 변환 (guestCode는 서버 전용 — 응답에서 제외)
+    const result = rows.map((row) => {
+      const { guestCode: _gc, ...artistData } = JSON.parse(row.data) as Record<string, unknown>;
+      return { id: row.id, eventId: row.eventId, ...artistData };
+    });
 
     return NextResponse.json(result);
   } catch (error) {

@@ -1,5 +1,31 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] feat: 게스트 신청 — DJ별 인증 코드 및 게스트 리밋 시스템 도입
+
+### 변경 개요
+
+#### 아키텍처 변경
+- 이벤트 단위 단일 `accessCode` → DJ(아티스트)별 개별 `guestCode` + `guestLimit`으로 교체
+- `invitedBy` 드롭다운 제거 — `artist_id`로 초대 경로 암묵 추적
+
+#### 수정 파일
+- `lib/db/schema.ts` — `accessRequests`: `invitedBy` 제거, `artistId` 추가
+- `lib/eventData.ts` — `TerminalEvent.accessCode` 제거, `Artist.guestLimit` 추가 (guestCode는 서버 전용)
+- `app/api/gate/request/route.ts` — 검증 로직 전면 교체: guestCode → artist 조회 → guestLimit 체크
+- `app/api/events/route.ts` + `app/api/artists/route.ts` — 응답에서 `guestCode` strip (보안)
+- `app/gate/request/page.tsx` — `invitedBy` 드롭다운, `otherInviter`, `/api/artists` fetch 전체 제거
+- `lib/i18n.ts` — invitedBy 번역 제거, `GUEST_LIMIT_REACHED` 에러 메시지 추가
+
+#### 신규 파일
+- `migrations/0006_dj_guest_codes.sql` — `invited_by` DROP, `artist_id` ADD
+
+### 핵심 효과
+- DJ가 각자의 고유 코드를 게스트에게 공유, 코드 하나로 인증 + 초대 경로 추적 동시 수행
+- guestLimit 설정 시 해당 아티스트 라인 게스트 수 초과 불가
+- guestCode는 클라이언트 응답에 포함되지 않아 외부 노출 차단
+
+---
+
 ## [2026-04-21] fix: transmit 로그 멀티라인 메시지 클리핑 수정
 
 ### 변경 개요

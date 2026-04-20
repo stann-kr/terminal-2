@@ -6,7 +6,6 @@ import PageLayout, { itemVariants } from '@/components/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import ReturnLink from '@/components/ui/ReturnLink';
 import TerminalPanel from '@/components/TerminalPanel';
-import TerminalButton from '@/components/TerminalButton';
 import SubmitButton from '@/components/SubmitButton';
 import { LabelText, MetaText, SubtitleText } from '@/components/ui/TerminalText';
 import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
@@ -19,7 +18,6 @@ interface FormState {
   name: string;
   email: string;
   instagram: string;
-  invitedBy: string;
   accessCode: string;
   privacyConsent: boolean;
   marketingConsent: boolean;
@@ -33,14 +31,11 @@ function RequestAccessContent() {
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [daysUntil, setDaysUntil] = useState(0);
-  const [artistNames, setArtistNames] = useState<string[]>([]);
-  const [otherInviter, setOtherInviter] = useState('');
 
   const [form, setForm] = useState<FormState>({
     name: '',
     email: '',
     instagram: '',
-    invitedBy: '',
     accessCode: searchParams.get('code') ?? '',
     privacyConsent: false,
     marketingConsent: false,
@@ -53,26 +48,20 @@ function RequestAccessContent() {
   useEffect(() => {
     fetch('/api/events?status=UPCOMING')
       .then(res => { if (!res.ok) throw new Error(); return res.json() as Promise<TerminalEvent[]>; })
-      .then(async data => {
+      .then(data => {
         if (data.length > 0) {
           const ev = data[0];
           setEvent(ev);
           const days = (new Date(ev.date).getTime() - Date.now()) / 86_400_000;
           setDaysUntil(Math.ceil(days));
           setIsActive(days >= 0 && days <= ACCESS_WINDOW_DAYS);
-
-          const artistRes = await fetch(`/api/artists?eventId=${ev.id}`);
-          if (artistRes.ok) {
-            const rows = await artistRes.json() as { name: string; status: string }[];
-            setArtistNames(rows.filter(a => a.status === 'CONFIRMED').map(a => a.name));
-          }
         }
       })
       .catch(() => setError(t.common.signalUnstable))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleChange = (field: keyof Omit<FormState, 'privacyConsent'>) =>
+  const handleChange = (field: keyof Omit<FormState, 'privacyConsent' | 'marketingConsent'>) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }));
 
@@ -81,27 +70,14 @@ function RequestAccessContent() {
     if (submittingRef.current) return;
     setError('');
 
-    if (!form.invitedBy) {
-      setError(t.request.errors.INVITER_REQUIRED);
-      return;
-    }
-    if (form.invitedBy === '__OTHER__' && !otherInviter.trim()) {
-      setError(t.request.errors.INVITER_REQUIRED);
-      return;
-    }
-
     submittingRef.current = true;
     setIsSubmitting(true);
-
-    const resolvedInvitedBy = form.invitedBy === '__OTHER__'
-      ? otherInviter.trim()
-      : form.invitedBy;
 
     try {
       const res = await fetch('/api/gate/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, invitedBy: resolvedInvitedBy }),
+        body: JSON.stringify(form),
       });
 
       const data = await res.json() as { ok?: boolean; error?: string };
@@ -245,35 +221,6 @@ function RequestAccessContent() {
                       className={`${inputClassBase} ${inputAccentClass.secondary} pl-6`}
                     />
                   </div>
-                </FormField>
-
-                {/* 초대인 */}
-                <FormField label={t.request.labelInvitedBy}>
-                  <div className="relative">
-                  <select
-                    value={form.invitedBy}
-                    onChange={e => setForm(prev => ({ ...prev, invitedBy: e.target.value }))}
-                    className={`${inputClassBase} ${inputAccentClass.secondary} appearance-none`}
-                  >
-                    <option value="">{t.request.selectInviter}</option>
-                    {artistNames.map(name => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
-                    <option value="__OTHER__">{t.request.optionOther}</option>
-                  </select>
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-terminal-accent-secondary/70 select-none">
-                    ▾
-                  </span>
-                  </div>
-                  {form.invitedBy === '__OTHER__' && (
-                    <input
-                      type="text"
-                      value={otherInviter}
-                      onChange={e => setOtherInviter(e.target.value)}
-                      placeholder={t.request.placeholderOtherInviter}
-                      className={`${inputClassBase} ${inputAccentClass.secondary} mt-2`}
-                    />
-                  )}
                 </FormField>
 
                 {/* 인증 코드 */}

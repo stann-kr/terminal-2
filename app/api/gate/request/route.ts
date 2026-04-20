@@ -1,9 +1,8 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
-import { accessRequests, events } from "@/lib/db/schema";
-import type { TerminalEvent } from "@/lib/eventData";
+import { accessRequests, artists, events } from "@/lib/db/schema";
 
 const MS_IN_DAY = 86_400_000;
 const ACCESS_WINDOW_DAYS = 30;
@@ -12,12 +11,12 @@ const ACCESS_WINDOW_DAYS = 30;
  * POST /api/gate/request
  * 게스트 액세스 신청을 저장함.
  *
- * @body name         - 신청자 이름
- * @body email        - 이메일 (이벤트 내 중복 불가)
- * @body instagram    - 인스타그램 아이디
- * @body invitedBy    - 초대인
- * @body accessCode   - 이벤트별 인증 코드
- * @body privacyConsent - 개인정보 수집 동의 (boolean)
+ * @body name             - 신청자 이름
+ * @body email            - 이메일 (이벤트 내 중복 불가)
+ * @body instagram        - 인스타그램 아이디
+ * @body accessCode       - DJ별 인증 코드 (artists.data.guestCode와 대조)
+ * @body privacyConsent   - 개인정보 수집 동의 (boolean)
+ * @body marketingConsent - 마케팅 수신 동의 (boolean, 선택)
  */
 export async function POST(request: Request) {
   try {
@@ -26,13 +25,12 @@ export async function POST(request: Request) {
     const name = (body?.name as string | undefined)?.trim() ?? "";
     const email = (body?.email as string | undefined)?.trim().toLowerCase() ?? "";
     const instagram = (body?.instagram as string | undefined)?.trim() ?? "";
-    const invitedBy = (body?.invitedBy as string | undefined)?.trim() ?? "";
     const accessCode = (body?.accessCode as string | undefined)?.trim() ?? "";
     const privacyConsent = Boolean(body?.privacyConsent);
     const marketingConsent = Boolean(body?.marketingConsent);
 
     // 1. 필수 필드 검증
-    if (!name || !email || !instagram || !invitedBy || !accessCode) {
+    if (!name || !email || !instagram || !accessCode) {
       return NextResponse.json({ error: "ALL_FIELDS_REQUIRED" }, { status: 400 });
     }
     if (!privacyConsent) {
@@ -56,7 +54,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "NO_UPCOMING_EVENT" }, { status: 404 });
     }
 
-    const eventData = JSON.parse(upcomingRow.data) as TerminalEvent;
+    const eventData = JSON.parse(upcomingRow.data) as { date: string; time: string };
     const eventDate = new Date(`${eventData.date}T00:00:00`);
     const daysUntil = (eventDate.getTime() - Date.now()) / MS_IN_DAY;
 
@@ -65,12 +63,42 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "REQUEST_PERIOD_INACTIVE" }, { status: 403 });
     }
 
-    // 4. 인증 코드 확인
-    if (!eventData.accessCode || accessCode !== eventData.accessCode) {
+    // 4. accessCode로 해당 이벤트의 아티스트 조회 (guestCode 매칭)
+    const artistRows = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.eventId, upcomingRow.id))
+      .all();
+
+    type ArtistData = { guestCode?: string; guestLimit?: number };
+    const matchedArtist = artistRows.find((a) => {
+      const data = JSON.parse(a.data) as ArtistData;
+      return data.guestCode && data.guestCode === accessCode;
+    });
+
+    if (!matchedArtist) {
       return NextResponse.json({ error: "INVALID_ACCESS_CODE" }, { status: 401 });
     }
 
-    // 5. 이메일 중복 확인 (동일 이벤트 내)
+    // 5. 게스트 리밋 확인
+    const artistData = JSON.parse(matchedArtist.data) as ArtistData;
+    if (artistData.guestLimit !== undefined) {
+      const [{ count: guestCount }] = await db
+        .select({ count: count() })
+        .from(accessRequests)
+        .where(
+          and(
+            eq(accessRequests.eventId, upcomingRow.id),
+            eq(accessRequests.artistId, matchedArtist.id)
+          )
+        );
+
+      if (guestCount >= artistData.guestLimit) {
+        return NextResponse.json({ error: "GUEST_LIMIT_REACHED" }, { status: 409 });
+      }
+    }
+
+    // 6. 이메일 중복 확인 (동일 이벤트 내)
     const existing = await db
       .select({ id: accessRequests.id })
       .from(accessRequests)
@@ -86,17 +114,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "EMAIL_ALREADY_REGISTERED" }, { status: 409 });
     }
 
-    // 6. DB INSERT
+    // 7. DB INSERT
     const id = `req-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const createdAt = new Date().toISOString();
 
     await db.insert(accessRequests).values({
       id,
       eventId: upcomingRow.id,
+      artistId: matchedArtist.id,
       name,
       email,
       instagram,
-      invitedBy,
       privacyConsent,
       marketingConsent,
       createdAt,

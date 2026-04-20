@@ -35,11 +35,10 @@ export async function GET(request: Request) {
     const result = eventRows
       .map((row) => {
         const eventData = JSON.parse(row.data) as Record<string, unknown>;
-        const eventArtists = (artistsByEventId[row.id] ?? []).map((a) => ({
-          id: a.id,
-          eventId: a.eventId,
-          ...JSON.parse(a.data as string),
-        }));
+        const eventArtists = (artistsByEventId[row.id] ?? []).map((a) => {
+          const { guestCode: _gc, ...artistData } = JSON.parse(a.data as string) as Record<string, unknown>;
+          return { id: a.id, eventId: a.eventId, ...artistData };
+        });
         return { id: row.id, ...eventData, artists: eventArtists } as unknown as Record<string, unknown> & { status: string };
       })
       .filter((ev) => (statusFilter ? ev.status === statusFilter : true));

@@ -19,6 +19,7 @@ export interface Artist {
   time: string;
   status: ArtistStatus;
   description?: ArtistDescription | string | string[];
+  guestLimit?: number;
 }
 
 export interface TerminalEvent {
@@ -34,7 +35,6 @@ export interface TerminalEvent {
   sound: string;
   status: EventStatus;
   artists: Artist[];
-  accessCode?: string;
   invitationLines?: {
     en: string[];
     ko: string[];
