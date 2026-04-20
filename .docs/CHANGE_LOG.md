@@ -1,5 +1,18 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] refactor: EventInfoPanel 소개글 — 줄 단위 decode 애니메이션으로 변경
+
+### 변경 개요
+
+#### 수정 파일
+- `app/gate/EventInfoPanel.tsx` — description 렌더링 방식 변경
+  - 기존: 단일 `SubtitleText`에 전체 텍스트 (`whitespace-pre-line`)
+  - 변경: `\n` 기준 줄 분리 → 각 줄 독립 `SubtitleText` + `delay` stagger
+  - About 매니페스토와 동일한 패턴 적용 (`DescriptionLines` 내부 컴포넌트)
+  - 빈 줄(`""`) → `h-3` spacer 렌더링
+
+---
+
 ## [2026-04-21] feat: About 매니페스토 내용 및 하이라이트 조건 업데이트
 
 ### 변경 개요

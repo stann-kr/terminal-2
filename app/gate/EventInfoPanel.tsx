@@ -9,6 +9,26 @@ interface Props {
   event: TerminalEvent;
 }
 
+function DescriptionLines({ text }: { text: string }) {
+  const lines = text.split('\n');
+  return (
+    <div className="space-y-0.5">
+      {lines.map((line, i) =>
+        line === '' ? (
+          <span key={i} className="block h-3" />
+        ) : (
+          <SubtitleText
+            key={i}
+            text={line}
+            delay={i * 40}
+            className="block text-terminal-subdued"
+          />
+        )
+      )}
+    </div>
+  );
+}
+
 export default function EventInfoPanel({ event }: Props) {
   const t = useT();
   const { lang } = useLang();
@@ -35,22 +55,12 @@ export default function EventInfoPanel({ event }: Props) {
           </div>
           {descText && (
             <div className="flex-1 font-mono">
-              <SubtitleText
-                autoHeight
-                text={descText}
-                className="text-terminal-subdued leading-relaxed whitespace-pre-line"
-              />
+              <DescriptionLines text={descText} />
             </div>
           )}
         </div>
       ) : (
-        descText && (
-          <SubtitleText
-            autoHeight
-            text={descText}
-            className="text-terminal-subdued leading-relaxed whitespace-pre-line"
-          />
-        )
+        descText && <DescriptionLines text={descText} />
       )}
     </TerminalPanel>
   );
