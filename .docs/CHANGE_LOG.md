@@ -1,5 +1,32 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] feat: Gate 페이지 — 이벤트 소개글 및 포스터 표시 기능 추가
+
+### 변경 개요
+
+#### 신규 파일
+- `app/gate/EventInfoPanel.tsx` — 이벤트 소개글 + 포스터 조건부 렌더링 컴포넌트
+
+#### 수정 파일
+- `lib/eventData.ts` — `TerminalEvent`에 `description?: { en; ko }`, `posterUrl?: string` 필드 추가
+- `components/ui/CountdownBlock.tsx` — `compact?: boolean` prop 추가 (Gate 전용 축소 모드)
+- `app/gate/EventDetail.tsx` — compact 카운트다운 적용, EventInfoPanel 삽입 (카운트다운 ↔ 위치 패널 사이)
+- `lib/i18n.ts` — `gate.eventInfoTitle` 키 추가 (`"EVENT_INFO.dec"`)
+
+### 렌더링 조건
+| 상태 | 표시 |
+|------|------|
+| `description`만 있음 | 소개글 full-width (TerminalPanel) |
+| `posterUrl` 있음 | 포스터(A4 비율) 좌 + 소개글 우 분할 레이아웃 |
+| 둘 다 없음 | EventInfoPanel 미렌더링 |
+
+### 데이터 관리
+- `events.data` JSON에 `description`, `posterUrl` 필드 추가로 제어 (스키마 마이그레이션 불필요)
+- 포스터는 Cloudflare R2 public URL 참조
+- 운영 가이드: `.docs/private/specs/event-info-panel.md`
+
+---
+
 ## [2026-04-21] feat: 게스트 신청 — 인증 코드 기반 초대인 자동 완성 및 폼 순서 개선
 
 ### 변경 개요

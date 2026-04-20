@@ -7,6 +7,8 @@ interface Props {
   targetDate: Date;
   /** 'primary' = home/gate primary 테마, 'secondary' = gate 카운트다운 테마 */
   accent?: 'primary' | 'secondary' | 'amber' | 'cyan';
+  /** 숫자 크기 및 패딩 축소 */
+  compact?: boolean;
 }
 
 interface TimeDelta {
@@ -72,7 +74,7 @@ const accentStyles: Record<string, AccentStyle> = {
   cyan: secondaryStyle,   // Legacy alias
 };
 
-export default function CountdownBlock({ targetDate, accent = 'primary' }: Props) {
+export default function CountdownBlock({ targetDate, accent = 'primary', compact = false }: Props) {
   const [delta, setDelta] = useState<TimeDelta>({ elapsed: false, d: 0, h: 0, m: 0, s: 0 });
 
   useEffect(() => {
@@ -90,6 +92,16 @@ export default function CountdownBlock({ targetDate, accent = 'primary' }: Props
 
   const s = accentStyles[accent] || accentStyles.primary;
 
+  const cellClass = compact
+    ? `text-center border py-2 bg-terminal-bg-overlay/50 ${s.border}`
+    : `${s.cellClass} ${s.border}`;
+  const valueSizeClass = compact
+    ? `text-xl sm:text-2xl font-bold font-mono flex items-center justify-center ${s.value}`
+    : `${s.valueSize} ${s.value}`;
+  const labelSizeClass = compact
+    ? `text-nano mt-1 tracking-wider font-mono ${s.label}`
+    : `${s.labelClass} ${s.label}`;
+
   return (
     <motion.div
       suppressHydrationWarning={true}
@@ -104,14 +116,14 @@ export default function CountdownBlock({ targetDate, accent = 'primary' }: Props
 
       <div className={s.wrapperClass}>
         {blocks.map((b) => (
-          <div key={b.label} className={`${s.cellClass} ${s.border}`}>
+          <div key={b.label} className={cellClass}>
             <div className={s.glow}>
               <DataText
                 text={b.val}
-                className={`${s.valueSize} ${s.value}`}
+                className={valueSizeClass}
               />
             </div>
-            <div className={`${s.labelClass} ${s.label}`}>
+            <div className={labelSizeClass}>
               <MetaText text={b.label} autoHeight />
             </div>
           </div>

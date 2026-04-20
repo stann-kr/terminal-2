@@ -62,6 +62,7 @@ export const gateKo = {
   locationWarning: "⚠ 세션 참가를 위한 상세 위치 및 게이트 정보입니다.",
   /** `◼ 세션 종료 — ${date}` */
   sessionArchived: (date: string) => `◼ 세션 종료 — ${date}`,
+  eventInfoTitle: "EVENT_INFO.dec",
 };
 
 // ─────────────────────────────────────────────
@@ -253,6 +254,7 @@ export const gateEn = {
   archivedLabel: "◼ ARCHIVED",
   locationWarning: "⚠ DETAILED LOCATION AND GATE INFORMATION FOR SESSION ENTRY.",
   sessionArchived: (date: string) => `◼ SESSION ARCHIVED — ${date}`,
+  eventInfoTitle: "EVENT_INFO.dec",
 };
 
 export const requestEn = {

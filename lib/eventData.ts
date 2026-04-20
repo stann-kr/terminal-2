@@ -39,6 +39,11 @@ export interface TerminalEvent {
     en: string[];
     ko: string[];
   };
+  description?: {
+    en: string;
+    ko: string;
+  };
+  posterUrl?: string;
 }
 
 export const EVENTS: TerminalEvent[] = [
@@ -54,6 +59,11 @@ export const EVENTS: TerminalEvent[] = [
     capacity: "CAPACITY: CLASSIFIED",
     sound: "KIRSCH AUDIO SYSTEM",
     status: "UPCOMING",
+    description: {
+      en: "A night where audio signals and data intersect in a station designed for total synchronization. High-density industrial textures, raw analog hardware, and precision digital processing collide in Seoul's most deliberately constructed techno environment.",
+      ko: "오디오 신호와 데이터가 교차하는 정거장, 완전한 동기화를 위해 설계된 밤. 하이 밀도의 인더스트리얼 텍스처, 원초적 아날로그 하드웨어, 정밀한 디지털 프로세싱이 서울에서 가장 의도적으로 구축된 테크노 환경에서 충돌한다.",
+    },
+    // posterUrl: "https://your-r2-bucket.r2.dev/trm-02-poster.jpg",
     artists: [
       {
         id: "02-A",

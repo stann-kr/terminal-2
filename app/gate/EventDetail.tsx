@@ -2,6 +2,7 @@
 import TerminalPanel from '@/components/TerminalPanel';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
 import CountdownBlock from '@/components/ui/CountdownBlock';
+import EventInfoPanel from './EventInfoPanel';
 import { LabelText, SubtitleText, MetaText } from '@/components/ui/TerminalText';
 import { useT } from '@/lib/langContext';
 import type { TerminalEvent } from '@/lib/eventData';
@@ -34,10 +35,12 @@ export default function EventDetail({ event, showCountdown = false }: Props) {
   return (
     <div className="space-y-4">
       <AnimatedHeight show={showCountdown}>
-        <div className="mb-4 border py-6 px-4 border-terminal-accent-primary/20 bg-terminal-bg-panel">
-          <CountdownBlock targetDate={eventDate} accent="primary" />
+        <div className="mb-4 border py-4 px-4 border-terminal-accent-primary/20 bg-terminal-bg-panel">
+          <CountdownBlock targetDate={eventDate} accent="primary" compact />
         </div>
       </AnimatedHeight>
+
+      <EventInfoPanel event={event} />
 
       {event.status === 'ARCHIVED' && (
         <div className="px-3 py-2 border tracking-widest font-mono border-terminal-accent-alert/30 text-terminal-accent-alert bg-terminal-accent-alert/5">
