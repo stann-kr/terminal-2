@@ -109,9 +109,10 @@ export default function StatusPage() {
                         <span className="font-bold text-terminal-primary">
                           <LabelText text={event.id} delay={i * 30} autoHeight />
                         </span>
-                        <span className={`tracking-wider shrink-0 ${colorClass}`}>
-                          {isPulsing && <span className="status-pulse mr-1">●</span>}
-                          <LabelText text={`${symbol} ${event.status}`} className="inline" delay={i * 30} autoHeight />
+                        <span className={`tracking-wider shrink-0 flex items-center gap-1 ${colorClass}`}>
+                          {isPulsing && <span className="status-pulse flex-shrink-0">●</span>}
+                          {!isPulsing && <span className="flex-shrink-0">{symbol}</span>}
+                          <LabelText text={event.status} className="inline" delay={i * 30} autoHeight />
                         </span>
                       </div>
                       <div className="text-terminal-accent-secondary">
