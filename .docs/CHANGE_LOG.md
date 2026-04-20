@@ -1,5 +1,19 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] feat: About 매니페스토 내용 및 하이라이트 조건 업데이트
+
+### 변경 개요
+
+#### 수정 파일
+- `lib/i18n.ts` — `manifestoKo` / `manifestoEn` 전면 개정
+  - 태그라인 `A Voyage to the Unknown Sector.` 추가
+  - `[ DEFINITION ]` 섹션 신규 추가
+  - 줄 단위 호흡 구분 반영 (빈 줄 삽입)
+- `app/about/page.tsx` — 하이라이트 조건 변경
+  - 기존: `startsWith('TERMINAL')` → 변경: 타이틀(`=== 'TERMINAL'`) · 섹션 헤더(`startsWith('[ ')`) · 서명(`startsWith('Terminal Architect')`)만 primary 색상 적용
+
+---
+
 ## [2026-04-21] feat: Gate 페이지 — 이벤트 소개글 및 포스터 표시 기능 추가
 
 ### 변경 개요
