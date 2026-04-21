@@ -1,5 +1,57 @@
 # 변경 이력 (Change Log)
 
+## [2026-04-21] fix: Lineup STATUS 컬럼 줄바꿈 및 컬럼 비율 조정
+
+### 변경 개요
+
+데스크탑 테이블에서 STATUS 컬럼이 좁아 "CONFIRMED [-]" 표시 시 줄바꿈 발생하여 행 높이가 증가하는 문제 수정 및 컬럼 비율 재조정.
+
+#### 원인
+- STATUS `col-span-2`(16.67%) + `tracking-wider` 조합으로 "CONFIRMED" 텍스트 + "[-]" 토글이 한 줄에 미수용
+- `flex justify-between` 레이아웃에서 공간 부족 시 줄바꿈 발생
+
+#### 수정 파일
+- `app/lineup/ArtistRow.tsx`
+  - STATUS span: `col-span-2 → col-span-3`, `whitespace-nowrap` 추가
+  - DOCK span: `col-span-3 → col-span-2` (공간 재배분)
+- `app/lineup/page.tsx`
+  - 헤더 DOCK: `col-span-3 → col-span-2`
+  - 헤더 STATUS: `col-span-2 → col-span-3`
+
+#### 컬럼 비율 변경 (합계 12 유지)
+| 컬럼 | 변경 전 | 변경 후 |
+|---|---|---|
+| DOCK | col-span-3 | col-span-2 |
+| STATUS | col-span-2 | col-span-3 |
+
+---
+
+## [2026-04-21] fix: About 페이지 본문 텍스트 가시성 개선
+
+### 변경 개요
+
+About 페이지 본문 일반 텍스트 색상이 너무 어두워 가독성 저하 문제 해소.
+
+#### 수정 파일
+- `app/about/page.tsx` — 일반 텍스트: `text-terminal-subdued` → `text-terminal-primary/75`
+
+---
+
+## [2026-04-21] fix: 404 페이지 ReturnLink 가시성 개선
+
+### 변경 개요
+
+404(not-found) 페이지의 "◀ RETURN /home" 링크 버튼 스타일 개선.
+
+#### 수정 파일
+- `app/not-found.tsx`
+  - 텍스트 색: `text-terminal-subdued` → `text-terminal-primary`
+  - 보더 불투명도: `/40` → `/60`
+  - `font-mono` 추가
+  - 호버 효과: `hover:text-shadow-glow-primary` 추가
+
+---
+
 ## [2026-04-21] fix: Status 모바일 상태 아이콘 중복 표시 수정
 
 ### 변경 개요

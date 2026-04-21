@@ -113,9 +113,9 @@ export default function LineupPage() {
                       <span className="col-span-1"><MetaText text="ID" /></span>
                       <span className="col-span-3"><MetaText text={t.lineup.colArtist} /></span>
                       <span className="col-span-1"><MetaText text="ORG" /></span>
-                      <span className="col-span-3"><MetaText text="DOCK" /></span>
+                      <span className="col-span-2"><MetaText text="DOCK" /></span>
                       <span className="col-span-2"><MetaText text={t.lineup.colTimeslot} /></span>
-                      <span className={`col-span-2`}><MetaText text={t.lineup.colStatus} /></span>
+                      <span className="col-span-3"><MetaText text={t.lineup.colStatus} /></span>
                     </div>
                   </div>
 

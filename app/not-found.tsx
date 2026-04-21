@@ -13,7 +13,7 @@ export default function NotFound() {
         <div className="mb-6">
           <a
             href="/home"
-            className="text-caption tracking-widest cursor-pointer inline-block px-3 py-1.5 border transition-colors whitespace-nowrap border-terminal-bg-panel-border/40 text-terminal-subdued hover:bg-terminal-bg-panel-border/20"
+            className="text-caption tracking-widest cursor-pointer inline-block px-3 py-1.5 border transition-colors whitespace-nowrap border-terminal-bg-panel-border/60 text-terminal-primary font-mono hover:bg-terminal-bg-panel-border/20 hover:text-shadow-glow-primary"
           >
             ◀ RETURN /home
           </a>

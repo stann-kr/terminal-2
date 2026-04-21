@@ -93,9 +93,9 @@ export default function ArtistRow({ artist: a }: Props) {
             <SubtitleText text={a.name} />
           </span>
           <span className="col-span-1 font-mono text-terminal-subdued"><MetaText text={a.origin} /></span>
-          <span className="col-span-3 font-mono text-terminal-subdued"><MetaText text={t.lineup.dock(a.dock)} /></span>
+          <span className="col-span-2 font-mono text-terminal-subdued"><MetaText text={t.lineup.dock(a.dock)} /></span>
           <span className="col-span-2 font-mono text-terminal-accent-warn"><MetaText text={a.time} /></span>
-          <span className={`col-span-2 font-bold tracking-wider font-mono flex items-center justify-between ${statusColorClass}`}>
+          <span className={`col-span-3 font-bold tracking-wider font-mono flex items-center justify-between whitespace-nowrap ${statusColorClass}`}>
             <span className="flex items-center">
               <span className="status-pulse mr-1">●</span>
               <LabelText text={a.status} className="inline" />

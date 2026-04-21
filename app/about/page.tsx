@@ -43,7 +43,7 @@ export default function AboutPage() {
                         line.startsWith('[ ') ||
                         line.startsWith('Terminal Architect')
                           ? 'text-terminal-primary'
-                          : 'text-terminal-subdued'
+                          : 'text-terminal-primary/75'
                       }`}
                     />
                   )}
