@@ -47,3 +47,6 @@ build_log.txt
 .docs/private/
 # git worktrees
 .worktrees/
+
+# seed data
+migrations/seed_*.sql

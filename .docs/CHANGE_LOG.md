@@ -6,14 +6,10 @@
 
 TRM-02 라인업 확정 데이터 DB 반영, 보안 취약점 수정, 게스트 신청 폼 UX 개선.
 
-#### TRM-02 라인업 등록 (`migrations/seed_lineup_trm02.sql`)
+#### TRM-02 라인업 등록
 - DOCK 1: DEXTUNE (23:00–01:00), STANN LUMO (01:00–03:00), LUCII (03:00–05:00)
 - DOCK 2: CUPRUM (00:00–02:00), FOI (02:00–04:00)
-- DJ별 한/영 바이오 등록
-
-#### DJ 게스트 코드 설정 (`migrations/seed_guest_codes_trm02.sql`)
-- DJ별 guestCode 및 guestLimit(10명) D1 적용
-- STANN LUMO guestLimit 미설정 (제한 없음)
+- DJ별 한/영 바이오 데이터 정비
 
 #### 보안 수정 (`app/api/gate/request/route.ts`, `app/api/gate/code-info/route.ts`)
 - guestLimit TOCTOU 레이스 컨디션 수정: 낙관적 삽입 패턴 적용 (INSERT 후 COUNT 재검증 → 초과 시 DELETE)
@@ -28,6 +24,11 @@ TRM-02 라인업 확정 데이터 DB 반영, 보안 취약점 수정, 게스트 
 - 동의 항목과 초대인 섹션 사이 구분선 추가
 - 폼 순서 변경: 인증 코드 → 이름 → 이메일 → 인스타그램 → 초대인 → 동의
 - i18n 신규 키 추가: `invitedByOther`, `invitedByOtherPlaceholder`, `INVALID_INPUT`, `INVALID_INSTAGRAM_FORMAT`
+
+#### 보안 및 저장소 정제 (Security Cleanup)
+- **민감 데이터 제거**: 실수로 포함된 게스트 코드 및 아티스트 시드 파일(`migrations/seed_*.sql`)을 Git 히스토리 전체에서 완전히 삭제 (`git filter-branch` 및 `gc` 수행)
+- **추적 방지**: `.gitignore`에 `migrations/seed_*.sql` 패턴을 추가하여 향후 시드 파일이 리포지토리에 포함되는 것을 원천 차단
+- **TOCTOU 레이스 컨디션 수정**: guestLimit 검증 로직 강화 (`app/api/gate/request/route.ts`)
 
 ---
 
