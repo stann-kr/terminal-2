@@ -1,7 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 interface ConsentBlockProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function ConsentBlock({ children }: ConsentBlockProps) {
