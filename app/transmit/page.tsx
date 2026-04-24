@@ -15,6 +15,11 @@ import { getNodeId, setNodeId } from '@/lib/nodeId';
 import { useT } from '@/lib/langContext';
 import { fetchTransmitLogs, postTransmitLog, transmitKeys } from '@/lib/queries/transmit';
 
+function formatLocalTime(isoStr: string): string {
+  const d = new Date(isoStr);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} / ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 export default function TransmitPage() {
   const t = useT();
   const queryClient = useQueryClient();
@@ -160,7 +165,7 @@ export default function TransmitPage() {
                             <SubtitleText autoHeight text={entry.handle} />
                           </span>
                           <span className="font-mono text-terminal-muted/50 shrink-0">
-                            <MetaText autoHeight text={entry.ts} />
+                            <MetaText autoHeight text={formatLocalTime(entry.createdAt)} />
                           </span>
                         </div>
                         <div className="font-mono whitespace-pre-wrap break-words">

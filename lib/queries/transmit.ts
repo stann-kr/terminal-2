@@ -3,7 +3,7 @@ export interface LogEntry {
   handle: string
   message: string
   ts: string
-  createdAt?: string
+  createdAt: string
   deviceId?: string | null
 }
 
