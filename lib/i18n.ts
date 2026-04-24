@@ -121,9 +121,9 @@ export const requestKo = {
   placeholderInstagram: "@사용자명",
   // 개인정보 동의
   privacyConsent:
-    "이벤트 게스트 관리 목적으로 개인정보(이름, 이메일, 인스타그램 ID)를 수집·이용하는 것에 동의합니다. (보유 기간: 이벤트 종료 후 1개월 / 제3자 미공유)",
+    "이름·이메일·인스타그램 ID를 게스트 접근 관리 목적으로 수집합니다. 보존 기간: 이벤트 종료 후 1개월. 제3자 미공개.",
   marketingConsent:
-    "[선택] 향후 이벤트 공지 및 안내를 이메일·인스타그램 DM으로 수신하는 것에 동의합니다. (보유 기간: 수신 거부 시까지)",
+    "[선택] 차기 이벤트 신호를 이메일·인스타그램 채널로 수신합니다. 보존 기간: 수신 거부 시까지.",
   // 버튼
   submitting: "▸ 전송 중...",
   submitBtn: "▶ 신청 제출",
@@ -227,7 +227,7 @@ export const signalKo = {
   labelInstagram: "인스타그램 ID:",
   placeholderEmail: "이메일@주소.COM",
   consentLabel:
-    "이메일·인스타그램 계정을 TERMINAL 이벤트 소식 발송 목적으로 수집·이용하는 것에 동의합니다. (보유 기간: 구독 해지 시까지)",
+    "이메일·인스타그램 계정을 TERMINAL 이벤트 신호 발신 목적으로 수집합니다. 보존 기간: 채널 해지 시까지.",
   submitting: "▸ 채널 등록 중...",
   submitBtn: "▶ 채널 등록",
   committed: "✓ 채널 등록 완료",
@@ -363,9 +363,9 @@ export const requestEn = {
   placeholderEmail: "EMAIL@ADDRESS.COM",
   placeholderInstagram: "@USERNAME",
   privacyConsent:
-    "I consent to the collection and use of personal information (name, email, Instagram ID) for event guest management. (Retention: 1 month after event / Not shared with third parties)",
+    "Name, email, and Instagram ID will be collected for guest access management. Retention: 1 month after event. Not disclosed to third parties.",
   marketingConsent:
-    "[OPTIONAL] I consent to receive future event announcements via email or Instagram DM. (Retention: until unsubscribed)",
+    "[OPTIONAL] Subscribe to receive future event signals via email or Instagram DM. Retention: until unsubscribed.",
   submitting: "▸ TRANSMITTING...",
   submitBtn: "▶ SUBMIT REQUEST",
   // invitedBy options
@@ -449,7 +449,7 @@ export const signalEn = {
   labelInstagram: "INSTAGRAM ID:",
   placeholderEmail: "EMAIL@ADDRESS.COM",
   consentLabel:
-    "I consent to the collection and use of my email and Instagram account for sending TERMINAL event updates. (Retention: until unsubscribed)",
+    "Email and Instagram account will be collected for TERMINAL event signal transmission only. Retention: until channel is closed.",
   submitting: "▸ REGISTERING CHANNEL...",
   submitBtn: "▶ REGISTER CHANNEL",
   committed: "✓ CHANNEL REGISTERED",
