@@ -6,7 +6,7 @@ interface ConsentCheckboxProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
-  badge?: '필수' | '선택';
+  badge?: string;
   disabled?: boolean;
   accent?: 'primary' | 'secondary' | 'alert' | 'warn';
 }

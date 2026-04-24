@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { signal } from "@/lib/db/schema";
+import { generateId } from "@/lib/utils/id";
 
 export async function POST(request: Request) {
   try {
@@ -42,14 +43,14 @@ export async function POST(request: Request) {
     }
 
     // 3. DB INSERT
-    const id = `sig-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const id = generateId('sig');
     const createdAt = new Date().toISOString();
 
     await db.insert(signal).values({
       id,
       name: null,
       email,
-      instagram: instagram,
+      instagram,
       source: 'signal',
       createdAt,
     });
