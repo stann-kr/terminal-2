@@ -380,14 +380,12 @@ function RequestAccessContent() {
                         checked={form.privacyConsent}
                         onChange={checked => setForm(prev => ({ ...prev, privacyConsent: checked }))}
                         label={t.request.privacyConsent}
-                        badge="필수"
                         disabled={!codeVerified}
                       />
                       <ConsentCheckbox
                         checked={form.marketingConsent}
                         onChange={checked => setForm(prev => ({ ...prev, marketingConsent: checked }))}
                         label={t.request.marketingConsent}
-                        badge="선택"
                         disabled={!codeVerified}
                       />
                     </ConsentBlock>
