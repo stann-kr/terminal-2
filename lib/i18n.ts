@@ -220,18 +220,18 @@ export const transmitKo = {
 
 export const signalKo = {
   description: [
-    "TERMINAL 이벤트 소식을 가장 먼저 받아보세요.",
-    "이메일 또는 인스타그램 DM으로 안내드립니다.",
+    "TERMINAL 이벤트 신호 수신을 위한 채널을 등록합니다.",
+    "신호는 등록된 이메일 또는 인스타그램 채널로 발신됩니다.",
   ],
   labelEmail: "이메일:",
   labelInstagram: "인스타그램 ID:",
   placeholderEmail: "이메일@주소.COM",
   consentLabel:
     "이메일·인스타그램 계정을 TERMINAL 이벤트 소식 발송 목적으로 수집·이용하는 것에 동의합니다. (보유 기간: 구독 해지 시까지)",
-  submitting: "▸ 전송 중...",
-  submitBtn: "▶ 구독 신청",
-  committed: "✓ 구독 완료",
-  committedSub: "소식을 보내드릴 때 찾아가겠습니다.",
+  submitting: "▸ 채널 등록 중...",
+  submitBtn: "▶ 채널 등록",
+  committed: "✓ 채널 등록 완료",
+  committedSub: "신호 발신 시 등록된 채널로 전송됩니다.",
   errors: {
     CONSENT_REQUIRED: "동의가 필요합니다.",
     INVALID_EMAIL_FORMAT: "이메일 형식이 올바르지 않습니다.",
@@ -442,18 +442,18 @@ export const transmitEn = {
 
 export const signalEn = {
   description: [
-    "BE THE FIRST TO HEAR ABOUT TERMINAL EVENTS.",
-    "WE'LL REACH YOU VIA EMAIL OR INSTAGRAM DM.",
+    "REGISTER YOUR RECEPTION CHANNEL FOR TERMINAL EVENT SIGNALS.",
+    "SIGNALS WILL BE TRANSMITTED TO YOUR REGISTERED EMAIL OR INSTAGRAM CHANNEL.",
   ],
   labelEmail: "EMAIL:",
   labelInstagram: "INSTAGRAM ID:",
   placeholderEmail: "EMAIL@ADDRESS.COM",
   consentLabel:
     "I consent to the collection and use of my email and Instagram account for sending TERMINAL event updates. (Retention: until unsubscribed)",
-  submitting: "▸ TRANSMITTING...",
-  submitBtn: "▶ SUBSCRIBE",
-  committed: "✓ SUBSCRIBED",
-  committedSub: "We'll reach you when the signal goes out.",
+  submitting: "▸ REGISTERING CHANNEL...",
+  submitBtn: "▶ REGISTER CHANNEL",
+  committed: "✓ CHANNEL REGISTERED",
+  committedSub: "SIGNAL WILL BE ROUTED TO YOUR CHANNEL ON NEXT TRANSMISSION.",
   errors: {
     CONSENT_REQUIRED: "CONSENT IS REQUIRED.",
     INVALID_EMAIL_FORMAT: "INVALID EMAIL FORMAT.",
