@@ -52,7 +52,7 @@ export default function ConsentCheckbox({
   const cls = accentClasses[accent];
 
   return (
-    <label className="flex items-start gap-3 cursor-pointer group">
+    <label className={`flex items-start gap-3 group ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
       <div className="relative mt-0.5 shrink-0">
         <input
           type="checkbox"

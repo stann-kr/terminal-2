@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       id,
       name: null,
       email,
-      instagram: cleanInstagram,
+      instagram: instagram,
       source: 'signal',
       createdAt,
     });

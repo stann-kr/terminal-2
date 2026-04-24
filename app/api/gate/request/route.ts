@@ -131,7 +131,7 @@ export async function POST(request: Request) {
         id: signalId,
         name,
         email,
-        instagram: cleanInstagram,
+        instagram: instagram,
         source: 'gate',
         createdAt,
       }).onConflictDoNothing();

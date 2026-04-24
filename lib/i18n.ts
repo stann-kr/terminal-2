@@ -233,6 +233,7 @@ export const signalKo = {
   committed: "✓ 채널 등록 완료",
   committedSub: "신호 발신 시 등록된 채널로 전송됩니다.",
   errors: {
+    ALL_FIELDS_REQUIRED: "이메일과 인스타그램을 입력해주세요.",
     CONSENT_REQUIRED: "동의가 필요합니다.",
     INVALID_EMAIL_FORMAT: "이메일 형식이 올바르지 않습니다.",
     INVALID_INSTAGRAM_FORMAT: "인스타그램 형식이 올바르지 않습니다.",
@@ -455,6 +456,7 @@ export const signalEn = {
   committed: "✓ CHANNEL REGISTERED",
   committedSub: "SIGNAL WILL BE ROUTED TO YOUR CHANNEL ON NEXT TRANSMISSION.",
   errors: {
+    ALL_FIELDS_REQUIRED: "EMAIL AND INSTAGRAM ARE REQUIRED.",
     CONSENT_REQUIRED: "CONSENT IS REQUIRED.",
     INVALID_EMAIL_FORMAT: "INVALID EMAIL FORMAT.",
     INVALID_INSTAGRAM_FORMAT: "INVALID INSTAGRAM FORMAT.",
