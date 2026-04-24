@@ -83,6 +83,8 @@ const DecodeText = memo(function DecodeText({
 
   // scrambleOnUpdate=false: 초기 애니메이션 완료 후 settled 상태
   const animationSettledRef = useRef(false);
+  // 최초 decode 애니메이션 완료 여부 — 완료 후 height 고정 해제
+  const animationCompleteRef = useRef(false);
   // scrambleOnUpdate=false: use-scramble에 전달하는 텍스트를 초기값으로 고정 → 텍스트 변경 시 재스크램블 방지
   const frozenTextRef = useRef(text);
 
@@ -111,6 +113,12 @@ const DecodeText = memo(function DecodeText({
         if (measureRef.current) {
           measureRef.current.textContent = text;
         }
+      }
+      // height 고정 해제: canvas 측정 오차로 인한 클리핑 방지
+      // 애니메이션 중 jitter 방지 목적은 완료됐으므로 브라우저 실제 높이로 전환
+      if (!autoHeight && containerRef.current) {
+        animationCompleteRef.current = true;
+        containerRef.current.style.height = 'auto';
       }
       onComplete?.();
     },
@@ -225,7 +233,11 @@ const DecodeText = memo(function DecodeText({
 
       const { height } = layout(preparedRef.current, width, activeLineHeight);
       const newHeight = `${Math.ceil(height)}px`;
-      if (container.style.height !== newHeight) container.style.height = newHeight;
+      // 애니메이션 완료 전: height 고정으로 jitter 방지
+      // 애니메이션 완료 후: height는 auto(브라우저 결정) 유지, minHeight만 갱신
+      if (!animationCompleteRef.current) {
+        if (container.style.height !== newHeight) container.style.height = newHeight;
+      }
       if (container.style.minHeight !== newHeight) container.style.minHeight = newHeight;
     };
 
