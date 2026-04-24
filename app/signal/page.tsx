@@ -37,12 +37,6 @@ export default function SignalPage() {
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm(prev => ({ ...prev, [field]: e.target.value }));
 
-  /**
-   * 구독 폼 제출 핸들러
-   * - POST /api/signal
-   * - 성공: submitted 상태로 전환
-   * - 실패: 에러 키 매핑 또는 fallback
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submittingRef.current || !form.consent) return;
