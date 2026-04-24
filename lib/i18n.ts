@@ -65,7 +65,7 @@ export const commonKo = {
 export const homeKo = {
   nextEntry: "다음 발사 —",
   rootDir: "▶ 루트 디렉토리 — /terminal/",
-  moduleCount: "6 모듈",
+  moduleCount: "7 모듈",
 };
 
 // ─────────────────────────────────────────────
@@ -321,7 +321,7 @@ export const commonEn = {
 export const homeEn = {
   nextEntry: "NEXT LAUNCH —",
   rootDir: "▶ ROOT DIRECTORY — /terminal/",
-  moduleCount: "6 MODULES",
+  moduleCount: "7 MODULES",
 };
 
 export const gateEn = {
