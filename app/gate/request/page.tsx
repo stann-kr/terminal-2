@@ -223,7 +223,8 @@ function RequestAccessContent() {
                       <SubtitleText
                         text={line}
                         delay={i * 40}
-                        style={isSeparator ? { whiteSpace: 'nowrap' } : undefined}
+                        autoHeight={isSeparator}
+                        style={isSeparator ? { whiteSpace: 'nowrap', overflow: 'hidden', display: 'block' } : undefined}
                       />
                     </div>
                   );
