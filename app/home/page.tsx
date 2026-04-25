@@ -66,7 +66,7 @@ export default function HomePage() {
       <div className="mb-6 text-center">
         <motion.div
           variants={itemVariants}
-          className="flex font-mono text-pico tracking-widest mb-1 sm:mb-3 text-terminal-muted overflow-hidden"
+          className="flex font-mono text-pico tracking-widest mb-1 sm:mb-3 text-terminal-muted overflow-hidden px-6 sm:px-10 md:px-16"
         >
           <span>╔</span>
           <span className="flex-1 overflow-hidden whitespace-nowrap select-none">{'═'.repeat(60)}</span>
@@ -95,7 +95,7 @@ export default function HomePage() {
 
         <motion.div
           variants={itemVariants}
-          className="flex font-mono text-pico tracking-widest mt-1 sm:mt-3 text-terminal-muted overflow-hidden"
+          className="flex font-mono text-pico tracking-widest mt-1 sm:mt-3 text-terminal-muted overflow-hidden px-6 sm:px-10 md:px-16"
         >
           <span>╚</span>
           <span className="flex-1 overflow-hidden whitespace-nowrap select-none">{'═'.repeat(60)}</span>
