@@ -216,7 +216,8 @@ function RequestAccessContent() {
             <TerminalPanel title="INVITATION_BRIEF" accent="secondary">
               <div className="space-y-1.5">
                 {invitationLines.map((line, i) => {
-                  const isSeparator = /^[\s=\-─═╔╗╚╝╠╣╦╩╬]+$/.test(line);
+                  // 알파벳·한글·숫자가 없는 줄 = 순수 구분선 → nowrap + clip 처리
+                  const isSeparator = line.trim().length > 0 && !/[a-zA-Z가-힣ㄱ-ㆎ\d]/.test(line);
                   return (
                     <div key={i} className={`font-mono text-terminal-subdued tracking-wide${isSeparator ? ' overflow-hidden' : ''}`}>
                       <SubtitleText
