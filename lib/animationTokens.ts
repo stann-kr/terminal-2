@@ -1,7 +1,7 @@
 import type { Variants } from "framer-motion";
 
 // ─── Motion Variants ─────────────────────────────────────────────────────────
-// 페이지 레이아웃 waterfall 진입 애니메이션
+// 콘텐츠는 즉시 표시하며 route별 소비자의 variants 계약을 유지한다.
 // (`components/shell/PageLayout.tsx`에서 route 사용 편의를 위해 re-export)
 
 export const containerVariants: Variants = {
@@ -23,7 +23,7 @@ export const itemVariants: Variants = {
 
 export const decode = {
   /** 메인 히어로 제목 — TERMINAL 타이틀 등 */
-  title: { speed: 0.7, scramble: 10, animateTextLength: true },
+  title: { speed: 0.9, scramble: 3, step: 2 },
   /** 페이지/섹션 제목 — PageHeader, 이벤트명 등 */
   heading: { speed: 0.65, scramble: 8, animateTextLength: true },
   /** 부제목/설명 — 이벤트 부제, 설명 텍스트 */

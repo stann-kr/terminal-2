@@ -46,14 +46,23 @@ const DecodeText = memo(function DecodeText({
   playOnMount = true,
   autoHeight = false,
 }: DecodeTextProps) {
-  const { allowMotion } = useMotionPolicy();
+  const { isReady, allowMotion } = useMotionPolicy();
   const [completedDelay, setCompletedDelay] = useState(0);
+  const [completedText, setCompletedText] = useState<string | null>(null);
   const nodeRef = useRef<HTMLElement | null>(null);
-  const completedWithoutMotionRef = useRef(false);
+  const playbackRef = useRef({ text, started: false, completed: false });
   const delayElapsed = delay <= 0 || completedDelay === delay;
-  const motionEnabled = allowMotion && delayElapsed && playOnMount;
+  const motionEnabled = allowMotion && delayElapsed && playOnMount && completedText !== text;
 
-  const { ref: scrambleRef } = useScramble({
+  const complete = useCallback(() => {
+    const playback = playbackRef.current;
+    if (playback.text !== text || !playback.started || playback.completed) return;
+    playback.completed = true;
+    setCompletedText(text);
+    onComplete?.();
+  }, [onComplete, text]);
+
+  const { ref: scrambleRef, replay } = useScramble({
     text,
     speed: motionEnabled ? speed : 0,
     scramble,
@@ -62,9 +71,12 @@ const DecodeText = memo(function DecodeText({
     overdrive: false,
     overflow: true,
     playOnMount: false,
-    onAnimationEnd: onComplete,
+    onAnimationEnd: complete,
   });
   const scrambleNodeRef = scrambleRef as { current: HTMLElement | null };
+  const replayRef = useRef(replay);
+
+  useEffect(() => { replayRef.current = replay; });
 
   useEffect(() => {
     if (delay <= 0) return;
@@ -73,17 +85,29 @@ const DecodeText = memo(function DecodeText({
   }, [delay]);
 
   useEffect(() => {
-    if (motionEnabled) {
-      completedWithoutMotionRef.current = false;
+    if (playbackRef.current.text !== text) {
+      playbackRef.current = { text, started: false, completed: false };
+    }
+    if (!isReady) return;
+
+    if (!allowMotion || !playOnMount || completedText === text) {
+      if (nodeRef.current) nodeRef.current.textContent = text;
+      playbackRef.current.started = true;
+      // Freeze the external animation before another frame can overwrite the final text.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      complete();
       return;
     }
 
-    if (nodeRef.current) nodeRef.current.textContent = text;
-    if (!completedWithoutMotionRef.current) {
-      completedWithoutMotionRef.current = true;
-      onComplete?.();
+    if (!delayElapsed) return;
+
+    // use-scramble mounts in its final state for SSR. Start explicitly once
+    // policy is ready; returning to a visible tab must not replay the title.
+    if (!playbackRef.current.started) {
+      playbackRef.current.started = true;
+      replayRef.current();
     }
-  }, [motionEnabled, onComplete, text]);
+  }, [allowMotion, complete, completedText, delayElapsed, isReady, playOnMount, text]);
 
   const setTagRef = useCallback((node: HTMLElement | null) => {
     nodeRef.current = node;

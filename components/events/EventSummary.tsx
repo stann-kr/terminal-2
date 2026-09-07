@@ -14,16 +14,24 @@ export default function EventSummary({ event, children }: { event: TerminalEvent
   return (
     <section className={`${styles.summary} ${event.posterUrl ? styles.withPoster : ''}`} aria-labelledby="event-title">
       <div className={styles.information}>
-        <p className="text-small text-terminal-subdued mb-4">{status}</p>
+        <p className={styles.status}><span aria-hidden="true">[{event.status}]</span> {status}</p>
         <h1 id="event-title" className={styles.title}>{event.session}</h1>
-        {event.subtitle && <p className="text-heading mt-3">{event.subtitle}</p>}
-        <p className="mt-6 font-mono text-small">{formatEventDate(event, lang === 'ko' ? 'ko-KR' : 'en-US')} · {event.time}</p>
-        <p className="text-body mt-1">{event.venue}{event.district ? ` · ${event.district}` : ''}</p>
-        <div className="mt-7 flex flex-wrap items-center gap-3">{children}</div>
-        {event.description?.[lang] && <p className="mt-8 text-body text-terminal-subdued whitespace-pre-wrap max-w-prose">{event.description[lang]}</p>}
+        {event.subtitle && <p className={styles.subtitle}>{event.subtitle}</p>}
+        <dl className={styles.metadata}>
+          <div>
+            <dt>{lang === 'ko' ? '일시' : 'Date'}</dt>
+            <dd><time dateTime={event.date}>{formatEventDate(event, lang === 'ko' ? 'ko-KR' : 'en-US')}</time><span className={styles.time}>{event.time.replace(/ KST$/, '')} KST</span></dd>
+          </div>
+          <div>
+            <dt>{lang === 'ko' ? '장소' : 'Venue'}</dt>
+            <dd>{event.venue}{event.district && <span className={styles.district}> / {event.district}</span>}</dd>
+          </div>
+        </dl>
+        <div className={styles.actions}>{children}</div>
+        {event.description?.[lang] && <p className={styles.description}>{event.description[lang]}</p>}
       </div>
       {event.posterUrl && (
-        <Image src={event.posterUrl} alt={`${event.session} ${lang === 'ko' ? '포스터' : 'poster'}`} width={900} height={1200} sizes="(min-width: 768px) 48vw, 100vw" className={styles.poster} />
+        <Image src={event.posterUrl} alt={`${event.session} ${lang === 'ko' ? '포스터' : 'poster'}`} width={900} height={1200} sizes="(min-width: 1184px) 540px, (min-width: 768px) 46vw, calc(100vw - 40px)" className={styles.poster} />
       )}
     </section>
   );

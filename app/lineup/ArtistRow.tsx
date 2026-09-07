@@ -3,6 +3,7 @@ import { useId, useRef, useState } from 'react';
 import type { Artist, ArtistStatus } from '@/lib/events/types';
 import { useLang, useT } from '@/lib/langContext';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
+import styles from './ArtistRow.module.css';
 
 const statusLabels: Record<'ko' | 'en', Record<ArtistStatus, string>> = {
   ko: {
@@ -45,21 +46,19 @@ export default function ArtistRow({ artist }: Props) {
 
   const summary = (
     <>
-      <span className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
-        <span className="text-heading font-semibold break-words min-w-0">{artist.name}</span>
-        <span className="font-mono text-small shrink-0">{artist.time}</span>
-      </span>
-      <span className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-small text-terminal-subdued">
+      <span className={styles.name}>{artist.name}</span>
+      <span className={styles.time}>{artist.time}</span>
+      <span className={styles.metadata}>
         <span>{statusLabels[lang][artist.status]}</span>
         <span>{artist.origin} · {t.lineup.dock(artist.dock)}</span>
         <span className="font-mono text-caption">{artist.id}</span>
-        {hasDescription && <span aria-hidden="true" className="ml-auto w-5 text-center">{isOpen ? '−' : '+'}</span>}
       </span>
+      {hasDescription && <span aria-hidden="true" className={styles.indicator}><span /><span /></span>}
     </>
   );
 
   return (
-    <div className="border-b border-terminal-bg-panel-border">
+    <div className={styles.row} data-open={isOpen}>
       {hasDescription ? (
         <button
           ref={triggerRef}
@@ -67,15 +66,15 @@ export default function ArtistRow({ artist }: Props) {
           aria-expanded={isOpen}
           aria-controls={descriptionId}
           onClick={toggleDescription}
-          className="block w-full min-h-11 py-5 text-left cursor-pointer transition-colors duration-200 hover:text-terminal-accent-primary focus-visible:text-terminal-accent-primary"
+          className={`${styles.summary} ${styles.trigger}`}
         >
           {summary}
         </button>
-      ) : <div className="py-5">{summary}</div>}
+      ) : <div className={styles.summary}>{summary}</div>}
 
       {hasDescription && (
         <AnimatedHeight id={descriptionId} show={isOpen}>
-          <div ref={descriptionRef} className="pb-6 max-w-prose text-body text-terminal-subdued space-y-2">
+          <div ref={descriptionRef} className={`${styles.description} space-y-2`}>
             {descriptionLines.map((line, index) => <p key={index} className="min-h-[1.6em]">{line || '\u00a0'}</p>)}
           </div>
         </AnimatedHeight>

@@ -1,6 +1,7 @@
 'use client';
 import { motion, Variants } from 'framer-motion';
 import { HeadingText } from '@/components/ui/TerminalText';
+import styles from './PageHeader.module.css';
 
 interface PageHeaderProps {
   path: string;
@@ -23,15 +24,16 @@ const accentClassMap: Record<NonNullable<PageHeaderProps['accent']>, string> = {
   tertiary:  'text-terminal-accent-tertiary text-shadow-glow-tertiary',
 };
 
-export default function PageHeader({ title, accent = 'primary', variants = defaultVariants, cipher = false }: PageHeaderProps) {
+export default function PageHeader({ path, title, accent = 'primary', variants = defaultVariants, cipher = false }: PageHeaderProps) {
   const accentClass = accentClassMap[accent] || accentClassMap.primary;
   return (
-    <motion.div variants={variants} className="mb-8">
+    <motion.div variants={variants} className={styles.header}>
+      <p className={styles.path}><span aria-hidden="true">&gt;</span> {path}</p>
       <HeadingText
         text={title}
         cipher={cipher}
         autoHeight
-        className={`font-orbit text-h1 md:text-title font-bold tracking-normal ${accentClass.split(' ')[0]}`}
+        className={`font-orbit text-h1 md:text-title tracking-normal ${accentClass.split(' ')[0]} ${styles.title}`}
       />
     </motion.div>
   );

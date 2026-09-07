@@ -12,6 +12,7 @@ import { useLang, useT } from '@/lib/langContext';
 import { fetchEvents, eventKeys } from '@/lib/events/client';
 import { getDefaultEvent, getLiveEvents } from '@/lib/events/lifecycle';
 import { useEventClock } from '@/lib/events/useEventClock';
+import styles from './HomePage.module.css';
 
 export default function HomePage() {
   const t = useT();
@@ -29,8 +30,18 @@ export default function HomePage() {
   ];
   return (
     <PageLayout width="event">
-      <div id="home-ambient-anchor" className="mb-8">
-        <CRTWrapper><div className="py-5 px-1"><TitleText text="TERMINAL" className="font-pixie text-h1 tracking-wider" /><p className="text-caption font-mono mt-1">A VOYAGE TO THE UNKNOWN SECTOR</p></div></CRTWrapper>
+      <div id="home-ambient-anchor" className={styles.masthead}>
+        <CRTWrapper>
+          <div className={styles.brand}>
+            <p className={styles.path}>/terminal/home</p>
+            <div className={styles.command}>
+              <span aria-hidden="true" className={styles.prompt}>&gt;</span>
+              <TitleText text="TERMINAL" className={`font-pixie ${styles.wordmark}`} />
+              <span aria-hidden="true" className={styles.cursor} />
+            </div>
+            <p className={styles.tagline}>A VOYAGE TO THE UNKNOWN SECTOR</p>
+          </div>
+        </CRTWrapper>
       </div>
       {isLoading ? <div role="status"><h1 className="sr-only">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.home.loading}</div>
         : isError ? <div role="alert" className="py-10 space-y-4"><h1 className="text-h1">{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
@@ -40,10 +51,10 @@ export default function HomePage() {
         </EventSummary>
         : <div role="status" className="py-12"><h1 className="text-h1 mb-4">{lang === 'ko' ? '이벤트' : 'Events'}</h1><p>{t.home.noEvents}</p></div>}
       {liveEvents.length > 1 && <nav className="mt-8 space-y-2" aria-label={lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}>{liveEvents.filter(e => e.id !== event?.id).map(e => <Link className="block min-h-11 py-2 underline" key={e.id} href={`/gate?event=${encodeURIComponent(e.id)}`}>{e.session}</Link>)}</nav>}
-      <nav className="mt-14 border-t border-terminal-bg-panel-border" aria-label={lang === 'ko' ? '더 알아보기' : 'Explore'}>
+      <nav className={styles.directory} aria-label={lang === 'ko' ? '더 알아보기' : 'Explore'}>
         {links.map((link, index) => <DirectoryLink key={link.href} {...link} index={index + 1} />)}
       </nav>
-      <Link href="/?experience=terminal" className="mt-6 text-small text-terminal-subdued underline min-h-11 inline-flex items-center self-start">{lang === 'ko' ? '터미널 체험' : 'Terminal experience'}</Link>
+      <Link href="/?experience=terminal" className={styles.experience}><span aria-hidden="true">[&gt;]</span>{lang === 'ko' ? '터미널 체험' : 'Terminal experience'}</Link>
     </PageLayout>
   );
 }

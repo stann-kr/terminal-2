@@ -11,5 +11,5 @@ export default function EventDetail({ event }: { event: TerminalEvent }) {
     [lang === 'ko' ? '정원' : 'Capacity', event.capacity],
     [lang === 'ko' ? '사운드' : 'Sound', event.sound],
   ].filter(([, value]) => value);
-  return <section className="border-t border-terminal-bg-panel-border pt-7" aria-labelledby="event-details-title"><h2 id="event-details-title" className="text-h2 mb-6">{lang === 'ko' ? '이벤트 안내' : 'Event details'}</h2><dl className="grid grid-cols-1 sm:grid-cols-2 gap-6">{fields.map(([label, value]) => <div key={label}><dt className="text-small text-terminal-subdued mb-1">{label}</dt><dd className="text-body break-words">{value}</dd></div>)}</dl></section>;
+  return <section className="border-t border-terminal-bg-panel-border pt-6" aria-labelledby="event-details-title"><h2 id="event-details-title" className="font-mono text-h2 mb-4">{lang === 'ko' ? '이벤트 안내' : 'Event details'}</h2><dl className="grid grid-cols-1 md:grid-cols-2 gap-x-10">{fields.map(([label, value]) => <div key={label} className="grid grid-cols-[8ch_minmax(0,1fr)] items-baseline gap-4 py-3 border-b border-terminal-bg-panel-border"><dt className="font-mono text-small text-terminal-subdued">{label}</dt><dd className="text-body break-words">{value}</dd></div>)}</dl></section>;
 }

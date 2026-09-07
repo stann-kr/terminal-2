@@ -22,7 +22,7 @@ export default function TerminalActionLink({
 }: TerminalActionLinkProps) {
   return (
     <Link href={href} className={getTerminalButtonClassName(variant, className)}>
-      <LabelText text={children} autoHeight />
+      <LabelText text={children} autoHeight className="text-small" />
     </Link>
   );
 }

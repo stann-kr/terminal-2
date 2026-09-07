@@ -11,7 +11,7 @@
 
 ## 2. 타이포그래피 시스템
 
-본문·입력은 system sans 16px, 보조 문구 14px, 메타 12px를 기본으로 한다. Orbit/Pixie는 브랜드·제목, Mono는 날짜·코드에 사용한다. `app/globals.css`의 terminal 역할 토큰만 변경하며 `app/stann-os.css` 정본은 보존한다.
+본문·입력은 system sans 16px, 보조 문구 14px, 메타 12px를 기본으로 한다. Orbit/Pixie는 브랜드·제목, 로드된 JetBrains Mono는 탐색·버튼·경로·날짜·코드에 사용한다. `app/globals.css`의 terminal 역할 토큰만 변경하며 `app/stann-os.css` 정본은 보존한다.
 
 | 토큰 | 값 |
 |---|---|
@@ -24,6 +24,10 @@
 | `text-display` | 96px |
 
 `BodyText`는 모든 폭에서 16px plain text다. 공통 `PageHeader`는 cipher를 명시적으로 요청할 때만 연출하며 보통 제목을 즉시 표시한다.
+
+- 페이지 제목 위에는 경로를, 디렉터리에는 고정 번호·설명·이동 열을 표시한다. 모바일에서는 설명과 시간을 별도 행으로 배치한다.
+- 주요 버튼과 언어 선택은 반전 표시하며, 공통 버튼·라벨은 14px와 최소 44px 높이를 유지한다. 현재 탐색 위치는 `aria-current`로 표시한다.
+- 행사 요약은 포스터와 정보의 상단을 맞추고 날짜·장소를 라벨/값 열로 정렬한다. 포스터는 원본 비율을 보존한다.
 
 ### FormField 컴포넌트 API (`components/ui/FormField.tsx`)
 
@@ -57,6 +61,8 @@
 - **주요 동적 속성 및 토큰화 (`lib/animationTokens.ts`):**
   - 각 시맨틱 컴포넌트는 `animationTokens.ts`에 정의된 프리셋을 참조하여 동작함.
   - `useMotionPolicy`는 reduced-motion, save-data, document visibility를 live 구독한다. 정책이 motion을 허용하지 않으면 최종 문자열을 즉시 유지하고 timer/RAF/Canvas를 실행하지 않는다.
+  - 브랜드 디코드는 motion 정책 확인 후 제목별로 한 번 시작하고 완료 콜백도 한 번만 실행한다. 중간에 탭을 숨기면 최종 문자열로 끝내며 복귀할 때 다시 재생하지 않는다.
+  - Home의 CRT 스캔은 브랜드 영역 높이를 기준으로 640ms 한 번 재생한다. 커서는 세 번 점멸 후 고정되며, 기능 화면의 hover/focus와 펼침 표시에는 160ms 피드백을 사용한다. reduced-motion에서는 즉시 표시한다.
 - **레이아웃 보존 기술 (Layout Shift 방지):**
   - 최종 문자열을 실제 DOM child로 먼저 렌더링해 브라우저 레이아웃과 접근성 트리가 같은 내용을 사용한다.
   - 펼침 영역은 `AnimatedHeight`가 내부 콘텐츠의 실제 높이를 관찰하며, cipher는 최종 접근성 이름을 바꾸지 않는 시각적 향상으로만 실행한다.

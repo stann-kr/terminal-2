@@ -41,8 +41,9 @@ export default function TerminalPanel({
       {title && (
         <TitleTag
           id={titleId}
-          className="pt-5 pb-2 flex items-center gap-2"
+          className="pt-4 pb-3 flex items-baseline gap-3 font-mono border-b border-terminal-bg-panel-border/60"
         >
+          <span aria-hidden="true" className="text-small text-terminal-subdued">&gt;</span>
           <LabelText
             text={title}
             autoHeight

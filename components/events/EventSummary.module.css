@@ -1,9 +1,25 @@
-.summary { display: grid; gap: 2.5rem; align-items: start; }
+.summary { display: grid; gap: 2rem; align-items: start; }
 .information { min-width: 0; }
-.title { font-family: 'Orbit', sans-serif; font-size: clamp(2rem, 4.5vw, 3.5rem); line-height: 1.15; overflow-wrap: anywhere; text-wrap: balance; }
-.poster { display: block; width: 100%; height: auto; }
+.status { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem; margin-bottom: 1rem; font: var(--text-small) / 1.5 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.status > span { color: rgb(var(--color-text-primary)); font-size: var(--text-caption); letter-spacing: 0.04em; }
+.title { font-family: 'Orbit', sans-serif; font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.2; overflow-wrap: anywhere; text-wrap: balance; }
+.subtitle { margin-top: 0.75rem; font-size: var(--text-body); line-height: 1.6; }
+.metadata { margin-top: 1.5rem; border-top: var(--os-hairline) solid rgb(var(--color-bg-panel-border)); }
+.metadata > div { display: grid; grid-template-columns: 5ch minmax(0, 1fr); align-items: baseline; gap: 1rem; padding-block: 0.75rem; border-bottom: var(--os-hairline) solid rgb(var(--color-bg-panel-border)); font: var(--text-small) / 1.6 var(--font-mono); }
+.metadata dt { color: rgb(var(--color-text-subdued)); }
+.metadata dd { min-width: 0; overflow-wrap: anywhere; }
+.time { display: block; font-variant-numeric: tabular-nums; }
+.district { color: rgb(var(--color-text-subdued)); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1.5rem; }
+.description { margin-top: 1.5rem; max-width: 65ch; white-space: pre-wrap; font-size: var(--text-body); line-height: 1.7; color: rgb(var(--color-text-subdued)); }
+.poster { display: block; width: 100%; height: auto; border: var(--os-hairline) solid rgb(var(--color-bg-panel-border)); }
+
+@media (max-width: 479px) {
+  .actions > a { flex: 1 0 auto; }
+}
+
 @media (min-width: 768px) {
-  .withPoster { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3.5rem; }
+  .withPoster { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 3.5vw, 2.5rem); }
   .withPoster .poster { grid-column: 1; grid-row: 1; }
-  .withPoster .information { grid-column: 2; grid-row: 1; padding-top: 1rem; }
+  .withPoster .information { grid-column: 2; grid-row: 1; }
 }

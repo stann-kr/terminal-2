@@ -1,0 +1,21 @@
+.masthead { margin-bottom: 2rem; border: var(--os-hairline) solid rgb(var(--color-bg-panel-border)); border-left-color: rgb(var(--color-accent-primary) / 0.6); }
+.brand { padding: 1.25rem; }
+.path { margin-bottom: 0.75rem; font: var(--text-caption) / 1.5 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.command { display: flex; align-items: center; gap: 0.75rem; min-height: 2.5rem; }
+.prompt { color: rgb(var(--color-text-subdued)); font: 1.25rem / 1 var(--font-mono); }
+.wordmark { display: inline-block; min-width: 8ch; font-size: clamp(1.75rem, 5vw, 2.75rem); line-height: 1.2; letter-spacing: 0.04em; }
+.cursor { width: 0.5rem; height: 1.25rem; flex: none; background: rgb(var(--color-accent-primary)); }
+.tagline { margin-top: 0.75rem; font: var(--text-caption) / 1.6 var(--font-mono); color: rgb(var(--color-text-subdued)); letter-spacing: 0.025em; }
+.directory { margin-top: 3rem; border-top: var(--os-hairline) solid rgb(var(--color-bg-panel-border)); }
+.experience { display: inline-flex; align-items: center; align-self: flex-start; gap: 0.75rem; min-height: 2.75rem; margin-top: 1.5rem; color: rgb(var(--color-text-subdued)); font: var(--text-small) / 1.5 var(--font-mono); transition: color var(--os-dur-fast); }
+.experience:hover, .experience:focus-visible { color: rgb(var(--color-text-primary)); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .cursor { animation: prompt-ready 640ms steps(1, end) 3; }
+}
+
+@keyframes prompt-ready { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+@media (min-width: 640px) {
+  .brand { padding: 1.5rem; }
+}

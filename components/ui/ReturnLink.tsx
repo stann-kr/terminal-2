@@ -21,9 +21,10 @@ export default function ReturnLink({ href = '/home', text, variants = defaultVar
     <motion.div variants={variants} className="mb-6">
       <Link
         href={href}
-        className="text-small cursor-pointer inline-flex items-center min-h-11 px-3 py-2 border transition-colors border-terminal-bg-panel-border text-terminal-primary hover:bg-terminal-bg-panel-border/20"
+        className="font-mono text-small cursor-pointer inline-flex items-center gap-2 min-h-11 py-2 transition-colors duration-[var(--os-dur-fast)] text-terminal-subdued hover:text-terminal-primary"
       >
-        <LabelText text={text ?? (lang === 'ko' ? '홈으로' : 'Home')} autoHeight />
+        <span aria-hidden="true">[←]</span>
+        <LabelText text={text ?? (lang === 'ko' ? '홈으로' : 'Home')} autoHeight className="text-small" />
       </Link>
     </motion.div>
   );

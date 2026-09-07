@@ -19,6 +19,7 @@ import LangToggle from '../components/ui/LangToggle';
 import GatePage from '../app/gate/page';
 import StatusPage from '../app/status/page';
 import SleepScreen from '../app/_entry/SleepScreen';
+import DecodeText from '../components/DecodeText';
 
 afterEach(cleanup);
 
@@ -105,6 +106,66 @@ describe('interactive control behavior', () => {
     await user.click(screen.getByRole('button', { name: 'Validate' }));
 
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Email' })).toHaveFocus());
+  });
+});
+
+describe('brand text motion', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} })));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it.each([false, true])('plays once and stays final after a tab return (interrupted: %s)', (interrupted) => {
+    const onComplete = vi.fn();
+    const props = { speed: 0.9, scramble: 3, step: 2, onComplete };
+    const { rerender } = render(<DecodeText as="h1" text="TERMINAL" {...props} />);
+    const heading = screen.getByRole('heading', { name: 'TERMINAL' });
+    expect(onComplete).not.toHaveBeenCalled();
+
+    act(() => vi.advanceTimersByTime(64));
+    expect(heading.textContent).not.toBe('TERMINAL');
+    expect(heading).toHaveAccessibleName('TERMINAL');
+    if (!interrupted) {
+      act(() => vi.advanceTimersByTime(1_000));
+      expect(heading.textContent).toBe('TERMINAL');
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    }
+
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    expect(heading.textContent).toBe('TERMINAL');
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    act(() => vi.advanceTimersByTime(64));
+    expect(heading.textContent).toBe('TERMINAL');
+    expect(onComplete).toHaveBeenCalledTimes(1);
+
+    rerender(<DecodeText as="h1" text="READY" {...props} />);
+    rerender(<DecodeText as="h1" text="TERMINAL" {...props} />);
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(heading.textContent).toBe('TERMINAL');
+    expect(onComplete).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps reduced-motion text final through its delay and a content change', () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener() {}, removeEventListener() {} })));
+    const onComplete = vi.fn();
+    const { rerender } = render(<DecodeText as="h1" text="TERMINAL" delay={200} onComplete={onComplete} />);
+    expect(screen.getByRole('heading', { name: 'TERMINAL' }).textContent).toBe('TERMINAL');
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(onComplete).toHaveBeenCalledTimes(1);
+
+    rerender(<DecodeText as="h1" text="READY" delay={200} onComplete={onComplete} />);
+    expect(screen.getByRole('heading', { name: 'READY' }).textContent).toBe('READY');
+    expect(onComplete).toHaveBeenCalledTimes(2);
   });
 });
 

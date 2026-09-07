@@ -14,8 +14,8 @@ export function FormField({ label, htmlFor, children }: FormFieldProps) {
 
   return (
     <div>
-      <LabelTag htmlFor={htmlFor} className="mb-1.5 block text-terminal-subdued">
-        <LabelText text={label} autoHeight />
+      <LabelTag htmlFor={htmlFor} className="mb-2 block font-mono text-terminal-subdued">
+        <LabelText text={label} autoHeight className="text-small" />
       </LabelTag>
       {children}
     </div>
