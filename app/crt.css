@@ -23,16 +23,6 @@ body {
   overflow-x: hidden;
 }
 
-@keyframes scanline-beam {
-  0%   { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-.animate-scanline-beam {
-  top: 0;
-  animation: scanline-beam var(--os-dur-slow) linear both;
-}
-
 @keyframes cursor-blink {
   0%, 50%  { opacity: 1; }
   51%, 100% { opacity: 0; }

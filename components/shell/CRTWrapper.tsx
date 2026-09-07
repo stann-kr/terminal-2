@@ -27,12 +27,6 @@ export default function CRTWrapper({ children }: { children: React.ReactNode }) 
         }}
       />
 
-      {/* 한 번의 짧은 스캔을 실제 브랜드 영역 안에서만 재생한다. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-0 right-0 z-40 h-full bg-gradient-to-b from-transparent via-terminal-accent-primary/5 to-transparent animate-scanline-beam"
-      />
-
       {/* Chromatic aberration 엣지 빛번짐 */}
       <div
         aria-hidden="true"

@@ -20,6 +20,9 @@ import GatePage from '../app/gate/page';
 import StatusPage from '../app/status/page';
 import SleepScreen from '../app/_entry/SleepScreen';
 import DecodeText from '../components/DecodeText';
+import AnimatedHeight from '../components/ui/AnimatedHeight';
+import HomeMasthead from '../app/home/HomeMasthead';
+import { gsap, ScrollTrigger } from '../lib/motion/gsap';
 
 afterEach(cleanup);
 
@@ -110,6 +113,10 @@ describe('interactive control behavior', () => {
 });
 
 describe('brand text motion', () => {
+  function advanceMotion(milliseconds: number) {
+    act(() => { gsap.globalTimeline.time(gsap.globalTimeline.time() + milliseconds / 1000, false); });
+  }
+
   beforeEach(() => {
     vi.useFakeTimers();
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} })));
@@ -129,11 +136,11 @@ describe('brand text motion', () => {
     const heading = screen.getByRole('heading', { name: 'TERMINAL' });
     expect(onComplete).not.toHaveBeenCalled();
 
-    act(() => vi.advanceTimersByTime(64));
+    advanceMotion(200);
     expect(heading.textContent).not.toBe('TERMINAL');
     expect(heading).toHaveAccessibleName('TERMINAL');
     if (!interrupted) {
-      act(() => vi.advanceTimersByTime(1_000));
+      advanceMotion(1_000);
       expect(heading.textContent).toBe('TERMINAL');
       expect(onComplete).toHaveBeenCalledTimes(1);
     }
@@ -143,13 +150,13 @@ describe('brand text motion', () => {
     expect(heading.textContent).toBe('TERMINAL');
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     act(() => document.dispatchEvent(new Event('visibilitychange')));
-    act(() => vi.advanceTimersByTime(64));
+    advanceMotion(200);
     expect(heading.textContent).toBe('TERMINAL');
     expect(onComplete).toHaveBeenCalledTimes(1);
 
     rerender(<DecodeText as="h1" text="READY" {...props} />);
     rerender(<DecodeText as="h1" text="TERMINAL" {...props} />);
-    act(() => vi.advanceTimersByTime(1_000));
+    advanceMotion(1_000);
     expect(heading.textContent).toBe('TERMINAL');
     expect(onComplete).toHaveBeenCalledTimes(2);
   });
@@ -160,12 +167,70 @@ describe('brand text motion', () => {
     const { rerender } = render(<DecodeText as="h1" text="TERMINAL" delay={200} onComplete={onComplete} />);
     expect(screen.getByRole('heading', { name: 'TERMINAL' }).textContent).toBe('TERMINAL');
     expect(onComplete).toHaveBeenCalledTimes(1);
-    act(() => vi.advanceTimersByTime(1_000));
+    advanceMotion(1_000);
     expect(onComplete).toHaveBeenCalledTimes(1);
 
     rerender(<DecodeText as="h1" text="READY" delay={200} onComplete={onComplete} />);
     expect(screen.getByRole('heading', { name: 'READY' }).textContent).toBe('READY');
     expect(onComplete).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps markup literal during scrambling and stops callbacks on unmount', () => {
+    const text = '<img src=x onerror=alert(1)> & TERMINAL';
+    const onComplete = vi.fn();
+    const { unmount, rerender } = render(<DecodeText as="h1" text={text} onComplete={onComplete} />);
+    const heading = screen.getByRole('heading', { name: text });
+    advanceMotion(1_000);
+    expect(heading.children).toHaveLength(0);
+    expect(heading).toHaveAccessibleName(text);
+    advanceMotion(1_500);
+    expect(heading.textContent).toBe(text);
+    expect(heading.children).toHaveLength(0);
+    expect(onComplete).toHaveBeenCalledOnce();
+    rerender(<DecodeText as="h1" text="READY" onComplete={onComplete} />);
+    unmount();
+    advanceMotion(3_000);
+    expect(onComplete).toHaveBeenCalledOnce();
+  });
+
+  it('releases a scene\'s scroll triggers when it unmounts', () => {
+    const before = ScrollTrigger.getAll();
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const { unmount } = render(<HomeMasthead />);
+    expect(ScrollTrigger.getAll().length).toBeGreaterThan(before.length);
+    unmount();
+    expect(ScrollTrigger.getAll()).toEqual(before);
+  });
+
+  it('reverses an accordion from its current height and settles on resized content', () => {
+    let notifyResize!: () => void;
+    const disconnect = vi.fn();
+    vi.stubGlobal('ResizeObserver', class {
+      constructor(callback: () => void) { notifyResize = callback; }
+      observe() {}
+      disconnect = disconnect;
+    });
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const measure = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(120);
+    const { container, rerender, unmount } = render(<AnimatedHeight show={false}><p>Details</p></AnimatedHeight>);
+    const outer = container.firstElementChild as HTMLElement;
+    rerender(<AnimatedHeight show><p>Details</p></AnimatedHeight>);
+    advanceMotion(100);
+    const openingHeight = parseFloat(outer.style.height);
+    expect(openingHeight).toBeGreaterThan(0);
+    expect(openingHeight).toBeLessThan(120);
+    rerender(<AnimatedHeight show={false}><p>Details</p></AnimatedHeight>);
+    advanceMotion(100);
+    expect(parseFloat(outer.style.height)).toBeLessThan(openingHeight);
+    expect(outer).toHaveAttribute('inert');
+    rerender(<AnimatedHeight show><p>Details</p></AnimatedHeight>);
+    measure.mockReturnValue(180);
+    act(() => notifyResize());
+    advanceMotion(1_000);
+    expect(outer.style.height).toBe('180px');
+    expect(outer).not.toHaveAttribute('inert');
+    unmount();
+    expect(disconnect).toHaveBeenCalledOnce();
   });
 });
 

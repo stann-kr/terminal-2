@@ -7,8 +7,7 @@
 .metadata { grid-column: 1 / -1; grid-row: 3; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 1rem; font-size: var(--text-small); color: rgb(var(--color-text-subdued)); }
 .indicator { grid-column: 2; grid-row: 1; position: relative; align-self: center; width: 1.5rem; height: 1.5rem; border: var(--os-hairline) solid rgb(var(--color-accent-primary) / 0.35); }
 .indicator > span { position: absolute; top: calc(50% - 0.5px); left: calc(50% - 4px); width: 8px; height: 1px; background: rgb(var(--color-text-primary)); }
-.indicator > span:last-child { transform: rotate(90deg); transition: transform var(--os-dur-fast) var(--os-ease-hud); }
-.row[data-open='true'] .indicator > span:last-child { transform: rotate(90deg) scaleX(0); }
+.indicator > span:last-child { transform: rotate(90deg); }
 .description { max-width: 65ch; padding: 0 0.75rem 1.25rem; font-size: var(--text-body); line-height: 1.7; color: rgb(var(--color-text-subdued)); }
 .trigger:focus-visible { background: rgb(var(--color-accent-primary) / 0.06); outline-offset: -2px; }
 

@@ -46,9 +46,9 @@
 
 ---
 
-## 3. Page Transition 및 `DecodeText` 렌더링 (Cipher Decode 시스템)
+## 3. GSAP 터미널 모션과 `DecodeText`
 
-기능 화면은 즉시 표시하고 Home 브랜드 영역과 선택형 체험에만 Cipher 연출을 사용한다.
+GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉시 제공하면서 Home, 이벤트, 디렉터리, 공통 shell과 accordion에 각각의 모션을 적용한다. Cipher는 Home 브랜드 영역과 선택형 체험에 사용한다.
 
 ### 3.1 통합 컴포넌트 `<DecodeText>` 및 `<TerminalText>` 분석
 
@@ -60,9 +60,10 @@
   - 제공 컴포넌트: `TitleText` (히어로), `HeadingText` (섹션 제목), `SubtitleText` (부제), `BodyText` (본문), `LabelText` (시스템 라벨), `MetaText` (메타데이터), `DataText` (실시간 데이터).
 - **주요 동적 속성 및 토큰화 (`lib/animationTokens.ts`):**
   - 각 시맨틱 컴포넌트는 `animationTokens.ts`에 정의된 프리셋을 참조하여 동작함.
-  - `useMotionPolicy`는 reduced-motion, save-data, document visibility를 live 구독한다. 정책이 motion을 허용하지 않으면 최종 문자열을 즉시 유지하고 timer/RAF/Canvas를 실행하지 않는다.
+  - `useMotionPolicy`는 reduced-motion, save-data, document visibility를 live 구독한다. 정책이 motion을 허용하지 않으면 장식 애니메이션을 해제하고 콘텐츠를 최종 상태로 복원한다.
   - 브랜드 디코드는 motion 정책 확인 후 제목별로 한 번 시작하고 완료 콜백도 한 번만 실행한다. 중간에 탭을 숨기면 최종 문자열로 끝내며 복귀할 때 다시 재생하지 않는다.
-  - Home의 CRT 스캔은 브랜드 영역 높이를 기준으로 640ms 한 번 재생한다. 커서는 세 번 점멸 후 고정되며, 기능 화면의 hover/focus와 펼침 표시에는 160ms 피드백을 사용한다. reduced-motion에서는 즉시 표시한다.
+  - `ScrambleTextPlugin`은 DOM 대신 `textContent`만 가진 proxy를 애니메이션한다. 출력은 실제 요소의 `textContent`로 복사해 HTML처럼 보이는 문자열도 문자 그대로 유지한다. 완료 시 원문과 공백을 복원한다.
+  - `use-scramble` 의존성과 보안 patch 검증은 기존 설치 계약으로 보존하지만, `DecodeText`의 재생은 GSAP이 소유한다.
 - **레이아웃 보존 기술 (Layout Shift 방지):**
   - 최종 문자열을 실제 DOM child로 먼저 렌더링해 브라우저 레이아웃과 접근성 트리가 같은 내용을 사용한다.
   - 펼침 영역은 `AnimatedHeight`가 내부 콘텐츠의 실제 높이를 관찰하며, cipher는 최종 접근성 이름을 바꾸지 않는 시각적 향상으로만 실행한다.
@@ -70,15 +71,31 @@
 ### 3.2 페이지 구조 (PageLayout & Transition)
 
 - **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
-- **동작 원리:** route wrapper는 opacity 전환 없이 scroll 위치만 복원한다. 공통 item stagger는 사용하지 않는다. event/reading/form 폭(1120/760/560px), 주요 탐색과 언어 제어를 `PageLayout`이 소유한다.
-- `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 펼침은 200ms이며 reduced-motion은 즉시 최종 상태를 표시한다.
+- **동작 원리:** route wrapper는 scroll 위치를 복원한다. `PageLayout`은 헤더 진입과 스크롤 진행선, event/reading/form 폭(1120/760/560px), 주요 탐색과 언어 제어를 소유한다. 기능 화면 전체를 가리거나 전환 완료까지 입력을 막는 단계는 없다.
+- `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 360ms·닫기 252ms이며, 새 요청은 현재 높이에서 반전한다. ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
 - **landmark:** `PageLayout`이 유일한 `main#main-content`를 소유하고 전역 skip link의 목적지가 된다.
+
+### 3.3 모션 소유권과 입력 반응
+
+| 영역 | 연출 | 소유 위치 |
+|---|---|---|
+| Home 브랜드 | 프레임 기동, 순차 디코드, 스캔·커서 반복, 포인터에 반응하는 grid | `app/home/HomeMasthead.tsx` |
+| 행사 요약 | 포스터·정보 진입, 스캔, 스크롤 진행선, fine pointer 기울기 | `components/events/useEventSummaryMotion.ts` |
+| 버튼·메뉴 | 고정된 hit target 안에서 글자·화살표 이동, 선택 광선, 키보드 focus 반응 | `components/ui/useControlMotion.ts` |
+| 디렉터리·라인업 | viewport 진입에 따른 짧은 stagger, 빠르게 반전되는 펼침 표시 | 해당 row component |
+| 공통 제목·panel | 경로·제목 진입, 경계선 그리기 | `PageHeader`, `TerminalPanel` |
+
+- [공식 React 연동](https://gsap.com/resources/React/)의 `useGSAP` scope와 cleanup을 사용한다. 비동기 ResizeObserver에서 만드는 tween도 context에 포함한다.
+- [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 일반 문서 스크롤을 유지한다. Home 반복 모션은 viewport 밖에서 멈추고 다시 진입하면 이어진다. 장식 pointer 반응은 fine pointer에서만 활성화한다.
+- `quickTo`는 포인터 움직임마다 tween을 새로 만들지 않고 재사용한다. 버튼 hover timeline도 재생·역재생으로 재사용하며, 조작 영역 자체를 포인터에 따라 이동시키지 않는다.
+- 콘텐츠 높이·이미지 로딩 뒤의 scroll 위치 재계산은 `ScrollTrigger.refresh(true)`로 묶는다. 화면 이탈 시 scene의 trigger, timeline, observer와 event listener를 정리한다.
+- 동일 요소의 transform·opacity를 GSAP과 CSS/Framer Motion이 동시에 제어하지 않는다. 기존 Boot/Sleep 상태 전환과 Transmit 상태 표현의 Framer Motion은 별도 owner로 유지한다.
 
 ## 4. 개발 가이드라인
 
 1. **신규 페이지 혹은 컴포넌트 개발 시 규칙:**
    - 정적 텍스트는 `<TerminalText>` 계열을 사용하되 plain rendering을 기본값으로 한다. `DecodeText` 직접 사용과 body/form/error/status cipher는 금지한다.
-   - `framer-motion`의 `variants` 내 애니메이션을 사용할 때는 `transition.ease` 배열 타입 충돌 여부(`Type 'number[]' is not assignable to type 'Easing...'`)를 주의하고, 반드시 기본 제공 문자열 네이밍 에셋(`ease: 'easeOut'`)으로 완화하여 기재함.
+   - 새 장식 모션은 `lib/motion/gsap.ts`를 통해 등록된 GSAP과 `useGSAP`을 사용한다. 각 component의 ref로 scope를 제한하고 기존 motion 정책을 따른다.
 2. **TypeScript 무결성 확보 규칙:**
    - hook, 브라우저 API, Framer Motion을 사용하는 컴포넌트만 client boundary로 선언한다.
    - `@react-three/fiber`는 Home ambient에만 사용한다. `/` 또는 `/home`, motion 허용, hero viewport 진입, WebGL 지원이 모두 참일 때 dynamic chunk를 로드하며 오류 시 semantic page를 그대로 유지한다.

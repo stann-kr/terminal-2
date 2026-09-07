@@ -1,6 +1,8 @@
 'use client';
-import React, { ReactNode, useId } from 'react';
+import React, { ReactNode, useId, useRef } from 'react';
 import { LabelText } from './ui/TerminalText';
+import { gsap, useGSAP } from '@/lib/motion/gsap';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 interface TerminalPanelProps {
   children: ReactNode;
@@ -32,12 +34,23 @@ export default function TerminalPanel({
   const RootTag = hasSemanticTitle ? 'section' : 'div';
   const TitleTag = headingLevel === 3 ? 'h3' : 'h2';
   const titleId = hasSemanticTitle ? generatedTitleId : undefined;
+  const rootRef = useRef<HTMLElement | null>(null);
+  const { allowMotion } = useMotionPolicy();
+  useGSAP(() => {
+    if (!allowMotion || !rootRef.current) return;
+    gsap.from('[data-panel="line"]', {
+      scaleX: 0, duration: 0.85, ease: 'expo.out',
+      scrollTrigger: { trigger: rootRef.current, start: 'top 96%', once: true },
+    });
+  }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
 
   return (
     <RootTag
+      ref={(node) => { rootRef.current = node; }}
       aria-labelledby={titleId}
       className={`relative border-t border-terminal-bg-panel-border ${className}`}
     >
+      <span aria-hidden="true" data-panel="line" className="absolute top-0 left-0 w-full h-px bg-terminal-accent-primary/40 origin-left pointer-events-none" />
       {title && (
         <TitleTag
           id={titleId}

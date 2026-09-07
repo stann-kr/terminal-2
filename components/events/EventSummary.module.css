@@ -13,6 +13,11 @@
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1.5rem; }
 .description { margin-top: 1.5rem; max-width: 65ch; white-space: pre-wrap; font-size: var(--text-body); line-height: 1.7; color: rgb(var(--color-text-subdued)); }
 .poster { display: block; width: 100%; height: auto; border: var(--os-hairline) solid rgb(var(--color-bg-panel-border)); }
+.posterFrame { position: relative; min-width: 0; perspective: 1000px; }
+.posterSurface { position: relative; transform-style: preserve-3d; }
+.scanWindow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.scan { display: block; position: absolute; inset: 0 0 auto; height: 16%; opacity: 0; background: linear-gradient(transparent, rgb(var(--color-accent-primary) / 0.16)); border-bottom: 1px solid rgb(var(--color-accent-primary) / 0.6); }
+.progress { position: absolute; top: 0; bottom: 0; right: -5px; width: 2px; background: rgb(var(--color-accent-primary) / 0.6); transform: scaleY(0.08); transform-origin: top; pointer-events: none; }
 
 @media (max-width: 479px) {
   .actions > a { flex: 1 0 auto; }
@@ -20,6 +25,6 @@
 
 @media (min-width: 768px) {
   .withPoster { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 3.5vw, 2.5rem); }
-  .withPoster .poster { grid-column: 1; grid-row: 1; }
+  .withPoster .posterFrame { grid-column: 1; grid-row: 1; }
   .withPoster .information { grid-column: 2; grid-row: 1; }
 }

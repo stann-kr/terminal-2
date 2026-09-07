@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { LabelText } from '@/components/ui/TerminalText';
 import {
   getTerminalButtonClassName,
+  TerminalControlContent,
   type TerminalButtonVariant,
 } from '@/components/TerminalButton';
+import { useControlMotion } from './ui/useControlMotion';
 
 interface TerminalActionLinkProps {
   href: string;
@@ -20,9 +21,10 @@ export default function TerminalActionLink({
   variant = 'primary',
   className = '',
 }: TerminalActionLinkProps) {
+  const rootRef = useControlMotion<HTMLAnchorElement>();
   return (
-    <Link href={href} className={getTerminalButtonClassName(variant, className)}>
-      <LabelText text={children} autoHeight className="text-small" />
+    <Link ref={rootRef} href={href} className={getTerminalButtonClassName(variant, className)}>
+      <TerminalControlContent>{children}</TerminalControlContent>
     </Link>
   );
 }

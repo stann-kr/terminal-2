@@ -2,14 +2,15 @@
 
 import {
   memo,
-  useCallback,
   useEffect,
   useRef,
-  useState,
   type CSSProperties,
 } from 'react';
-import { useScramble } from 'use-scramble';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
+import { gsap, useGSAP } from '@/lib/motion/gsap';
 import { useMotionPolicy } from '@/lib/useMotionPolicy';
+
+gsap.registerPlugin(ScrambleTextPlugin);
 
 export interface DecodeTextProps {
   text: string;
@@ -47,76 +48,49 @@ const DecodeText = memo(function DecodeText({
   autoHeight = false,
 }: DecodeTextProps) {
   const { isReady, allowMotion } = useMotionPolicy();
-  const [completedDelay, setCompletedDelay] = useState(0);
-  const [completedText, setCompletedText] = useState<string | null>(null);
   const nodeRef = useRef<HTMLElement | null>(null);
   const playbackRef = useRef({ text, started: false, completed: false });
-  const delayElapsed = delay <= 0 || completedDelay === delay;
-  const motionEnabled = allowMotion && delayElapsed && playOnMount && completedText !== text;
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
 
-  const complete = useCallback(() => {
-    const playback = playbackRef.current;
-    if (playback.text !== text || !playback.started || playback.completed) return;
-    playback.completed = true;
-    setCompletedText(text);
-    onComplete?.();
-  }, [onComplete, text]);
-
-  const { ref: scrambleRef, replay } = useScramble({
-    text,
-    speed: motionEnabled ? speed : 0,
-    scramble,
-    step,
-    range: [48, 102],
-    overdrive: false,
-    overflow: true,
-    playOnMount: false,
-    onAnimationEnd: complete,
-  });
-  const scrambleNodeRef = scrambleRef as { current: HTMLElement | null };
-  const replayRef = useRef(replay);
-
-  useEffect(() => { replayRef.current = replay; });
-
-  useEffect(() => {
-    if (delay <= 0) return;
-    const timer = window.setTimeout(() => setCompletedDelay(delay), delay);
-    return () => window.clearTimeout(timer);
-  }, [delay]);
-
-  useEffect(() => {
+  useGSAP(() => {
+    const node = nodeRef.current;
+    if (!node || !isReady) return;
     if (playbackRef.current.text !== text) {
       playbackRef.current = { text, started: false, completed: false };
     }
-    if (!isReady) return;
-
-    if (!allowMotion || !playOnMount || completedText === text) {
-      if (nodeRef.current) nodeRef.current.textContent = text;
-      playbackRef.current.started = true;
-      // Freeze the external animation before another frame can overwrite the final text.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    const playback = playbackRef.current;
+    node.textContent = text;
+    const complete = () => {
+      node.textContent = text;
+      if (playback.completed) return;
+      playback.completed = true;
+      onCompleteRef.current?.();
+    };
+    if (!allowMotion || !playOnMount || speed <= 0 || !text || playback.started) {
+      playback.started = true;
       complete();
       return;
     }
-
-    if (!delayElapsed) return;
-
-    // use-scramble mounts in its final state for SSR. Start explicitly once
-    // policy is ready; returning to a visible tab must not replay the title.
-    if (!playbackRef.current.started) {
-      playbackRef.current.started = true;
-      replayRef.current();
-    }
-  }, [allowMotion, complete, completedText, delayElapsed, isReady, playOnMount, text]);
-
-  const setTagRef = useCallback((node: HTMLElement | null) => {
-    nodeRef.current = node;
-    scrambleNodeRef.current = node;
-  }, [scrambleNodeRef]);
+    playback.started = true;
+    // The plugin prefers innerHTML on DOM nodes. A text-only proxy keeps
+    // user-supplied characters literal throughout the effect, including '<'.
+    const output = { nodeType: 1, textContent: text };
+    const duration = gsap.utils.clamp(0.55, 1.6, (text.length + scramble) / (24 * speed * Math.max(step, 1)) + 0.3);
+    gsap.to(output, {
+      duration,
+      delay: Math.max(0, delay) / 1000,
+      ease: 'none',
+      scrambleText: { text, chars: '01/_-', revealDelay: 0.12, speed, tweenLength: false },
+      onUpdate: () => { node.textContent = output.textContent; },
+      onComplete: complete,
+    });
+    return () => { node.textContent = text; };
+  }, { scope: nodeRef, dependencies: [text, isReady, allowMotion, playOnMount, speed, scramble, step, delay], revertOnUpdate: true });
 
   return (
     <Tag
-      ref={setTagRef as never}
+      ref={nodeRef as never}
       aria-label={text}
       className={className}
       style={{

@@ -2,8 +2,7 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import PageLayout from '@/components/shell/PageLayout';
-import CRTWrapper from '@/components/shell/CRTWrapper';
-import { TitleText } from '@/components/ui/TerminalText';
+import HomeMasthead from './HomeMasthead';
 import TerminalButton from '@/components/TerminalButton';
 import TerminalActionLink from '@/components/TerminalActionLink';
 import EventSummary from '@/components/events/EventSummary';
@@ -30,19 +29,7 @@ export default function HomePage() {
   ];
   return (
     <PageLayout width="event">
-      <div id="home-ambient-anchor" className={styles.masthead}>
-        <CRTWrapper>
-          <div className={styles.brand}>
-            <p className={styles.path}>/terminal/home</p>
-            <div className={styles.command}>
-              <span aria-hidden="true" className={styles.prompt}>&gt;</span>
-              <TitleText text="TERMINAL" className={`font-pixie ${styles.wordmark}`} />
-              <span aria-hidden="true" className={styles.cursor} />
-            </div>
-            <p className={styles.tagline}>A VOYAGE TO THE UNKNOWN SECTOR</p>
-          </div>
-        </CRTWrapper>
-      </div>
+      <HomeMasthead />
       {isLoading ? <div role="status"><h1 className="sr-only">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.home.loading}</div>
         : isError ? <div role="alert" className="py-10 space-y-4"><h1 className="text-h1">{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
         : event ? <EventSummary event={event}>

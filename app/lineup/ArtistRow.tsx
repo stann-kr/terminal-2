@@ -4,6 +4,9 @@ import type { Artist, ArtistStatus } from '@/lib/events/types';
 import { useLang, useT } from '@/lib/langContext';
 import AnimatedHeight from '@/components/ui/AnimatedHeight';
 import styles from './ArtistRow.module.css';
+import { useControlMotion } from '@/components/ui/useControlMotion';
+import { gsap, useGSAP } from '@/lib/motion/gsap';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 const statusLabels: Record<'ko' | 'en', Record<ArtistStatus, string>> = {
   ko: {
@@ -22,20 +25,36 @@ const statusLabels: Record<'ko' | 'en', Record<ArtistStatus, string>> = {
   },
 };
 
-interface Props { artist: Artist; }
+interface Props { artist: Artist; index?: number; }
 
-export default function ArtistRow({ artist }: Props) {
+export default function ArtistRow({ artist, index = 0 }: Props) {
   const { lang } = useLang();
   const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const descriptionId = useId();
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const crossRef = useRef<HTMLSpanElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const hasEntered = useRef(false);
+  const { allowMotion } = useMotionPolicy();
   const descriptionRef = useRef<HTMLDivElement>(null);
   const description = typeof artist.description === 'object' && !Array.isArray(artist.description)
     ? artist.description[lang]
     : artist.description;
   const descriptionLines = Array.isArray(description) ? description : description?.split('\n') ?? [];
   const hasDescription = descriptionLines.some((line) => line.trim().length > 0);
+  const triggerRef = useControlMotion<HTMLButtonElement>(hasDescription);
+  useGSAP(() => {
+    if (!crossRef.current) return;
+    gsap.to(crossRef.current, { rotation: isOpen ? 0 : 90, scaleX: isOpen ? 0 : 1, duration: allowMotion ? 0.32 : 0, ease: 'expo.out', overwrite: true });
+  }, { scope: triggerRef, dependencies: [isOpen, allowMotion, hasDescription] });
+  useGSAP(() => {
+    if (!allowMotion || !rowRef.current || hasEntered.current) return;
+    gsap.from(rowRef.current, {
+      x: 18, opacity: 0.65, duration: 0.65, delay: Math.min(index, 5) * 0.05, ease: 'expo.out',
+      scrollTrigger: { trigger: rowRef.current, start: 'top 97%', once: true },
+      onStart: () => { hasEntered.current = true; }, clearProps: 'transform,opacity',
+    });
+  }, { scope: rowRef, dependencies: [allowMotion], revertOnUpdate: true });
 
   const toggleDescription = () => {
     if (isOpen && descriptionRef.current?.contains(document.activeElement)) {
@@ -46,19 +65,19 @@ export default function ArtistRow({ artist }: Props) {
 
   const summary = (
     <>
-      <span className={styles.name}>{artist.name}</span>
+      <span data-control-label className={styles.name}>{artist.name}</span>
       <span className={styles.time}>{artist.time}</span>
       <span className={styles.metadata}>
         <span>{statusLabels[lang][artist.status]}</span>
         <span>{artist.origin} · {t.lineup.dock(artist.dock)}</span>
         <span className="font-mono text-caption">{artist.id}</span>
       </span>
-      {hasDescription && <span aria-hidden="true" className={styles.indicator}><span /><span /></span>}
+      {hasDescription && <span aria-hidden="true" className={styles.indicator}><span /><span ref={crossRef} /></span>}
     </>
   );
 
   return (
-    <div className={styles.row} data-open={isOpen}>
+    <div ref={rowRef} className={styles.row} data-open={isOpen}>
       {hasDescription ? (
         <button
           ref={triggerRef}

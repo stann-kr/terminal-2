@@ -71,7 +71,7 @@ export default function LineupPage() {
 
             {selectedEvent.artists.length > 0 ? (
               <ul aria-label={t.lineup.colArtist}>
-                {selectedEvent.artists.map((artist) => <li key={artist.id}><ArtistRow artist={artist} /></li>)}
+                {selectedEvent.artists.map((artist, index) => <li key={artist.id}><ArtistRow artist={artist} index={index} /></li>)}
               </ul>
             ) : <p role="status" className="py-8">{lang === 'ko' ? '아직 공개된 아티스트가 없습니다.' : 'The lineup has not been announced yet.'}</p>}
 

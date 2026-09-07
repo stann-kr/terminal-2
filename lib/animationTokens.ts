@@ -16,14 +16,12 @@ export const itemVariants: Variants = {
 
 // ─── DecodeText 프리셋 ────────────────────────────────────────────────────────
 // 색상 시스템(globals.css)과 병렬하는 애니메이션 토큰.
-// speed: 텍스트가 디코딩되는 속도 (높을수록 빠름)
-// scramble: 스크램블 문자 수 (텍스트 길이에 반비례)
-// animateTextLength: 빈 값에서 텍스트 길이가 채워지는 방식 (페이지 전환 플래시 방지)
-// STANN OS 정본 --os-decode-speed(80ms/char)에 체감 근사하는 use-scramble 단위 프리셋
+// GSAP ScrambleText의 지속 시간과 문자 갱신 속도에 사용한다.
+// 본문·입력·상태 문구는 TerminalText에서 plain text로 유지한다.
 
 export const decode = {
   /** 메인 히어로 제목 — TERMINAL 타이틀 등 */
-  title: { speed: 0.9, scramble: 3, step: 2 },
+  title: { speed: 0.7, scramble: 7, step: 1 },
   /** 페이지/섹션 제목 — PageHeader, 이벤트명 등 */
   heading: { speed: 0.65, scramble: 8, animateTextLength: true },
   /** 부제목/설명 — 이벤트 부제, 설명 텍스트 */

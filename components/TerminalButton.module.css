@@ -1,8 +1,10 @@
 .control {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
   border: var(--os-hairline) solid transparent;
   border-radius: var(--os-radius);
   line-height: 1.5;
@@ -11,6 +13,10 @@
   cursor: pointer;
   transition: color var(--os-dur-fast), background-color var(--os-dur-fast), border-color var(--os-dur-fast);
 }
+
+.scan { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: currentColor; opacity: 0.1; transform: scaleX(0); transform-origin: left; }
+.label, .arrow { display: inline-block; }
+.arrow { font-size: 1rem; line-height: 1; }
 
 .primary { color: rgb(var(--color-bg-base)); background: rgb(var(--color-accent-primary)); border-color: rgb(var(--color-accent-primary)); }
 .ghost { color: rgb(var(--color-text-primary)); background: transparent; border-color: rgb(var(--color-accent-primary) / 0.35); }

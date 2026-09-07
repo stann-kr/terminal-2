@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@gsap/react": "2.1.2",
     "@opennextjs/cloudflare": "^1.18.1",
     "@react-three/fiber": "9.3.0",
     "@react-three/postprocessing": "^3.0.4",
@@ -10,6 +11,7 @@
     "cross-env": "^7.0.3",
     "drizzle-orm": "^0.45.2",
     "framer-motion": "12.23.12",
+    "gsap": "3.15.0",
     "next": "^16.2.11",
     "patch-package": "^8.0.1",
     "postprocessing": "^6.39.0",
