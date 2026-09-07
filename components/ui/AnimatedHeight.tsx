@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, useState } from 'react';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 interface AnimatedHeightProps {
   children: React.ReactNode;
@@ -9,9 +10,10 @@ interface AnimatedHeightProps {
    * true(기본값): 내부 content 높이를 ResizeObserver로 추적하며 부드럽게 전환
    */
   show?: boolean;
-  /** CSS transition 지속 시간 (ms). 기본 350 */
+  /** CSS transition 지속 시간 (ms). 기본 200 */
   duration?: number;
   className?: string;
+  id?: string;
 }
 
 /**
@@ -24,11 +26,14 @@ interface AnimatedHeightProps {
 export default function AnimatedHeight({
   children,
   show = true,
-  duration = 350,
+  duration = 200,
   className,
+  id,
 }: AnimatedHeightProps) {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const [initialHeight] = useState(show ? 'auto' : '0px');
+  const { allowMotion } = useMotionPolicy();
 
   useLayoutEffect(() => {
     const outer = outerRef.current;
@@ -48,12 +53,17 @@ export default function AnimatedHeight({
 
   return (
     <div
+      id={id}
       ref={outerRef}
+      aria-hidden={!show}
+      inert={!show}
       style={{
         overflow: 'hidden',
-        height: '0px',
+        height: initialHeight,
         opacity: show ? 1 : 0,
-        transition: `height ${duration}ms ease-out, opacity ${duration}ms ease-out`,
+        transition: allowMotion
+          ? `height ${duration}ms cubic-bezier(0.16, 1, 0.3, 1), opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`
+          : 'none',
       }}
     >
       <div ref={innerRef} className={className}>

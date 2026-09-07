@@ -17,7 +17,7 @@ describe('optional browser storage resilience', () => {
     vi.unstubAllGlobals();
   });
 
-  it.each(['access', 'read', 'write'])('keeps language and alias in memory when storage %s fails', async (failure) => {
+  it.each(['access', 'read', 'write'])('keeps client preferences in memory when storage %s fails', async (failure) => {
     vi.resetModules();
     const storage = {
       getItem: () => {
@@ -34,6 +34,7 @@ describe('optional browser storage resilience', () => {
     });
     const { getLang, setLang } = await import('../lib/lang');
     const { getNodeId, setNodeId } = await import('../lib/transmit/nodeIdentity');
+    const { hasVisited, markVisited } = await import('../app/_entry/visitState');
 
     expect(getLang()).toBe('ko');
     setLang('en');
@@ -45,6 +46,9 @@ describe('optional browser storage resilience', () => {
     expect(getNodeId()).toBe('MY_ALIAS');
     setNodeId('');
     expect(getNodeId()).toBe('');
+    expect(hasVisited()).toBe(false);
+    markVisited();
+    expect(hasVisited()).toBe(true);
   });
 
   it('does not access browser storage or share preferences during server rendering', async () => {
@@ -52,10 +56,13 @@ describe('optional browser storage resilience', () => {
     vi.stubGlobal('window', undefined);
     const { getLang, setLang } = await import('../lib/lang');
     const { getNodeId, setNodeId } = await import('../lib/transmit/nodeIdentity');
+    const { hasVisited, markVisited } = await import('../app/_entry/visitState');
 
     setLang('en');
     setNodeId('SERVER_ALIAS');
+    markVisited();
     expect(getLang()).toBe('ko');
     expect(getNodeId()).toBe('');
+    expect(hasVisited()).toBe(false);
   });
 });

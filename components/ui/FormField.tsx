@@ -14,7 +14,7 @@ export function FormField({ label, htmlFor, children }: FormFieldProps) {
 
   return (
     <div>
-      <LabelTag htmlFor={htmlFor} className="mb-1.5 block tracking-widest font-mono text-terminal-subdued">
+      <LabelTag htmlFor={htmlFor} className="mb-1.5 block text-terminal-subdued">
         <LabelText text={label} autoHeight />
       </LabelTag>
       {children}
@@ -24,7 +24,7 @@ export function FormField({ label, htmlFor, children }: FormFieldProps) {
 
 /** 폼 input/textarea 공통 기본 클래스 */
 export const inputClassBase =
-  'w-full bg-transparent outline-none px-3 py-2 text-base md:text-body border transition-colors font-mono placeholder:text-terminal-muted/40';
+  'w-full min-h-11 bg-transparent outline-none px-3 py-2 text-body border transition-colors font-sans tracking-normal placeholder:text-terminal-subdued';
 
 /** accent 색상별 추가 클래스 맵 */
 export const inputAccentClass: Record<string, string> = {

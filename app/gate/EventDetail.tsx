@@ -1,78 +1,15 @@
 'use client';
-import TerminalPanel from '@/components/TerminalPanel';
-import AnimatedHeight from '@/components/ui/AnimatedHeight';
-import CountdownBlock from '@/components/events/CountdownBlock';
-import EventInfoPanel from './EventInfoPanel';
-import { LabelText, SubtitleText, MetaText } from '@/components/ui/TerminalText';
-import { useT } from '@/lib/langContext';
+import { useLang } from '@/lib/langContext';
 import type { TerminalEvent } from '@/lib/events/types';
 
-interface Props {
-  event: TerminalEvent;
-  showCountdown?: boolean;
-}
-
-export default function EventDetail({ event, showCountdown = false }: Props) {
-  const t = useT();
-  const eventDate = new Date(`${event.date}T${event.time.replace(' KST', '')}:00+09:00`);
-
-  const eventDateLabel = new Date(event.date)
-    .toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    })
-    .toUpperCase();
-
-  const locationFields = [
-    { k: 'GATE_ID',     v: event.venue },
-    { k: 'DISTRICT',    v: event.district },
-    { k: 'COORDINATES', v: event.coords },
-    { k: 'CAPACITY',    v: event.capacity },
-    { k: 'SOUND_SYS',   v: event.sound },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <AnimatedHeight show={showCountdown}>
-        <div className="mb-4 border py-4 px-4 border-terminal-accent-primary/20 bg-terminal-bg-panel">
-          <CountdownBlock targetDate={eventDate} accent="primary" compact />
-        </div>
-      </AnimatedHeight>
-
-      <EventInfoPanel event={event} />
-
-      {event.status === 'ARCHIVED' && (
-        <div className="px-3 py-2 border tracking-widest font-mono border-terminal-accent-alert/30 text-terminal-accent-alert bg-terminal-accent-alert/5">
-          <LabelText text={t.gate.sessionArchived(event.date.replace(/-/g, '.'))} />
-        </div>
-      )}
-
-      <TerminalPanel title="LOCATION_DATA.enc" accent="primary">
-        <div className="space-y-3">
-          {event.status === 'UPCOMING' && (
-            <div className="font-mono text-terminal-subdued">
-              <SubtitleText
-                autoHeight
-                text={t.gate.locationWarning}
-                className="text-terminal-accent-primary font-mono"
-              />
-            </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {locationFields.map((item, i) => (
-              <div key={item.k}>
-                <div className="mb-0.5 font-mono text-terminal-subdued">
-                  <LabelText text={item.k} delay={i * 30} />
-                </div>
-                <div className="font-mono text-terminal-accent-primary">
-                  <SubtitleText autoHeight text={item.v} delay={i * 30} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </TerminalPanel>
-    </div>
-  );
+export default function EventDetail({ event }: { event: TerminalEvent }) {
+  const { lang } = useLang();
+  const fields = [
+    [lang === 'ko' ? '장소' : 'Venue', event.venue],
+    [lang === 'ko' ? '지역' : 'District', event.district],
+    [lang === 'ko' ? '위치' : 'Location', event.coords],
+    [lang === 'ko' ? '정원' : 'Capacity', event.capacity],
+    [lang === 'ko' ? '사운드' : 'Sound', event.sound],
+  ].filter(([, value]) => value);
+  return <section className="border-t border-terminal-bg-panel-border pt-7" aria-labelledby="event-details-title"><h2 id="event-details-title" className="text-h2 mb-6">{lang === 'ko' ? '이벤트 안내' : 'Event details'}</h2><dl className="grid grid-cols-1 sm:grid-cols-2 gap-6">{fields.map(([label, value]) => <div key={label}><dt className="text-small text-terminal-subdued mb-1">{label}</dt><dd className="text-body break-words">{value}</dd></div>)}</dl></section>;
 }

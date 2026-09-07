@@ -16,12 +16,12 @@
 * **접근성:** route마다 하나의 `main`, skip link, 고유 title/h1을 제공하고 폼 label·오류·focus·reduced-motion 계약을 유지한다.
 
 ## 3. 기능 요구 사항
-* HOME: STANN OS LIVE 진입, 이벤트 카운트다운/elapsed 상태, 모듈 디렉토리 제공.
-* GATE: upcoming/archive 이벤트 정보, 상세 위치/세션 정보, request 진입 제공.
-* REQUEST: access code 검증, 게스트 신청, 개인정보/마케팅 동의 저장.
-* LINEUP: 이벤트별 아티스트/도크/상태 표시.
+* HOME: `/`·`/home`에서 LIVE→가까운 예정→최근 지난 이벤트 순서로 정보·원본 포스터·주요 행동을 제공한다. Boot/Sleep은 `/?experience=terminal` 선택형 체험이다.
+* GATE: LIVE/upcoming/archive 정보와 동일 행사 Lineup 연결을 제공하며 서버의 실제 신청 대상·기간에 해당할 때만 신청 CTA를 표시한다.
+* REQUEST: 화면 eventId와 서버 신청 대상을 일치 검증하고 코드·기간·정원 정책을 적용한다. 대상 변경 시 입력을 보존한 채 행사 재확인·코드 재검증을 요구한다. 접수는 입장 확정을 뜻하지 않는다.
+* LINEUP: 유효 event URL을 우선하여 아티스트·시간·정적 상태를 표시한다. 설명 펼침은 키보드·접근성 상태와 DOM 수명을 함께 유지한다.
 * STATUS: 이벤트 레지스트리 기반 세션 요약과 정적 노드 시각화 표시. 실제 telemetry 또는 realtime 상태로 표현하지 않는다.
-* TRANSMIT: idempotency key 기반 방문자 로그 작성/조회.
+* TRANSMIT: 공개 별칭·메시지 게시를 사전에 안내하고 idempotency key를 유지한다. 전송 중 수정한 새 초안은 이전 요청 성공으로 지우지 않는다.
 * SIGNAL: 이벤트 신호 수신 채널 등록.
 * LINK: STANN OS HUB / ARCHIVE / LIVE 및 외부 채널 연결.
 

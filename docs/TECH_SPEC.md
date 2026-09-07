@@ -11,34 +11,19 @@
 
 ## 2. 타이포그래피 시스템
 
-### 폰트 사이즈 토큰 스케일
+본문·입력은 system sans 16px, 보조 문구 14px, 메타 12px를 기본으로 한다. Orbit/Pixie는 브랜드·제목, Mono는 날짜·코드에 사용한다. `app/globals.css`의 terminal 역할 토큰만 변경하며 `app/stann-os.css` 정본은 보존한다.
 
-| 토큰 | CSS 변수 | 값 | 용도 |
-|---|---|---|---|
-| `text-pico` | `--text-pico` | 8px | 홈 ASCII 장식 |
-| `text-nano` | `--text-nano` | 9px | 카운트다운 라벨, ASCII |
-| `text-micro` | `--text-micro` | 10px | 배지, 홈 서브타이틀 최소값 |
-| `text-caption` | `--text-caption` | 11px | LabelText·MetaText 모바일, ArtistRow 메타, DirectoryLink |
-| `text-small` | `--text-small` | 12px | body 모바일, label 데스크톱, 입력 모바일 |
-| `text-body` | `--text-body` | 14px | body 데스크톱, heading 모바일, 입력 데스크톱 |
-| `text-heading` | `--text-heading` | 16px | PageHeader 타이틀 모바일 |
-| `text-h2` | `--text-h2` | 20px | PageHeader 타이틀 데스크톱, HeadingText 모바일 |
-| `text-h1` | `--text-h1` | 24px | TitleText 모바일, HeadingText 데스크톱 |
-| `text-title` | `--text-title` | 30px | TitleText 데스크톱 |
-| `text-hero` | `--text-hero` | 48px | 홈 TERMINAL 모바일 |
-| `text-display` | `--text-display` | 96px | 홈 TERMINAL 데스크톱 |
+| 토큰 | 값 |
+|---|---|
+| `text-micro`, `text-caption` | 12px |
+| `text-small` | 14px |
+| `text-body`, `text-heading` | 16px |
+| `text-h2` | 20px |
+| `text-h1` | 32px |
+| `text-title`, `text-hero` | 48px |
+| `text-display` | 96px |
 
-### TerminalText 컴포넌트 → 토큰 매핑
-
-| 컴포넌트 | 모바일 | 데스크톱(md+) |
-|---|---|---|
-| `TitleText` | text-h1 (24px) | text-title (30px) |
-| `HeadingText` | text-h2 (20px) | text-h1 (24px) |
-| `SubtitleText` | text-small (12px) | text-body (14px) |
-| `BodyText` | text-small (12px) | text-body (14px) |
-| `DataText` | text-small (12px) | text-body (14px) |
-| `LabelText` | text-caption (11px) | text-small (12px) |
-| `MetaText` | text-caption (11px) | text-small (12px) |
+`BodyText`는 모든 폭에서 16px plain text다. 공통 `PageHeader`는 cipher를 명시적으로 요청할 때만 연출하며 보통 제목을 즉시 표시한다.
 
 ### FormField 컴포넌트 API (`components/ui/FormField.tsx`)
 
@@ -59,7 +44,7 @@
 
 ## 3. Page Transition 및 `DecodeText` 렌더링 (Cipher Decode 시스템)
 
-짧은 페이지 진입 전환 위에 터미널 특화형 텍스트 Cipher(난수 복호화) 애니메이션을 결합한다.
+기능 화면은 즉시 표시하고 Home 브랜드 영역과 선택형 체험에만 Cipher 연출을 사용한다.
 
 ### 3.1 통합 컴포넌트 `<DecodeText>` 및 `<TerminalText>` 분석
 
@@ -79,7 +64,8 @@
 ### 3.2 페이지 구조 (PageLayout & Transition)
 
 - **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
-- **동작 원리:** route wrapper는 opacity 전환 없이 scroll 위치만 복원한다. `PageLayout`의 8px item reveal은 사용자 motion 설정을 따르며 의미 텍스트를 숨기지 않는다.
+- **동작 원리:** route wrapper는 opacity 전환 없이 scroll 위치만 복원한다. 공통 item stagger는 사용하지 않는다. event/reading/form 폭(1120/760/560px), 주요 탐색과 언어 제어를 `PageLayout`이 소유한다.
+- `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 펼침은 200ms이며 reduced-motion은 즉시 최종 상태를 표시한다.
 - **landmark:** `PageLayout`이 유일한 `main#main-content`를 소유하고 전역 skip link의 목적지가 된다.
 
 ## 4. 개발 가이드라인
@@ -89,7 +75,7 @@
    - `framer-motion`의 `variants` 내 애니메이션을 사용할 때는 `transition.ease` 배열 타입 충돌 여부(`Type 'number[]' is not assignable to type 'Easing...'`)를 주의하고, 반드시 기본 제공 문자열 네이밍 에셋(`ease: 'easeOut'`)으로 완화하여 기재함.
 2. **TypeScript 무결성 확보 규칙:**
    - hook, 브라우저 API, Framer Motion을 사용하는 컴포넌트만 client boundary로 선언한다.
-   - `@react-three/fiber`는 Home ambient에만 사용한다. `/home`, motion 허용, hero viewport 진입, WebGL 지원이 모두 참일 때 dynamic chunk를 로드하며 오류 시 semantic page를 그대로 유지한다.
+   - `@react-three/fiber`는 Home ambient에만 사용한다. `/` 또는 `/home`, motion 허용, hero viewport 진입, WebGL 지원이 모두 참일 때 dynamic chunk를 로드하며 오류 시 semantic page를 그대로 유지한다.
 3. **환경 관리 가이드 (Docker):**
    - 호스트 개발은 저장소 루트의 npm 스크립트를 사용한다. Docker 전용 환경에서 패키지를 추가할 때는 실행 중인 컨테이너의 `docker compose exec web npm install <패키지>`를 사용해 anonymous `node_modules` volume과의 불일치를 피한다.
 
@@ -121,7 +107,7 @@ Cloudflare D1의 제약 사항과 개발 생산성을 고려하여, 핵심 비�
 - **`id` (PK):** 이벤트 식별자 (예: `TRM-02`)
 - **`data` (JSON):** 이벤트의 모든 메타데이터를 포함하는 JSON 문자열.
   - 주요 필드: `session`, `subtitle`, `date`, `time`, `venue`, `status`, `invitationLines` (다국어 지원 객체) 등.
-  - 인포 패널 필드: `description: { en: string; ko: string }` (소개글), `posterUrl: string` (R2 이미지 URL) — optional, 없으면 Gate `EventInfoPanel` 미렌더링.
+  - 인포 패널 필드: `description: { en: string; ko: string }` (소개글), `posterUrl: string` (R2 이미지 URL) — optional, `EventSummary`가 Home/Gate에서 원본 이미지 비율과 실제 소개를 표시한다. 포스터가 없으면 행사 정보만으로 구성한다.
   - 장점: 새로운 속성 추가 시 DDL 마이그레이션 없이 애플리케이션 레벨의 타입 업데이트만으로 대응 가능.
 
 ### 6.2 `artists` 테이블 설계
@@ -129,6 +115,8 @@ Cloudflare D1의 제약 사항과 개발 생산성을 고려하여, 핵심 비�
 - **`event_id` (FK):** `events.id` 참조 (Cascade On Delete)
 - **`data` (JSON):** 아티스트 정보.
   - 주요 필드: `name`, `origin`, `status`, `description` (다국어 지원 객체) 등.
+
+`lib/events/lifecycle.ts`는 strict KST calendar/time 파싱, 유효 URL 우선 선택과 LIVE→가까운 UPCOMING→최근 ARCHIVED 기본값을 소유한다. `useEventClock`은 신청창·시작 경계와 visibility 복귀 때만 재계산한다.
 
 ### 6.3 `access_requests` 및 `transmit_logs`
 - 이들은 트랜잭션 성격이 강하므로 전통적인 관계형 컬럼 구조를 유지하여 쿼리 성능과 데이터 무결성을 확보함.

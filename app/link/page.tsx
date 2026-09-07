@@ -5,10 +5,11 @@ import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import DirectoryLink from '@/components/DirectoryLink';
 import { LabelText } from '@/components/ui/TerminalText';
-import { useT } from '@/lib/langContext';
+import { useT, useLang } from '@/lib/langContext';
 
 export default function LinkPage() {
   const t = useT();
+  const { lang } = useLang();
 
   const LINKS = [
     { href: 'https://stann.kr',                         label: 'STANN OS Hub',         description: t.link.descriptions.stannHub,      accent: 'primary' as const },
@@ -20,11 +21,11 @@ export default function LinkPage() {
   return (
     <PageLayout>
       <ReturnLink variants={itemVariants} />
-      <PageHeader path="/terminal/link" title="LINK.DAT" accent="primary" variants={itemVariants} />
+      <PageHeader path="/terminal/link" title={lang === 'ko' ? '공식 채널' : 'Official channels'} accent="primary" variants={itemVariants} />
 
       <motion.div
         variants={itemVariants}
-        className="border border-terminal-accent-primary/20 bg-terminal-bg-panel"
+        className="border-t border-terminal-bg-panel-border"
       >
         <div className="px-4 py-2 border-b flex items-center justify-between border-terminal-accent-primary/15 bg-terminal-bg-overlay/40">
           <span className="text-micro sm:text-small tracking-widest text-terminal-accent-primary font-mono">

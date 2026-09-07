@@ -53,7 +53,7 @@ export const gateKo = {
   tabArchive: "지난 이벤트",
   loading: "이벤트를 불러오는 중입니다.",
   requestBtn: "▶ 게스트 신청",
-  archivedLabel: "지난 이벤트됨",
+  archivedLabel: "지난 이벤트",
   noArchive: "기록된 아카이브가 없습니다.",
   locationWarning: "⚠ 세션 참가를 위한 상세 위치 및 게이트 정보입니다.",
   /** `◼ 세션 종료 — ${date}` */
@@ -76,7 +76,7 @@ export const requestKo = {
   eventDate: (date: string, time: string) => `이벤트 날짜 — ${date} · ${time}`,
   /** `신청 가능까지 T-${n}일` */
   windowCountdown: (n: number) => `신청 가능까지 T-${n}일`,
-  eventElapsed: "이벤트가 종료되어 신청이 닫혔습니다.",
+  eventElapsed: "이 이벤트의 온라인 신청은 마감되었습니다.",
   noEvent: "현재 신청 가능한 예정 이벤트가 없습니다.",
   committed: "신청 접수 완료",
   committedSub: "접수는 입장 확정을 뜻하지 않습니다.",
@@ -143,8 +143,8 @@ export const lineupKo = {
   colStatus: "상태",
   footerUpcoming: "공개된 라인업입니다.",
   footerArchived: "이 이벤트에 참여한 아티스트 기록입니다.",
-  /** `도크 ${dock}` */
-  dock: (dock: string) => `도크 ${dock}`,
+  /** `스테이지 ${dock}` */
+  dock: (dock: string) => `스테이지 ${dock}`,
 };
 
 // ─────────────────────────────────────────────
@@ -278,12 +278,12 @@ export const commonEn = {
 };
 
 export const homeEn = {
-  loading: "▸ LOADING EVENT DATA...",
-  noEvents: "NO EVENTS AVAILABLE.",
+  loading: "Loading events...",
+  noEvents: "No events have been published yet.",
   nextEntry: "Next event —",
   lastEntry: "Past event —",
-  viewEvent: "▶ VIEW EVENT",
-  viewArchive: "▶ VIEW ARCHIVE",
+  viewEvent: "View event",
+  viewArchive: "View past event",
   rootDir: "▶ ROOT DIRECTORY — /terminal/",
   moduleCount: (count: number) => `${count} MODULES`,
 };
@@ -292,9 +292,9 @@ export const gateEn = {
   tabUpcoming: "Live & upcoming",
   tabArchive: "Past events",
   loading: "Loading event details...",
-  requestBtn: "▶ GUEST REQUEST",
-  archivedLabel: "Past eventsD",
-  noArchive: "NO ARCHIVED SESSIONS AVAILABLE.",
+  requestBtn: "Guest request",
+  archivedLabel: "Archived",
+  noArchive: "No past events have been recorded.",
   locationWarning:
     "⚠ DETAILED LOCATION AND GATE INFORMATION FOR SESSION ENTRY.",
   sessionArchived: (date: string) => `◼ SESSION ARCHIVED — ${date}`,
@@ -302,15 +302,15 @@ export const gateEn = {
 };
 
 export const requestEn = {
-  loading: "▸ LOADING REQUEST DATA...",
-  eventLoadFailed: "REQUEST DATA COULD NOT BE LOADED. CHECK YOUR CONNECTION AND RETRY.",
+  loading: "Loading request details...",
+  eventLoadFailed: "Request details could not be loaded. Check your connection and try again.",
   retry: "RETRY",
   periodInactive: "⚠ REQUEST PERIOD INACTIVE",
   windowInfo: (days: number) =>
     `NEXT RESPONSE WINDOW OPENS ${days} DAYS BEFORE EVENT`,
   eventDate: (date: string, time: string) => `EVENT DATE — ${date} · ${time}`,
   windowCountdown: (n: number) => `WINDOW OPENS IN T-${n} DAYS`,
-  eventElapsed: "EVENT HAS ELAPSED — REQUEST WINDOW CLOSED.",
+  eventElapsed: "Online requests for this event are closed.",
   noEvent: "There is no upcoming event accepting requests.",
   committed: "Request received",
   committedSub: "Submission does not confirm admission.",
@@ -319,11 +319,11 @@ export const requestEn = {
     "Check the event, name and contact details before submitting.",
     "Submitting a request does not confirm admission.",
   ],
-  labelCode: "ACCESS CODE:",
-  labelInvitedBy: "INVITED BY:",
-  labelName: "NAME:",
-  labelEmail: "EMAIL:",
-  labelInstagram: "INSTAGRAM ID:",
+  labelCode: "Access code",
+  labelInvitedBy: "Invited by",
+  labelName: "Name",
+  labelEmail: "Email",
+  labelInstagram: "Instagram ID",
   placeholderCode: "SESSION ACCESS CODE",
   placeholderInvitedBy: "INVITER NAME",
   placeholderName: "FULL NAME",
@@ -333,8 +333,8 @@ export const requestEn = {
     "Name, email, and Instagram ID will be collected for guest access management. Retention: 1 month after event. Not disclosed to third parties.",
   marketingConsent:
     "[OPTIONAL] Subscribe to receive future event signals via email or Instagram DM. Retention: until unsubscribed.",
-  submitting: "▸ TRANSMITTING...",
-  submitBtn: "▶ SUBMIT REQUEST",
+  submitting: "Sending...",
+  submitBtn: "Submit request",
   // invitedBy options
   invitedByOther: "OTHER",
   invitedByOtherPlaceholder: "ENTER INVITER NAME",
@@ -360,7 +360,7 @@ export const requestEn = {
 };
 
 export const lineupEn = {
-  loading: "▸ LOADING LINEUP DATA...",
+  loading: "Loading lineup...",
   upcomingTag: "UPCOMING",
   actCount: (n: number) => `${n} ARTISTS`,
   colArtist: "ARTIST",
@@ -368,7 +368,7 @@ export const lineupEn = {
   colStatus: "STATUS",
   footerUpcoming: "Published lineup.",
   footerArchived: "Artists who took part in this event.",
-  dock: (dock: string) => `DOCK ${dock}`,
+  dock: (dock: string) => `Stage ${dock}`,
 };
 
 export const statusEn = {
@@ -393,12 +393,12 @@ export const transmitEn = {
   publicNotice: "Your alias and message are posted publicly. Do not include contact details or other personal information.",
   previousPageLabel: "Previous entries page",
   nextPageLabel: "Next entries page",
-  labelAlias: "ALIAS:",
-  labelMessage: "MESSAGE:",
+  labelAlias: "Alias",
+  labelMessage: "Message",
   placeholderAlias: "ENTER ALIAS",
   placeholderMsg: "Leave a message",
   committed: "Your submitted message has been posted.",
-  submitting: "▸ TRANSMITTING...",
+  submitting: "Sending...",
   submitBtn: "Post message",
   syncing: "Loading entries...",
   noEntries: "NO ENTRIES.",
@@ -419,11 +419,11 @@ export const transmitEn = {
 
 export const signalEn = {
   description: [
-    "REGISTER YOUR RECEPTION CHANNEL FOR TERMINAL EVENT SIGNALS.",
+    "Sign up for TERMINAL event updates.",
     "We save your email and Instagram contact details.",
   ],
-  labelEmail: "EMAIL:",
-  labelInstagram: "INSTAGRAM ID:",
+  labelEmail: "Email",
+  labelInstagram: "Instagram ID",
   placeholderEmail: "EMAIL@ADDRESS.COM",
   consentLabel:
     "I agree to the collection of my email and Instagram account for TERMINAL event updates.",

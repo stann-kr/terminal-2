@@ -1,168 +1,37 @@
 'use client';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import TerminalPanel from '@/components/TerminalPanel';
+import PageLayout from '@/components/shell/PageLayout';
+import PageHeader from '@/components/ui/PageHeader';
+import ReturnLink from '@/components/ui/ReturnLink';
+import TerminalButton from '@/components/TerminalButton';
 import StatusMetric from './StatusMetric';
 import NodeMap from './NodeMap';
-import PageLayout, { itemVariants } from '@/components/shell/PageLayout';
-import { LabelText, SubtitleText, MetaText } from '@/components/ui/TerminalText';
-import ReturnLink from '@/components/ui/ReturnLink';
-import PageHeader from '@/components/ui/PageHeader';
-import TerminalButton from '@/components/TerminalButton';
-import { useT } from '@/lib/langContext';
+import { useLang, useT } from '@/lib/langContext';
 import { fetchEvents, eventKeys } from '@/lib/events/client';
+import { formatEventDate, getArchivedOrElapsedEvents, getFutureUpcomingEvent, getEffectiveEventStatus } from '@/lib/events/lifecycle';
+import { useEventClock } from '@/lib/events/useEventClock';
 
 export default function StatusPage() {
   const t = useT();
-
-  const { data: events = [], isLoading, isError, refetch } = useQuery({
-    queryKey: eventKeys.list(),
-    queryFn: fetchEvents,
-  });
-
-  const archivedCount  = events.filter(e => e.status === 'ARCHIVED').length;
-  const upcomingEvent  = events.find(e => e.status === 'UPCOMING');
-  const confirmedCount = new Set(events.flatMap(e => e.artists).map(a => a.name)).size;
-
-  const nextLaunchValue = upcomingEvent ? upcomingEvent.id : '—';
-  const nextLaunchUnit  = upcomingEvent
-    ? upcomingEvent.date.replace(/-/g, '.')
-    : t.status.unitStandby;
-
-  const statusColorClass = (status: string) =>
-    status === 'UPCOMING' ? 'text-terminal-accent-secondary' :
-    status === 'LIVE'     ? 'text-terminal-accent-primary'  :
-                            'text-terminal-accent-alert';
-
-  const statusSymbol = (status: string) =>
-    status === 'ARCHIVED' ? '◼' : '●';
-
-  return (
-    <PageLayout>
-      <ReturnLink variants={itemVariants} />
-      <PageHeader path="/terminal/status" title="STATUS.SYS" accent="alert" variants={itemVariants} />
-
-      {/* Metrics */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <StatusMetric
-          label={t.status.labelSessionsRun}
-          value={String(archivedCount).padStart(2, '0')}
-          unit={t.status.unitArchived}
-          accent="alert"
-        />
-        <StatusMetric
-          label={t.status.labelNextLaunch}
-          value={nextLaunchValue}
-          unit={nextLaunchUnit}
-          accent="secondary"
-        />
-        <StatusMetric
-          label={t.status.labelArtistNodes}
-          value={String(confirmedCount).padStart(2, '0')}
-          unit={t.status.unitConfirmed}
-          accent="primary"
-        />
-      </motion.div>
-
-      {/* Node Map */}
-      <motion.div variants={itemVariants} className="mb-6">
-        <TerminalPanel title="GALACTIC_NODE_MAP — STATIC REGISTRY" accent="alert">
-          <NodeMap />
-        </TerminalPanel>
-      </motion.div>
-
-      {/* Session Log */}
-      <motion.div variants={itemVariants}>
-        <TerminalPanel title={t.status.sessionLogTitle} accent="primary">
-          {isLoading ? (
-            <div className="font-mono text-terminal-muted py-4 text-center">
-              <LabelText text={t.status.loading} />
-            </div>
-          ) : isError ? (
-            <div className="font-mono text-terminal-accent-alert py-4 text-center space-y-3" role="alert">
-              <div><LabelText text={t.common.signalUnstable} /></div>
-              <div className="text-terminal-muted"><MetaText text={t.common.dbUnreachable} /></div>
-              <div className="flex justify-center"><TerminalButton variant="ghost" onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
-            </div>
-          ) : events.length === 0 ? (
-            <div className="font-mono text-terminal-muted py-4 text-center">
-              <MetaText text={t.status.noSessions} />
-            </div>
-          ) : (
-            <div className="space-y-4" role="list" aria-label={t.status.sessionLogTitle}>
-              {/* 데스크탑 헤더 */}
-              <div className="hidden md:grid grid-cols-12 gap-2 pb-2 border-b border-terminal-accent-primary/15 font-mono">
-                <span className="col-span-2 text-terminal-muted"><LabelText text={t.status.colSession} /></span>
-                <span className="col-span-4 text-terminal-muted"><LabelText text="ID / NAME" /></span>
-                <span className="col-span-2 text-terminal-muted"><LabelText text={t.status.colDate} /></span>
-                <span className="col-span-2 text-terminal-muted"><LabelText text={t.status.colArtists} /></span>
-                <span className="col-span-2 text-terminal-muted"><LabelText text={t.status.colStatus} /></span>
-              </div>
-
-              {events.map((event, i) => {
-                const colorClass  = statusColorClass(event.status);
-                const symbol      = statusSymbol(event.status);
-                const isPulsing   = event.status !== 'ARCHIVED';
-                const artistCount = event.artists.length;
-
-                return (
-                  <div key={event.id} role="listitem" className="border-b border-terminal-accent-primary/10 pb-4 last:border-0 last:pb-0">
-                    {/* Mobile */}
-                    <div className="md:hidden space-y-1.5 font-mono">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-bold text-terminal-primary">
-                          <LabelText text={event.id} delay={i * 30} autoHeight />
-                        </span>
-                        <span className={`tracking-wider shrink-0 flex items-center gap-1 ${colorClass}`}>
-                          {isPulsing && <span className="status-pulse flex-shrink-0">●</span>}
-                          {!isPulsing && <span className="flex-shrink-0">{symbol}</span>}
-                          <LabelText text={event.status} className="inline" delay={i * 30} autoHeight />
-                        </span>
-                      </div>
-                      <div className="text-terminal-accent-secondary">
-                        <SubtitleText text={event.session} delay={i * 30} autoHeight />
-                      </div>
-                      <div className="text-terminal-subdued">
-                        <MetaText text={event.subtitle} delay={i * 30} autoHeight />
-                      </div>
-                      <div className="flex gap-4 text-terminal-muted">
-                        <MetaText text={event.date.replace(/-/g, '.')} delay={i * 30} autoHeight />
-                        <MetaText text={`${artistCount} NODES`} delay={i * 30} autoHeight />
-                      </div>
-                    </div>
-
-                    {/* Desktop */}
-                    <div className="hidden md:grid grid-cols-12 gap-2 items-start font-mono">
-                      <span className="col-span-2 font-bold text-terminal-primary">
-                        <LabelText text={event.id} delay={i * 30} />
-                      </span>
-                      <div className="col-span-4">
-                        <div className="text-terminal-accent-secondary">
-                          <SubtitleText text={event.session} delay={i * 30} />
-                        </div>
-                        <div className="text-terminal-subdued mt-0.5">
-                          <MetaText text={event.subtitle} delay={i * 30} />
-                        </div>
-                      </div>
-                      <span className="col-span-2 text-terminal-subdued">
-                        <MetaText text={event.date.replace(/-/g, '.')} delay={i * 30} />
-                      </span>
-                      <span className="col-span-2 text-terminal-muted">
-                        <MetaText text={`${artistCount} NODES`} delay={i * 30} />
-                      </span>
-                      <span className={`col-span-2 font-bold tracking-wider flex items-center gap-1 ${colorClass}`}>
-                        {isPulsing && <span className="status-pulse flex-shrink-0">●</span>}
-                        {!isPulsing && <span className="flex-shrink-0">{symbol}</span>}
-                        <LabelText text={event.status} delay={i * 30} />
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </TerminalPanel>
-      </motion.div>
-    </PageLayout>
-  );
+  const { lang } = useLang();
+  const { data: events = [], isLoading, isError, refetch } = useQuery({ queryKey: eventKeys.list(), queryFn: fetchEvents });
+  const now = useEventClock(events);
+  const archived = getArchivedOrElapsedEvents(events, now);
+  const nextEvent = getFutureUpcomingEvent(events, now);
+  const artists = new Set(archived.flatMap(e => e.artists).map(a => a.name)).size;
+  const statusLabel = (status: string) => lang === 'ko' ? ({ LIVE: '진행 중', UPCOMING: '예정', ARCHIVED: '지난 이벤트' }[status] ?? status) : ({ LIVE: 'Live', UPCOMING: 'Upcoming', ARCHIVED: 'Past event' }[status] ?? status);
+  return <PageLayout>
+    <ReturnLink />
+    <PageHeader path="/terminal/status" title={lang === 'ko' ? '이벤트 기록' : 'Event history'} />
+    {isLoading ? <p role="status" className="py-8">{t.status.loading}</p> : isError ? <div role="alert" className="py-8 space-y-4"><p>{t.common.signalUnstable}</p><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div> : <>
+      <div className="grid sm:grid-cols-3 gap-6 mb-10">
+        <StatusMetric label={t.status.labelSessionsRun} value={String(archived.length)} unit={lang === 'ko' ? '이벤트' : 'Events'} />
+        <StatusMetric label={t.status.labelNextLaunch} value={nextEvent?.session ?? '—'} unit={nextEvent ? formatEventDate(nextEvent, lang === 'ko' ? 'ko-KR' : 'en-US') : (lang === 'ko' ? '예정 없음' : 'None scheduled')} />
+        <StatusMetric label={t.status.labelArtistNodes} value={String(artists)} unit={lang === 'ko' ? '지난 이벤트 기준' : 'Across past events'} />
+      </div>
+      {events.length === 0 ? <p role="status">{t.status.noSessions}</p> : <ul aria-label={t.status.sessionLogTitle} className="border-t border-terminal-bg-panel-border">{[...events].sort((a,b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id)).map(event => <li key={event.id} className="py-6 border-b border-terminal-bg-panel-border"><Link href={`/gate?event=${encodeURIComponent(event.id)}`} className="text-h2 underline underline-offset-4">{event.session}</Link><p className="mt-2 text-small text-terminal-subdued">{formatEventDate(event, lang === 'ko' ? 'ko-KR' : 'en-US')} · {event.venue}</p><p className="mt-2 text-small">{statusLabel(getEffectiveEventStatus(event, now))} · {t.lineup.actCount(event.artists.length)}</p></li>)}</ul>}
+    </>}
+    <details className="mt-12 text-small text-terminal-subdued"><summary className="cursor-pointer min-h-11 py-3">{lang === 'ko' ? 'TERMINAL 세계관 지도' : 'TERMINAL universe map'}</summary><p className="mb-4">{lang === 'ko' ? '브랜드를 표현한 정적 지도입니다.' : 'A static map of the TERMINAL universe.'}</p><NodeMap /></details>
+  </PageLayout>;
 }

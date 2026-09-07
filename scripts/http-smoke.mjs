@@ -55,7 +55,7 @@ for (const route of routes) {
 if (titles.size !== routes.length) throw new Error('route titles are not unique');
 
 const statusHtml = await (await fetch(`${baseUrl}/status`)).text();
-if (!statusHtml.includes('STATIC REGISTRY') || statusHtml.includes('REALTIME')) {
+if (!statusHtml.includes('브랜드를 표현한 정적 지도입니다.') || statusHtml.includes('REALTIME')) {
   throw new Error('status map truthfulness contract failed');
 }
 

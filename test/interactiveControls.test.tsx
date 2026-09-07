@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import TerminalButton from '../components/TerminalButton';
 import ConsentCheckbox from '../components/ui/ConsentCheckbox';
 import { useFieldErrors } from '../components/ui/useFieldErrors';
@@ -10,7 +10,15 @@ import { useUrlQueryState } from '../lib/useUrlQueryState';
 import { useTransmit } from '../app/transmit/useTransmit';
 import { useEventClock } from '../lib/events/useEventClock';
 import { getEffectiveEventStatus, getRequestWindowState } from '../lib/events/lifecycle';
-import type { TerminalEvent } from '../lib/events/types';
+import type { Artist, TerminalEvent } from '../lib/events/types';
+import { eventKeys } from '../lib/events/client';
+import ArtistRow from '../app/lineup/ArtistRow';
+import LineupPage from '../app/lineup/page';
+import { LangProvider } from '../lib/langContext';
+import LangToggle from '../components/ui/LangToggle';
+import GatePage from '../app/gate/page';
+import StatusPage from '../app/status/page';
+import SleepScreen from '../app/_entry/SleepScreen';
 
 afterEach(cleanup);
 
@@ -221,5 +229,151 @@ describe('event clock policy updates', () => {
     act(() => document.dispatchEvent(new Event('visibilitychange')));
     expect(getEffectiveEventStatus(event, result.current)).toBe('ARCHIVED');
     expect(getRequestWindowState(event, 30, result.current).isActive).toBe(false);
+  });
+});
+
+describe('lineup controls', () => {
+  const artist: Artist = {
+    id: 'artist-1', name: 'ARTIST ONE', origin: 'KR', dock: '1', time: '23:00–00:00', status: 'CONFIRMED',
+    description: { ko: '아티스트의 긴 한국어 소개입니다.', en: 'A longer artist biography in English.' },
+  };
+
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: true, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {},
+    })));
+    localStorage.setItem('terminal_lang', 'ko');
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('keeps accordion content mounted through keyboard toggles and language changes, restoring internal focus on close', async () => {
+    const user = userEvent.setup();
+    render(<LangProvider><ArtistRow artist={artist} /><LangToggle /></LangProvider>);
+    const trigger = screen.getByRole('button', { name: /ARTIST ONE/ });
+    const details = document.getElementById(trigger.getAttribute('aria-controls')!)!;
+    const biography = screen.getByText('아티스트의 긴 한국어 소개입니다.');
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(details).toHaveAttribute('aria-hidden', 'true');
+    expect(details).toHaveAttribute('inert');
+
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(details).not.toHaveAttribute('inert');
+    await user.keyboard(' ');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByText('아티스트의 긴 한국어 소개입니다.')).toBe(biography);
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByText('A longer artist biography in English.')).toBe(biography);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // Rich description content can own focus when a close is dispatched elsewhere.
+    biography.tabIndex = 0;
+    biography.focus();
+    fireEvent.click(trigger);
+    expect(trigger).toHaveFocus();
+    expect(details).toHaveAttribute('aria-hidden', 'true');
+    expect(details).toHaveAttribute('inert');
+  });
+
+  it('honors the event URL and immediately replaces the lineup and Gate link on selection', async () => {
+    const baseEvent: TerminalEvent = {
+      id: 'live', session: 'Live event', subtitle: 'Test', date: '2026-09-08', time: '23:00 KST', status: 'LIVE',
+      venue: 'Venue', district: 'District', coords: '0,0', capacity: '100', sound: 'System',
+      artists: [{ ...artist, name: 'LIVE ARTIST', description: undefined }],
+    };
+    const archived: TerminalEvent = {
+      ...baseEvent, id: 'archive', session: 'Archived event', date: '2025-09-08', status: 'ARCHIVED',
+      artists: [{ ...artist, name: 'ARCHIVE ARTIST', description: undefined }],
+    };
+    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, gcTime: Infinity, retry: false } } });
+    queryClient.setQueryData(eventKeys.list(), [baseEvent, archived]);
+    window.history.replaceState(null, '', '/lineup?lang=ko&event=archive');
+    const user = userEvent.setup();
+    render(<QueryClientProvider client={queryClient}><LineupPage /></QueryClientProvider>);
+
+    expect(screen.getByRole('heading', { name: 'Archived event' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '이벤트 보기' })).toHaveAttribute('href', '/gate?event=archive');
+    await user.selectOptions(screen.getByRole('combobox', { name: '이벤트 선택' }), 'live');
+    expect(screen.getByRole('heading', { name: 'Live event' })).toBeInTheDocument();
+    expect(screen.getByText('LIVE ARTIST')).toBeInTheDocument();
+    expect(screen.queryByText('ARCHIVE ARTIST')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '이벤트 보기' })).toHaveAttribute('href', '/gate?event=live');
+    expect(window.location.search).toBe('?lang=ko&event=live');
+
+    act(() => {
+      window.history.replaceState(null, '', '/lineup?lang=ko&event=missing');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByRole('combobox', { name: '이벤트 선택' })).toHaveValue('live');
+    expect(screen.getByText('LIVE ARTIST')).toBeInTheDocument();
+  });
+});
+
+describe('event page states and optional entry', () => {
+  const event: TerminalEvent = {
+    id: 'next', session: 'Next event', subtitle: 'Test', date: '2099-09-08', time: '23:00 KST', status: 'UPCOMING',
+    venue: 'Venue', district: 'District', coords: '0,0', capacity: '100', sound: 'System', artists: [],
+  };
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} })));
+  });
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+  it('distinguishes loading, failure and a confirmed empty event registry', async () => {
+    let complete!: (response: Response) => void;
+    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => new Promise(resolve => { complete = resolve; }));
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+    render(<QueryClientProvider client={queryClient}><StatusPage /></QueryClientProvider>);
+    expect(screen.getByRole('status')).toHaveTextContent('불러오는 중');
+    expect(screen.queryByText('지난 이벤트 기준')).not.toBeInTheDocument();
+    await act(async () => complete(Response.json({}, { status: 500 })));
+    expect(await screen.findByRole('alert')).toHaveTextContent('불러오지 못했습니다');
+    expect(screen.queryByText('지난 이벤트 기준')).not.toBeInTheDocument();
+    act(() => { queryClient.setQueryData(eventKeys.list(), []); });
+    expect(await screen.findAllByText('0')).toHaveLength(2);
+    expect(screen.getByRole('status')).toHaveTextContent('기록된 이벤트가 없습니다');
+  });
+
+  it('hides requests before opening and changes Gate view with one history entry', () => {
+    const archived = { ...event, id: 'old', session: 'Past event', status: 'ARCHIVED' as const };
+    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
+    queryClient.setQueryData(eventKeys.list(), [event, archived]);
+    window.history.replaceState(null, '', '/gate?view=archive&event=old&lang=ko');
+    render(<QueryClientProvider client={queryClient}><GatePage /></QueryClientProvider>);
+    const push = vi.spyOn(window.history, 'pushState');
+    fireEvent.click(screen.getByRole('button', { name: '진행 중·예정' }));
+    expect(push).toHaveBeenCalledTimes(1);
+    expect(window.location.search).toBe('?view=upcoming&lang=ko');
+    expect(screen.getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('신청 시작:');
+    act(() => {
+      window.history.replaceState(null, '', '/gate?view=archive&event=old&lang=ko');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByRole('heading', { name: 'Past event' })).toBeInTheDocument();
+  });
+
+  it.each([true, false])('resumes exactly once after explicit activation (reduced motion: %s)', async (reduce) => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: reduce, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} })));
+    const onWake = vi.fn();
+    const user = userEvent.setup();
+    render(<SleepScreen onWake={onWake} />);
+    await user.tab();
+    expect(screen.getByRole('button', { name: /RESUME SESSION/ })).toHaveFocus();
+    expect(onWake).not.toHaveBeenCalled();
+    await user.keyboard('{Enter}{Enter}');
+    fireEvent.click(screen.getByRole('button', { name: /RESUME SESSION/ }));
+    await waitFor(() => expect(onWake).toHaveBeenCalledTimes(1));
   });
 });

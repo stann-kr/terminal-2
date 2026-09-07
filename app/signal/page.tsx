@@ -11,9 +11,11 @@ import ConsentCheckbox from '@/components/ui/ConsentCheckbox';
 import ConsentBlock from '@/components/ui/ConsentBlock';
 import FieldError from '@/components/ui/FieldError';
 import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
+import { useLang } from '@/lib/langContext';
 import { useSignalSubscription } from './useSignalSubscription';
 
 export default function SignalPage() {
+  const { lang } = useLang();
   const {
     t,
     form,
@@ -28,13 +30,13 @@ export default function SignalPage() {
   } = useSignalSubscription();
 
   return (
-    <PageLayout centerContent={false}>
+    <PageLayout centerContent={false} width="form">
       <ReturnLink variants={itemVariants} />
-      <PageHeader path="/terminal/signal" title="SIGNAL_SUBSCRIPTION" accent="tertiary" variants={itemVariants} />
+      <PageHeader path="/terminal/signal" title={lang === 'ko' ? '소식 신청' : 'Event updates'} accent="tertiary" variants={itemVariants} />
 
       {submitted ? (
         <motion.div variants={itemVariants} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <TerminalPanel title="REQUEST_COMMITTED" accent="tertiary" headingLevel={2}>
+          <TerminalPanel title={t.signal.committed} accent="tertiary" headingLevel={2}>
             <div className="text-center py-6 space-y-2" role="status" aria-live="polite" aria-atomic="true">
               <div className="font-bold tracking-widest font-mono text-terminal-accent-tertiary">
                 <LabelText text={t.signal.committed} />
@@ -48,10 +50,10 @@ export default function SignalPage() {
       ) : (
         <div className="space-y-4">
           <motion.div variants={itemVariants}>
-            <TerminalPanel title="SIGNAL_BRIEF" accent="tertiary" headingLevel={2}>
+            <TerminalPanel title={lang === 'ko' ? '이벤트 소식 받기' : 'Receive event updates'} accent="tertiary" headingLevel={2}>
               <div className="space-y-1.5">
                 {t.signal.description.map((line, index) => (
-                  <div key={index} className="font-mono text-terminal-subdued tracking-wide">
+                  <div key={index} className="text-terminal-subdued">
                     <SubtitleText text={line} delay={index * 40} />
                   </div>
                 ))}
@@ -60,7 +62,7 @@ export default function SignalPage() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <TerminalPanel title="SIGNAL_SUBSCRIPTION" accent="tertiary" headingLevel={2}>
+            <TerminalPanel title={lang === 'ko' ? '소식 신청' : 'Event updates'} accent="tertiary" headingLevel={2}>
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <FormField label={t.signal.labelEmail} htmlFor="signal-email">
                   <input
@@ -119,7 +121,7 @@ export default function SignalPage() {
                 <AnimatePresence mode="wait">
                   {formError && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-terminal-accent-alert" role="alert" aria-live="assertive">
-                      <LabelText text={`⚠ ERROR: ${formError}`} />
+                      <LabelText text={formError} />
                     </motion.div>
                   )}
                 </AnimatePresence>

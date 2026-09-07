@@ -273,7 +273,9 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
       className="fixed inset-0 z-50 flex flex-col justify-center items-center px-4 sm:px-6 overflow-hidden bg-terminal-bg-base font-mono"
       animate={powering ? { scaleY: 0.001, filter: 'brightness(0)' } : { scaleY: 1, filter: 'brightness(1)' }}
       transition={{ duration: allowMotion ? 0.6 : 0, ease: 'easeOut' }}
-      exit={{ opacity: 0, filter: 'brightness(3) blur(8px)', transition: { duration: 0.5 } }}
+      exit={allowMotion
+        ? { opacity: 0, filter: 'brightness(3) blur(8px)', transition: { duration: 0.5 } }
+        : { opacity: 0, filter: 'none', transition: { duration: 0 } }}
     >
       <TerminalButton
         onClick={skipToNextGate}

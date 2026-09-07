@@ -1,210 +1,52 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import PageLayout, { itemVariants } from "@/components/shell/PageLayout";
-import { LabelText, SubtitleText, MetaText, HeadingText } from "@/components/ui/TerminalText";
-import ReturnLink from "@/components/ui/ReturnLink";
-import PageHeader from "@/components/ui/PageHeader";
-import TerminalPanel from "@/components/TerminalPanel";
-import TerminalButton from "@/components/TerminalButton";
-import TerminalActionLink from "@/components/TerminalActionLink";
-import EventDetail from "./EventDetail";
-import { useT } from "@/lib/langContext";
-import { fetchEvents, eventKeys } from "@/lib/events/client";
-import { getArchivedOrElapsedEvents, getFutureUpcomingEvent } from "@/lib/events/lifecycle";
-import { useUrlQueryState } from "@/lib/useUrlQueryState";
+'use client';
+import { useQuery } from '@tanstack/react-query';
+import PageLayout from '@/components/shell/PageLayout';
+import ReturnLink from '@/components/ui/ReturnLink';
+import TerminalButton from '@/components/TerminalButton';
+import TerminalActionLink from '@/components/TerminalActionLink';
+import EventSummary from '@/components/events/EventSummary';
+import EventDetail from './EventDetail';
+import { useLang, useT } from '@/lib/langContext';
+import { fetchEvents, eventKeys } from '@/lib/events/client';
+import { getArchivedOrElapsedEvents, getDefaultEvent, getEffectiveEventStatus, getEventDateTime, getFutureUpcomingEvent, getRequestWindowState, selectEvent } from '@/lib/events/lifecycle';
+import { useEventClock } from '@/lib/events/useEventClock';
+import { ACCESS_WINDOW_DAYS } from '@/lib/gate/requestPolicy';
+import { useUrlQueryState } from '@/lib/useUrlQueryState';
 
 export default function GatePage() {
   const t = useT();
-  const [viewQuery, setViewQuery] = useUrlQueryState('view');
-  const [selectedArchive, setSelectedArchive] = useUrlQueryState('event');
-  const tab = viewQuery === 'archive' ? 'archive' : 'upcoming';
-
-  const { data: events = [], isLoading: loading, isError: error, refetch } = useQuery({
-    queryKey: eventKeys.list(),
-    queryFn: fetchEvents,
-  });
-
-  const upcomingEvent = getFutureUpcomingEvent(events);
-  const archivedEvents = getArchivedOrElapsedEvents(events);
-  const effectiveArchiveId = archivedEvents.some((event) => event.id === selectedArchive)
-    ? selectedArchive
-    : archivedEvents[0]?.id || "";
-  const selectedEvent =
-    tab === "upcoming"
-      ? upcomingEvent
-      : (events.find((e) => e.id === effectiveArchiveId) || archivedEvents[0] || null);
-
+  const { lang } = useLang();
+  const [view, setView] = useUrlQueryState('view');
+  const [selectedId, setSelectedId] = useUrlQueryState('event');
+  const { data: events = [], isLoading, isError, refetch } = useQuery({ queryKey: eventKeys.list(), queryFn: fetchEvents });
+  const now = useEventClock(events, ACCESS_WINDOW_DAYS);
+  const requested = events.find(e => e.id === selectedId);
+  const defaultEvent = getDefaultEvent(events, now);
+  const isArchive = requested ? getEffectiveEventStatus(requested, now) === 'ARCHIVED' : view === 'archive' || (!view && defaultEvent?.status === 'ARCHIVED');
+  const candidates = isArchive ? getArchivedOrElapsedEvents(events, now) : events.filter(e => getEffectiveEventStatus(e, now) !== 'ARCHIVED');
+  const event = selectEvent(candidates, selectedId, now);
+  const requestEvent = getFutureUpcomingEvent(events, now);
+  const requestWindow = event ? getRequestWindowState(event, ACCESS_WINDOW_DAYS, now) : null;
+  const canRequest = event?.id === requestEvent?.id && requestWindow?.isActive;
+  const switchView = (archive: boolean) => setView(archive ? 'archive' : 'upcoming', { event: '' });
   return (
-    <PageLayout>
-      <ReturnLink variants={itemVariants} />
-      <PageHeader
-        path="/terminal/gate"
-        title="GATE.SEC"
-        accent="primary"
-        variants={itemVariants}
-      />
-
-      {/* Tab switcher */}
-      <motion.div variants={itemVariants} className="mb-6">
-        <div
-          className="inline-flex p-1 gap-1 bg-terminal-bg-overlay/50 border border-terminal-accent-primary/15"
-          role="group"
-          aria-label="Event view"
-        >
-          {(["upcoming", "archive"] as const).map((tabKey) => (
-            <TerminalButton
-              key={tabKey}
-              variant={tab === tabKey ? "primary" : "ghost"}
-              className="px-4 py-1.5 text-micro"
-              onClick={() => setViewQuery(tabKey === 'archive' ? 'archive' : '')}
-              aria-pressed={tab === tabKey}
-            >
-              {tabKey === "upcoming" ? t.gate.tabUpcoming : t.gate.tabArchive}
-            </TerminalButton>
-          ))}
-        </div>
-      </motion.div>
-
-      {loading ? (
-        <motion.div variants={itemVariants} className="font-mono text-terminal-muted text-center py-8">
-          <LabelText text={t.gate.loading} />
-        </motion.div>
-      ) : error ? (
-        <motion.div variants={itemVariants} className="border border-terminal-accent-alert/25 bg-terminal-bg-panel px-4 py-8 text-center space-y-2">
-          <div className="font-bold tracking-widest text-terminal-accent-alert font-mono">
-            <LabelText text={t.common.signalUnstable} />
-          </div>
-          <div className="text-terminal-muted font-mono">
-            <MetaText text={t.common.dbUnreachable} />
-          </div>
-          <div className="flex justify-center">
-            <TerminalButton variant="ghost" onClick={() => void refetch()}>{t.common.retry}</TerminalButton>
-          </div>
-        </motion.div>
-      ) : (
-        <AnimatePresence mode="wait">
-          {tab === "upcoming" ? (
-            <motion.div
-              key="upcoming"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="space-y-4"
-            >
-              {upcomingEvent ? (
-                <>
-                  {/* Event header - 정보 가독성 유지 */}
-                  <div className="border border-terminal-accent-secondary/30 px-4 py-4 bg-terminal-bg-panel">
-                    <div className="flex items-start justify-between gap-2 sm:gap-4">
-                      <div>
-                        <div className="tracking-widest mb-1 font-mono text-terminal-muted">
-                          <MetaText text={`${upcomingEvent.date.replace(/-/g, ".")} · ${upcomingEvent.time}`} />
-                        </div>
-                        <div className="drop-shadow-[0_0_12px_rgb(var(--color-accent-secondary)/0.4)]">
-                          <HeadingText
-                            as="h2"
-                            text={upcomingEvent.session}
-                            className="tracking-[0.15em] text-terminal-accent-secondary"
-                          />
-                        </div>
-                        <SubtitleText
-                          autoHeight
-                          text={upcomingEvent.subtitle}
-                          className="mt-1 text-terminal-subdued tracking-[0.1em]"
-                        />
-                      </div>
-                      <div className="font-bold tracking-wider shrink-0 text-terminal-accent-secondary font-mono text-micro sm:text-small">
-                        <span className="status-pulse mr-1">●</span>
-                        <LabelText text="UPCOMING" className="inline" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <EventDetail event={upcomingEvent} showCountdown />
-
-                  <div className="text-center pt-2">
-                    <TerminalActionLink href="/gate/request" className="inline-flex px-8" variant="primary">
-                      {t.gate.requestBtn}
-                    </TerminalActionLink>
-                  </div>
-                </>
-              ) : (
-                <TerminalPanel title="REQUEST_STATUS" accent="alert">
-                  <div className="text-center py-6 space-y-2 font-mono">
-                    <LabelText text={t.request.noEvent} />
-                    <MetaText text={t.request.eventElapsed} />
-                  </div>
-                </TerminalPanel>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="archive"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="space-y-4"
-            >
-              {/* Archive session list */}
-              <div
-                className="space-y-2"
-                role={archivedEvents.length > 0 ? 'list' : undefined}
-                aria-label={archivedEvents.length > 0 ? 'Archived events' : undefined}
-              >
-                {archivedEvents.length === 0 ? (
-                  <TerminalPanel title="ARCHIVE_STATUS" accent="alert">
-                    <div className="text-center py-4 font-mono text-terminal-muted" role="status" aria-live="polite">
-                      <MetaText text={t.gate.noArchive} />
-                    </div>
-                  </TerminalPanel>
-                ) : archivedEvents.map((ev) => (
-                  <div key={ev.id} role="listitem">
-                    <button
-                      onClick={() => setSelectedArchive(ev.id)}
-                      aria-current={effectiveArchiveId === ev.id ? 'true' : undefined}
-                      className={`w-full text-left px-4 py-3 border cursor-pointer transition-[color,border-color,background-color] duration-200 font-mono ${
-                        effectiveArchiveId === ev.id
-                          ? "border-terminal-accent-alert/50 bg-terminal-accent-alert/10"
-                          : "border-terminal-accent-primary/15 bg-terminal-bg-panel hover:bg-terminal-accent-primary/5"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <div className={`font-bold tracking-wider ${effectiveArchiveId === ev.id ? "text-terminal-accent-alert" : "text-terminal-primary"}`}>
-                            <SubtitleText autoHeight text={ev.session} />
-                          </div>
-                          <div className="mt-0.5 text-terminal-subdued">
-                            <MetaText text={`${ev.subtitle} · ${ev.date.replace(/-/g, ".")}`} />
-                          </div>
-                        </div>
-                        <div className="tracking-wider shrink-0 text-terminal-muted flex items-center">
-                          <LabelText autoHeight text={t.gate.archivedLabel} />
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Selected archive detail */}
-              {selectedEvent && (
-                <motion.div
-                  key={selectedEvent.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <EventDetail event={selectedEvent} />
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
+    <PageLayout width="event">
+      <ReturnLink />
+      <div role="group" aria-label={lang === 'ko' ? '이벤트 보기' : 'Event view'} className="flex flex-wrap gap-2 mb-8">
+        <TerminalButton variant={!isArchive ? 'primary' : 'ghost'} aria-pressed={!isArchive} onClick={() => switchView(false)}>{t.gate.tabUpcoming}</TerminalButton>
+        <TerminalButton variant={isArchive ? 'primary' : 'ghost'} aria-pressed={isArchive} onClick={() => switchView(true)}>{t.gate.tabArchive}</TerminalButton>
+      </div>
+      {isLoading ? <div role="status"><h1 className="sr-only">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.gate.loading}</div> : isError ? <div role="alert" className="space-y-4"><h1 className="text-h1">{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div> : <>
+        {candidates.length > 1 && <div className="mb-8"><label className="block text-small mb-2" htmlFor="gate-event">{lang === 'ko' ? '이벤트 선택' : 'Select event'}</label><select id="gate-event" className="w-full min-h-11 p-3 bg-terminal-bg-panel border border-terminal-bg-panel-border text-body" value={event?.id ?? ''} onChange={e => setSelectedId(e.target.value)}>{candidates.map(e => <option key={e.id} value={e.id}>{e.session} · {e.date}</option>)}</select></div>}
+        {event ? <>
+          <EventSummary event={event}>
+            {canRequest && <TerminalActionLink href={`/gate/request?event=${encodeURIComponent(event.id)}`}>{t.gate.requestBtn}</TerminalActionLink>}
+            <TerminalActionLink variant="ghost" href={`/lineup?event=${encodeURIComponent(event.id)}`}>{lang === 'ko' ? '라인업 보기' : 'View lineup'}</TerminalActionLink>
+            {!canRequest && <p className="w-full text-small text-terminal-subdued" role="status">{event.status === 'LIVE' ? (lang === 'ko' ? '이벤트가 진행 중입니다. 온라인 신청은 마감되었습니다.' : 'The event is live. Online requests are closed.') : event.status === 'ARCHIVED' ? t.request.eventElapsed : requestWindow?.opensInDays ? (lang === 'ko' ? '신청 시작: ' : 'Requests open: ') + new Intl.DateTimeFormat(lang === 'ko' ? 'ko-KR' : 'en-US', { timeZone: 'Asia/Seoul', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(getEventDateTime(event).getTime() - ACCESS_WINDOW_DAYS * 86400000)) + ' KST' : (lang === 'ko' ? '현재 이 이벤트는 온라인 신청을 받지 않습니다.' : 'Online requests are not available for this event.')}</p>}
+          </EventSummary>
+          <div className="mt-12"><EventDetail event={event} /></div>
+        </> : <div role="status" className="py-10"><h1 className="text-h1 mb-4">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{isArchive ? t.gate.noArchive : t.request.noEvent}</div>}
+      </>}
     </PageLayout>
   );
 }

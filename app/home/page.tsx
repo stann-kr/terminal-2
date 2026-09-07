@@ -1,231 +1,49 @@
-"use client";
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import AnimatedHeight from "@/components/ui/AnimatedHeight";
-import DirectoryLink from "@/components/DirectoryLink";
-import TerminalButton from "@/components/TerminalButton";
-import TerminalActionLink from "@/components/TerminalActionLink";
-import PageLayout, { itemVariants } from "@/components/shell/PageLayout";
-import {
-  TitleText,
-  SubtitleText,
-  HeadingText,
-  LabelText,
-  MetaText,
-} from "@/components/ui/TerminalText";
-import CountdownBlock from "@/components/events/CountdownBlock";
-import LangToggle from "@/components/ui/LangToggle";
-import { useT } from "@/lib/langContext";
-import { fetchEvents, eventKeys } from "@/lib/events/client";
-import { getArchivedOrElapsedEvents, getEventDateTime, getFutureUpcomingEvent } from "@/lib/events/lifecycle";
+'use client';
+import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import PageLayout from '@/components/shell/PageLayout';
+import CRTWrapper from '@/components/shell/CRTWrapper';
+import { TitleText } from '@/components/ui/TerminalText';
+import TerminalButton from '@/components/TerminalButton';
+import TerminalActionLink from '@/components/TerminalActionLink';
+import EventSummary from '@/components/events/EventSummary';
+import DirectoryLink from '@/components/DirectoryLink';
+import { useLang, useT } from '@/lib/langContext';
+import { fetchEvents, eventKeys } from '@/lib/events/client';
+import { getDefaultEvent, getLiveEvents } from '@/lib/events/lifecycle';
+import { useEventClock } from '@/lib/events/useEventClock';
 
 export default function HomePage() {
   const t = useT();
-
-  const DIRS = [
-    { href: "/about",    label: "About",    description: t.dirDesc.about,    accent: "primary" as const },
-    { href: "/gate",     label: "Gate",     description: t.dirDesc.gate,     accent: "primary" as const },
-    { href: "/lineup",   label: "Lineup",   description: t.dirDesc.lineup,   accent: "primary" as const },
-    { href: "/status",   label: "Status",   description: t.dirDesc.status,   accent: "primary" as const },
-    { href: "/transmit", label: "Transmit", description: t.dirDesc.transmit, accent: "primary" as const },
-    { href: "/signal",   label: "Signal",   description: t.dirDesc.signal,   accent: "primary" as const },
-    { href: "/link",     label: "Link",     description: t.dirDesc.link,     accent: "primary" as const },
+  const { lang } = useLang();
+  const { data: events = [], isLoading, isError, refetch } = useQuery({ queryKey: eventKeys.list(), queryFn: fetchEvents });
+  const now = useEventClock(events);
+  const event = getDefaultEvent(events, now);
+  const liveEvents = getLiveEvents(events, now);
+  const links = [
+    { href: '/status', label: lang === 'ko' ? '지난 기록' : 'Event history', description: t.dirDesc.status },
+    { href: '/signal', label: lang === 'ko' ? '소식 신청' : 'Event updates', description: t.dirDesc.signal },
+    { href: '/transmit', label: lang === 'ko' ? '방명록' : 'Guestbook', description: t.dirDesc.transmit },
+    { href: '/about', label: lang === 'ko' ? '소개' : 'About', description: t.dirDesc.about },
+    { href: '/link', label: lang === 'ko' ? '공식 채널' : 'Official channels', description: t.dirDesc.link },
   ];
-
-  const { data: events = [], isLoading: isEventLoading, isError: eventError, refetch } = useQuery({
-    queryKey: eventKeys.list(),
-    queryFn: fetchEvents,
-  });
-
-  const upcomingEvent = useMemo(() => getFutureUpcomingEvent(events), [events]);
-
-  const countdownTarget = useMemo(() => {
-    if (upcomingEvent) {
-      return getEventDateTime(upcomingEvent);
-    }
-    const archived = getArchivedOrElapsedEvents(events);
-    if (archived.length > 0) {
-      return getEventDateTime(archived[0]);
-    }
-    return null;
-  }, [events, upcomingEvent]);
-
-  const eventDate = countdownTarget;
-  const isElapsed = upcomingEvent === null && countdownTarget !== null;
-  const displayEvent = upcomingEvent ?? getArchivedOrElapsedEvents(events)[0] ?? null;
-
-  const eventDateLabel = displayEvent
-    ? new Date(displayEvent.date)
-        .toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        })
-        .toUpperCase()
-    : "—";
-
   return (
-    <PageLayout>
-      {/* Header */}
-      <div id="home-ambient-anchor" className="mb-6 text-center">
-        <motion.div
-          variants={itemVariants}
-          className="flex font-mono text-pico tracking-widest mb-1 sm:mb-3 text-terminal-muted overflow-hidden px-6 sm:px-10 md:px-16"
-        >
-          <span>╔</span>
-          <span className="flex-1 overflow-hidden whitespace-nowrap select-none">{'═'.repeat(60)}</span>
-          <span>╗</span>
-        </motion.div>
-
-        <motion.h1
-          variants={itemVariants}
-          className="font-bold tracking-[0.15em] sm:tracking-[0.25em] mb-1 sm:mb-2 leading-none drop-shadow-[0_0_30px_rgb(var(--color-accent-primary)/0.5)] font-pixie"
-        >
-          <TitleText
-            text="TERMINAL"
-            as="span"
-            autoHeight
-            className="text-hero sm:text-[4rem] md:text-display text-terminal-accent-primary"
-          />
-        </motion.h1>
-
-        <motion.div variants={itemVariants}>
-          <SubtitleText
-            text="A VOYAGE TO THE UNKNOWN SECTOR"
-            delay={100}
-            className="text-caption md:text-small text-terminal-subdued text-center tracking-[0.2em] opacity-70"
-          />
-        </motion.div>
-
-        <motion.div
-          variants={itemVariants}
-          className="flex font-mono text-pico tracking-widest mt-1 sm:mt-3 text-terminal-muted overflow-hidden px-6 sm:px-10 md:px-16"
-        >
-          <span>╚</span>
-          <span className="flex-1 overflow-hidden whitespace-nowrap select-none">{'═'.repeat(60)}</span>
-          <span>╝</span>
-        </motion.div>
+    <PageLayout width="event">
+      <div id="home-ambient-anchor" className="mb-8">
+        <CRTWrapper><div className="py-5 px-1"><TitleText text="TERMINAL" className="font-pixie text-h1 tracking-wider" /><p className="text-caption font-mono mt-1">A VOYAGE TO THE UNKNOWN SECTOR</p></div></CRTWrapper>
       </div>
-
-      {/* Next Event Countdown */}
-      <motion.div
-        variants={itemVariants}
-        className="mb-8 border py-6 px-4 border-terminal-accent-primary/20 bg-terminal-bg-panel"
-      >
-        {isEventLoading ? (
-          <div className="text-center py-4 font-mono text-terminal-muted" role="status" aria-live="polite">
-            <LabelText autoHeight text={t.home.loading} />
-          </div>
-        ) : eventError ? (
-          <div className="text-center py-4 space-y-2">
-            <div className="font-bold tracking-widest text-terminal-accent-alert font-mono">
-              <LabelText
-                autoHeight
-                text={t.common.signalUnstable}
-              />
-            </div>
-            <div className="text-terminal-muted font-mono">
-              <MetaText
-                autoHeight
-                text={t.common.dbUnreachable}
-              />
-            </div>
-            <div className="flex justify-center">
-              <TerminalButton variant="ghost" onClick={() => void refetch()}>{t.common.retry}</TerminalButton>
-            </div>
-          </div>
-        ) : events.length === 0 ? (
-          <div className="text-center py-4 font-mono text-terminal-muted" role="status" aria-live="polite">
-            <MetaText autoHeight text={t.home.noEvents} />
-          </div>
-        ) : (
-          <>
-            <div className="text-center mb-4">
-              <div className="mb-1 tracking-[0.1em]">
-                <MetaText
-                  className="text-terminal-muted"
-                  text={`${isElapsed ? t.home.lastEntry : t.home.nextEntry} ${eventDateLabel}`}
-                />
-              </div>
-              <div className="drop-shadow-[0_0_16px_rgb(var(--color-accent-primary)/0.4)]">
-                <HeadingText
-                  autoHeight
-                  className="font-bold text-terminal-accent-primary tracking-[0.2em]"
-                  text={displayEvent?.session ?? "—"} as="span"
-                />
-              </div>
-              <div className="mt-1 tracking-[0.1em]">
-                <MetaText
-                  className="text-terminal-subdued"
-                  autoHeight
-                  text={
-                    displayEvent
-                      ? `${displayEvent.subtitle} // ${displayEvent.venue}`
-                      : "—"
-                  }
-                />
-              </div>
-            </div>
-            <AnimatedHeight show={!!eventDate}>
-              {eventDate && <CountdownBlock targetDate={eventDate} />}
-            </AnimatedHeight>
-            {displayEvent && (
-              <div className="mt-5 flex justify-center">
-                <TerminalActionLink
-                  href={isElapsed
-                    ? `/gate?view=archive&event=${encodeURIComponent(displayEvent.id)}`
-                    : '/gate'}
-                  variant={isElapsed ? 'ghost' : 'primary'}
-                >
-                  {isElapsed ? t.home.viewArchive : t.home.viewEvent}
-                </TerminalActionLink>
-              </div>
-            )}
-          </>
-        )}
-      </motion.div>
-
-      {/* Directory */}
-      <motion.nav
-        variants={itemVariants}
-        className="border border-terminal-accent-primary/20 bg-terminal-bg-panel"
-        aria-labelledby="home-directory-title"
-      >
-        <div className="px-4 py-2 border-b flex items-center justify-between border-terminal-accent-primary/15 bg-terminal-bg-overlay/40">
-          <span id="home-directory-title" className="text-micro sm:text-small tracking-widest text-terminal-accent-primary">
-            <LabelText
-              autoHeight
-              text={t.home.rootDir}
-            />
-          </span>
-          <span className="text-micro sm:text-small text-terminal-muted">
-            <LabelText
-              autoHeight
-              text={t.home.moduleCount(DIRS.length)}
-            />
-          </span>
-        </div>
-
-        <ul className="list-none m-0 p-0">
-          {DIRS.map((dir, i) => (
-            <li key={dir.href}>
-              <DirectoryLink {...dir} index={i + 1} />
-            </li>
-          ))}
-        </ul>
-      </motion.nav>
-
-      {/* Footer */}
-      <motion.div
-        variants={itemVariants}
-        className="mt-6 flex items-center justify-between text-micro sm:text-caption text-terminal-muted font-mono"
-      >
-        <span>
-          <MetaText text="TERMINAL · SEOUL" autoHeight />
-        </span>
-        <LangToggle />
-      </motion.div>
+      {isLoading ? <div role="status"><h1 className="sr-only">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.home.loading}</div>
+        : isError ? <div role="alert" className="py-10 space-y-4"><h1 className="text-h1">{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
+        : event ? <EventSummary event={event}>
+          <TerminalActionLink href={`/gate?${event.status === 'ARCHIVED' ? 'view=archive&' : ''}event=${encodeURIComponent(event.id)}`}>{event.status === 'ARCHIVED' ? t.home.viewArchive : t.home.viewEvent}</TerminalActionLink>
+          <TerminalActionLink variant="ghost" href={`/lineup?event=${encodeURIComponent(event.id)}`}>{lang === 'ko' ? '라인업' : 'Lineup'}</TerminalActionLink>
+        </EventSummary>
+        : <div role="status" className="py-12"><h1 className="text-h1 mb-4">{lang === 'ko' ? '이벤트' : 'Events'}</h1><p>{t.home.noEvents}</p></div>}
+      {liveEvents.length > 1 && <nav className="mt-8 space-y-2" aria-label={lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}>{liveEvents.filter(e => e.id !== event?.id).map(e => <Link className="block min-h-11 py-2 underline" key={e.id} href={`/gate?event=${encodeURIComponent(e.id)}`}>{e.session}</Link>)}</nav>}
+      <nav className="mt-14 border-t border-terminal-bg-panel-border" aria-label={lang === 'ko' ? '더 알아보기' : 'Explore'}>
+        {links.map((link, index) => <DirectoryLink key={link.href} {...link} index={index + 1} />)}
+      </nav>
+      <Link href="/?experience=terminal" className="mt-6 text-small text-terminal-subdued underline min-h-11 inline-flex items-center self-start">{lang === 'ko' ? '터미널 체험' : 'Terminal experience'}</Link>
     </PageLayout>
   );
 }

@@ -9,6 +9,10 @@ terminal-2 is the STANN OS LIVE surface for `https://terminal.stann.kr`.
   - ARCHIVE: `https://lumo.stann.kr`
   - LIVE: `https://terminal.stann.kr`
 
+## Event experience
+
+`/` and `/home` open the event overview. The optional boot/sleep experience is available at `/?experience=terminal`. Event selection prefers live events, then the nearest upcoming event, then the latest past event. Dates are displayed in Korea Standard Time. Gate and Lineup preserve the selected event in `?event=`.
+
 ## Stack
 
 - Next.js 16 App Router
@@ -146,6 +150,8 @@ These routes accept public writes and must be protected by validation, body guar
 - `POST /api/gate/request`
 - `POST /api/signal`
 - `POST /api/transmit`
+
+`POST /api/gate/code-info` and `POST /api/gate/request` require the displayed `eventId` in the JSON body. The server independently selects the eligible event. Missing IDs return `400 EVENT_ID_REQUIRED`; changed targets return `409 EVENT_MISMATCH`; no eligible upcoming event returns `404 NO_UPCOMING_EVENT`. Clients must refresh and review the event before retrying, preserving the draft. Older clients without an event ID must reload.
 
 Current local contracts include exact JSON media-type and streaming byte guards, runtime DTO validation, a Cloudflare rate-limit binding interface, and a server-side Turnstile validator. Broad public launch still requires the real binding/secret, client token flow, and verified Signal unsubscribe/retention operations.
 
