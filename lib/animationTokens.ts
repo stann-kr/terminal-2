@@ -6,14 +6,12 @@ import type { Variants } from "framer-motion";
 
 export const containerVariants: Variants = {
   hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
-  },
+  visible: {},
 };
 
 export const itemVariants: Variants = {
-  hidden: { y: 8 },
-  visible: { y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+  hidden: {},
+  visible: {},
 };
 
 // ─── DecodeText 프리셋 ────────────────────────────────────────────────────────

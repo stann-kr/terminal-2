@@ -36,22 +36,21 @@ export default function TerminalPanel({
   return (
     <RootTag
       aria-labelledby={titleId}
-      className={`relative bg-terminal-bg-panel border ${classes.border} ${classes.glow} ${className}`}
+      className={`relative border-t border-terminal-bg-panel-border ${className}`}
     >
       {title && (
         <TitleTag
           id={titleId}
-          className={`px-4 py-2 border-b flex items-center gap-2 bg-terminal-bg-overlay/40 ${classes.border}`}
+          className="pt-5 pb-2 flex items-center gap-2"
         >
-          <span className={`text-small ${classes.title}`} aria-hidden="true">▶</span>
           <LabelText
             text={title}
             autoHeight
-            className={`text-small font-bold tracking-widest uppercase ${classes.title}`}
+            className={`text-body font-semibold ${classes.title}`}
           />
         </TitleTag>
       )}
-      <div className="p-4">{children}</div>
+      <div className="py-4">{children}</div>
     </RootTag>
   );
 }

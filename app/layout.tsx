@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import "./crt.css";
-import CRTWrapper from "@/components/shell/CRTWrapper";
 import PageTransition from "@/components/shell/PageTransition";
 import { LangProvider } from "@/lib/langContext";
 import { QueryProvider } from "@/providers/query-provider";
@@ -37,16 +36,14 @@ export const viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${jetbrainsMono.variable} font-orbit bg-terminal-bg-base overflow-x-hidden`}>
+      <body className={`${jetbrainsMono.variable} bg-terminal-bg-base overflow-x-hidden`}>
         <QueryProvider>
           <LangProvider>
             <MotionProvider>
               <SkipLink />
-              <CRTWrapper>
                 <PageTransition>
                   {children}
                 </PageTransition>
-              </CRTWrapper>
             </MotionProvider>
           </LangProvider>
         </QueryProvider>

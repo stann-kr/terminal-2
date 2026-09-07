@@ -1,12 +1,13 @@
 'use client';
 import { motion, Variants } from 'framer-motion';
-import { HeadingText, LabelText } from '@/components/ui/TerminalText';
+import { HeadingText } from '@/components/ui/TerminalText';
 
 interface PageHeaderProps {
   path: string;
   title: string;
   accent?: 'primary' | 'secondary' | 'alert' | 'warn' | 'tertiary';
   variants?: Variants;
+  cipher?: boolean;
 }
 
 const defaultVariants = {
@@ -22,18 +23,15 @@ const accentClassMap: Record<NonNullable<PageHeaderProps['accent']>, string> = {
   tertiary:  'text-terminal-accent-tertiary text-shadow-glow-tertiary',
 };
 
-export default function PageHeader({ path, title, accent = 'primary', variants = defaultVariants }: PageHeaderProps) {
+export default function PageHeader({ title, accent = 'primary', variants = defaultVariants, cipher = false }: PageHeaderProps) {
   const accentClass = accentClassMap[accent] || accentClassMap.primary;
   return (
-    <motion.div variants={variants} className="mb-8 font-mono">
-      <div className="text-small tracking-label mb-1 text-terminal-muted">
-        <LabelText text={`[ ${path.toUpperCase()} ]`} autoHeight />
-      </div>
+    <motion.div variants={variants} className="mb-8">
       <HeadingText
         text={title}
-        cipher
+        cipher={cipher}
         autoHeight
-        className={`font-orbit text-heading md:text-h2 font-bold tracking-[0.2em] ${accentClass}`}
+        className={`font-orbit text-h1 md:text-title font-bold tracking-normal ${accentClass.split(' ')[0]}`}
       />
     </motion.div>
   );
