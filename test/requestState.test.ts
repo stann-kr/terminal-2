@@ -1,4 +1,9 @@
-import { describe, expect, it } from 'vitest';
+// @vitest-environment jsdom
+import { createElement, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
+import { act, cleanup, renderHook } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useAccessRequest } from '../app/gate/request/useAccessRequest';
+import { LangProvider, useLang } from '../lib/langContext';
 import {
   resolveCodeVerificationState,
   resolveRequestEventState,
@@ -42,5 +47,74 @@ describe('request access state', () => {
     expect(resolveCodeVerificationState({ ok: false, status: 500 })).toEqual({
       kind: 'unavailable',
     });
+  });
+});
+
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+describe('request event binding and draft preservation', () => {
+  it('keeps an explicit event query distinct from the current eligible event', () => {
+    const nextEvent = { ...futureEvent, id: 'next', date: '2026-09-02' };
+    expect(resolveRequestEventState([futureEvent, nextEvent], 30, new Date('2026-08-15T12:00:00+09:00'), 'next'))
+      .toEqual({ kind: 'target-changed', event: nextEvent, nextEvent: futureEvent });
+    expect(resolveCodeVerificationState({ ok: false, status: 409, error: 'EVENT_MISMATCH' }))
+      .toEqual({ kind: 'target-changed' });
+  });
+
+  it('preserves the draft through language changes and stale-event rejection, then requires explicit event selection', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-15T12:00:00+09:00'));
+    window.history.replaceState(null, '', '/gate/request?event=event-1');
+    const nextEvent = { ...futureEvent, id: 'event-2', session: 'Next event', date: '2026-09-02' };
+    let events = [futureEvent];
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
+      if (url === '/api/events') return Response.json(events);
+      if (url === '/api/gate/code-info') return Response.json({ name: 'Inviter' });
+      return Response.json({ error: 'EVENT_MISMATCH' }, { status: 409 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(LangProvider, null, children);
+    const { result } = renderHook(() => ({ request: useAccessRequest(), language: useLang() }), { wrapper });
+    await act(async () => {});
+    expect(result.current.request.event?.id).toBe('event-1');
+
+    act(() => result.current.request.handleCodeChange({ target: { value: 'CODE-1' } } as ChangeEvent<HTMLInputElement>));
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(result.current.request.isCodeVerified).toBe(true);
+    act(() => {
+      result.current.request.handleTextChange('name')({ target: { value: 'My draft' } } as ChangeEvent<HTMLInputElement>);
+      result.current.request.handleTextChange('email')({ target: { value: 'draft@example.com' } } as ChangeEvent<HTMLInputElement>);
+      result.current.request.handleInstagramChange({ target: { value: 'draft' } } as ChangeEvent<HTMLInputElement>);
+      result.current.request.handlePrivacyConsentChange(true);
+      result.current.language.setLang('en');
+    });
+    expect(result.current.request.form.name).toBe('My draft');
+    expect(result.current.request.isCodeVerified).toBe(true);
+
+    events = [nextEvent];
+    await act(async () => { await result.current.request.handleSubmit({ preventDefault() {} } as FormEvent); });
+    expect(result.current.request.needsTargetReview).toBe(true);
+    expect(result.current.request.isCodeVerified).toBe(false);
+    expect(result.current.request.form).toMatchObject({ name: 'My draft', email: 'draft@example.com', privacyConsent: true });
+    expect(result.current.request.nextEvent?.id).toBe('event-2');
+    expect(result.current.request.gateHref).toBe('/gate?event=event-1');
+    expect(window.location.search).toBe('?event=event-1');
+    const submitCall = fetchMock.mock.calls.find(([url]) => url === '/api/gate/request');
+    expect(JSON.parse((submitCall?.[1] as RequestInit).body as string)).toMatchObject({ eventId: 'event-1', name: 'My draft' });
+
+    act(() => result.current.request.acceptNextEvent());
+    expect(window.location.search).toBe('?event=event-2');
+    expect(result.current.request.event?.id).toBe('event-2');
+    expect(result.current.request.isCodeVerified).toBe(false);
+    expect(result.current.request.form.name).toBe('My draft');
+    await act(async () => { result.current.request.verifyCode('CODE-1'); });
+    expect(result.current.request.isCodeVerified).toBe(true);
+    const lastCodeCall = fetchMock.mock.calls.filter(([url]) => url === '/api/gate/code-info').at(-1);
+    expect(JSON.parse((lastCodeCall?.[1] as RequestInit).body as string).eventId).toBe('event-2');
   });
 });

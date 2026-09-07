@@ -1,23 +1,30 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import PageLayout, { itemVariants } from '@/components/shell/PageLayout';
+import PageLayout from '@/components/shell/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import ReturnLink from '@/components/ui/ReturnLink';
 import TerminalPanel from '@/components/TerminalPanel';
 import TerminalButton from '@/components/TerminalButton';
 import SubmitButton from '@/components/SubmitButton';
-import { LabelText, MetaText, SubtitleText } from '@/components/ui/TerminalText';
 import ConsentCheckbox from '@/components/ui/ConsentCheckbox';
 import ConsentBlock from '@/components/ui/ConsentBlock';
 import FieldError from '@/components/ui/FieldError';
 import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
+import { formatEventDate } from '@/lib/events/lifecycle';
+import type { TerminalEvent } from '@/lib/events/types';
 import { ACCESS_WINDOW_DAYS } from '@/lib/gate/requestPolicy';
 import { useAccessRequest } from './useAccessRequest';
 
 export default function RequestAccessPage() {
   const {
     t,
+    lang,
+    event,
+    gateHref,
+    needsTargetReview,
+    isRefreshingEvent,
+    nextEvent,
+    acceptNextEvent,
     eventState,
     retryEvent,
     invitationLines,
@@ -39,100 +46,67 @@ export default function RequestAccessPage() {
     formError,
   } = useAccessRequest();
 
-  const disabledClass = !isCodeVerified
-    ? 'opacity-30 select-none'
-    : 'transition-opacity duration-300';
-
   return (
-    <PageLayout centerContent={false}>
-      <ReturnLink variants={itemVariants} />
-      <PageHeader path="/terminal/gate/request" title="ACCESS.REQUEST" accent="secondary" variants={itemVariants} />
+    <PageLayout centerContent={false} width="form">
+      <ReturnLink href={gateHref} text={lang === 'ko' ? '← 이벤트로 돌아가기' : '← Back to event'} />
+      <PageHeader path="/gate/request" title={lang === 'ko' ? '게스트 신청' : 'Guest request'} accent="secondary" />
 
-      {eventState.kind === 'loading' ? (
-        <motion.div variants={itemVariants} className="font-mono text-terminal-muted text-center py-8" role="status" aria-live="polite">
-          <LabelText text={t.request.loading} />
-        </motion.div>
+      {event && <RequestEventSummary event={event} lang={lang} />}
+
+      {submitted ? (
+        <section className="border-t border-terminal-bg-panel-border py-6" role="status" aria-live="polite" aria-atomic="true">
+          <h2 className="text-xl font-semibold">{t.request.committed}</h2>
+          <p className="mt-3 text-base leading-relaxed">{t.request.committedSub}</p>
+        </section>
+      ) : eventState.kind === 'loading' ? (
+        <p className="py-8 text-base" role="status">{t.request.loading}</p>
       ) : eventState.kind === 'load-error' ? (
-        <motion.div variants={itemVariants}>
-          <TerminalPanel title="REQUEST_STATUS" accent="alert" headingLevel={2}>
-            <div className="space-y-4 text-center py-4 font-mono" role="alert">
-              <MetaText text={t.request.eventLoadFailed} />
-              <div className="flex justify-center">
-                <TerminalButton onClick={retryEvent} variant="ghost">
-                  {t.request.retry}
-                </TerminalButton>
-              </div>
-            </div>
-          </TerminalPanel>
-        </motion.div>
+        <div className="space-y-4 py-6" role="alert">
+          <p>{t.request.eventLoadFailed}</p>
+          <TerminalButton onClick={retryEvent} variant="ghost">{t.request.retry}</TerminalButton>
+        </div>
       ) : eventState.kind === 'empty' ? (
-        <motion.div variants={itemVariants}>
-          <TerminalPanel title="REQUEST_STATUS" accent="alert" headingLevel={2}>
-            <div className="font-mono text-terminal-muted text-center py-4" role="status" aria-live="polite">
-              <MetaText text={t.request.noEvent} />
-            </div>
-          </TerminalPanel>
-        </motion.div>
-      ) : eventState.kind === 'inactive' ? (
-        <motion.div variants={itemVariants}>
-          <TerminalPanel title="REQUEST_STATUS" accent="alert" headingLevel={2}>
-            <div className="space-y-3 text-center py-4">
-              <div className="font-bold tracking-widest font-mono text-terminal-accent-alert">
-                <LabelText text={t.request.periodInactive} />
-              </div>
-              <div className="font-mono text-terminal-muted space-y-1">
-                <div><MetaText text={t.request.windowInfo(ACCESS_WINDOW_DAYS)} /></div>
-                <div><MetaText text={t.request.eventDate(eventState.event.date.replace(/-/g, '.'), eventState.event.time)} /></div>
-                <div className="pt-1 text-terminal-accent-primary">
-                  <MetaText
-                    text={
-                      eventState.window.isElapsed
-                        ? t.request.eventElapsed
-                        : t.request.windowCountdown(eventState.window.opensInDays ?? 0)
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          </TerminalPanel>
-        </motion.div>
-      ) : submitted ? (
-        <motion.div variants={itemVariants} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <TerminalPanel title="REQUEST_COMMITTED" accent="secondary" headingLevel={2}>
-            <div className="text-center py-6 space-y-2" role="status" aria-live="polite" aria-atomic="true">
-              <div className="font-bold tracking-widest font-mono text-terminal-accent-secondary">
-                <LabelText text={t.request.committed} />
-              </div>
-              <div className="font-mono text-terminal-muted">
-                <MetaText text={t.request.committedSub} />
-              </div>
-            </div>
-          </TerminalPanel>
-        </motion.div>
+        <p className="py-6" role="status">{t.request.noEvent}</p>
       ) : (
-        <div className="space-y-4">
-          <motion.div variants={itemVariants}>
-            <TerminalPanel title="INVITATION_BRIEF" accent="secondary" headingLevel={2}>
-              <div className="space-y-1.5">
-                {invitationLines.map((line, index) => {
-                  const isSeparator = line.trim().length > 0 && !/[a-zA-Z가-힣ㄱ-ㆎ\d]/.test(line);
-                  return (
-                    <div key={index} className={`font-mono text-terminal-subdued tracking-wide${isSeparator ? ' overflow-hidden' : ''}`}>
-                      <SubtitleText
-                        text={line}
-                        delay={index * 40}
-                        autoHeight={isSeparator}
-                        style={isSeparator ? { whiteSpace: 'nowrap', overflow: 'hidden', display: 'block' } : undefined}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </TerminalPanel>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <TerminalPanel title="GUEST_REQUEST_FORM" accent="secondary" headingLevel={2}>
+        <div className="space-y-6">
+          {needsTargetReview && (
+            <section className="border border-terminal-accent-alert p-4 space-y-4" aria-labelledby="request-target-title">
+              <h2 id="request-target-title" className="text-lg font-semibold">
+                {lang === 'ko' ? '신청 대상을 다시 확인해 주세요' : 'Review the request event'}
+              </h2>
+              <p role="alert">
+                {lang === 'ko'
+                  ? '신청 대상 또는 접수 상태가 바뀌었습니다. 입력한 내용은 유지됩니다. 현재 행사를 확인한 뒤 인증 코드를 다시 확인해 주세요.'
+                  : 'The request event or its application status has changed. Your draft is preserved. Review the current event, then verify your access code again.'}
+              </p>
+              {nextEvent ? (
+                <>
+                  <RequestEventSummary event={nextEvent} lang={lang} />
+                  <TerminalButton onClick={acceptNextEvent} variant="primary">
+                    {lang === 'ko' ? '이 행사로 신청 계속' : 'Continue with this event'}
+                  </TerminalButton>
+                </>
+              ) : <p role="status">{isRefreshingEvent ? t.request.loading : t.request.noEvent}</p>}
+              <TerminalButton onClick={retryEvent} variant="ghost">
+                {lang === 'ko' ? '신청 정보 새로고침' : 'Refresh request information'}
+              </TerminalButton>
+            </section>
+          )}
+          {eventState.kind === 'inactive' && !needsTargetReview ? (
+            <section className="border-t border-terminal-bg-panel-border py-6 space-y-3" role="status">
+              <h2 className="text-lg font-semibold">{t.request.periodInactive}</h2>
+              <p>{t.request.windowInfo(ACCESS_WINDOW_DAYS)}</p>
+              <p>{eventState.window.isElapsed ? t.request.eventElapsed : t.request.windowCountdown(eventState.window.opensInDays ?? 0)}</p>
+            </section>
+          ) : (
+            <>
+              <section className="space-y-2 text-base leading-relaxed">
+                {invitationLines.filter(line => /[a-zA-Z가-힣ㄱ-ㆎ\d]/.test(line)).map((line, index) => <p key={index}>{line}</p>)}
+                <p className="font-medium">
+                  {lang === 'ko' ? '신청 접수는 입장 확정을 뜻하지 않습니다.' : 'Submitting a request does not confirm admission.'}
+                </p>
+              </section>
+              <TerminalPanel title={lang === 'ko' ? '신청 정보' : 'Your details'} accent="secondary" headingLevel={2}>
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <FormField label={t.request.labelCode} htmlFor="request-accessCode">
                   <div className="relative">
@@ -152,7 +126,7 @@ export default function RequestAccessPage() {
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-caption pointer-events-none" aria-hidden="true">
                       {codeState.kind === 'verifying' ? (
-                        <span className="text-terminal-muted animate-pulse">···</span>
+                        <span className="text-terminal-muted">···</span>
                       ) : isCodeVerified ? (
                         <span className="text-terminal-accent-secondary">✓</span>
                       ) : form.accessCode ? (
@@ -168,7 +142,7 @@ export default function RequestAccessPage() {
                     role={codeError ? 'alert' : 'status'}
                     aria-live="polite"
                   >
-                    <MetaText text={codeError ?? codeStatus ?? ''} />
+                    {codeError ?? codeStatus ?? ''}
                     {codeState.kind === 'unavailable' && (
                       <TerminalButton className="ml-3 px-3 py-1 text-micro" variant="ghost" onClick={() => verifyCode(form.accessCode)}>
                         {t.request.retry}
@@ -177,7 +151,12 @@ export default function RequestAccessPage() {
                   </div>
                 )}
 
-                <div className={disabledClass}>
+                {form.accessCode.trim() && codeState.kind === 'idle' && !needsTargetReview && (
+                  <TerminalButton variant="ghost" onClick={() => verifyCode(form.accessCode)}>
+                    {lang === 'ko' ? '인증 코드 다시 확인' : 'Verify access code again'}
+                  </TerminalButton>
+                )}
+                <div>
                   <div className="space-y-4">
                     <FormField label={t.request.labelName} htmlFor="request-name">
                       <input
@@ -278,22 +257,32 @@ export default function RequestAccessPage() {
                   </div>
                 </div>
 
-                <AnimatePresence mode="wait">
                   {formError && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-terminal-accent-alert" role="alert" aria-live="assertive">
-                      <LabelText text={`⚠ ERROR: ${formError}`} />
-                    </motion.div>
+                    <div className="text-terminal-accent-alert" role="alert">
+                      {formError}
+                    </div>
                   )}
-                </AnimatePresence>
 
                 <div className="flex justify-end pt-2">
                   <SubmitButton isSubmitting={isSubmitting} disabled={!isCodeVerified} variant="primary" defaultText={t.request.submitBtn} loadingText={t.request.submitting} />
                 </div>
               </form>
-            </TerminalPanel>
-          </motion.div>
+              </TerminalPanel>
+            </>
+          )}
         </div>
       )}
     </PageLayout>
+  );
+}
+
+function RequestEventSummary({ event, lang }: { event: TerminalEvent; lang: 'ko' | 'en' }) {
+  return (
+    <section className="mb-6 space-y-2" aria-label={lang === 'ko' ? '신청 대상 행사' : 'Request event'}>
+      <h2 className="text-2xl font-semibold leading-tight">{event.session}</h2>
+      {event.subtitle && <p>{event.subtitle}</p>}
+      <p>{formatEventDate(event, lang === 'ko' ? 'ko-KR' : 'en-US')} · {event.time}</p>
+      <p>{event.venue}{event.district ? ` · ${event.district}` : ''}</p>
+    </section>
   );
 }
