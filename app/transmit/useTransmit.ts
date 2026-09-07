@@ -17,9 +17,11 @@ import {
   transmitKeys,
 } from '@/lib/transmit/client';
 import { getNodeId, setNodeId } from '@/lib/transmit/nodeIdentity';
+import type { PostTransmitInput } from '@/lib/transmit/contract';
 import { useT } from '@/lib/langContext';
 
 type TransmitField = 'handle' | 'message';
+type TransmitSubmission = { input: PostTransmitInput; draftRevision: number };
 
 export function useTransmit() {
   const t = useT();
@@ -36,6 +38,7 @@ export function useTransmit() {
   } = useFieldErrors<TransmitField>('transmit');
   const [formError, setFormError] = useState('');
   const idempotencyKeyRef = useRef<string | null>(null);
+  const draftRevisionRef = useRef(0);
 
   const {
     data: logPage,
@@ -50,16 +53,18 @@ export function useTransmit() {
   });
 
   const { mutate: submitLog, isPending: isSubmitting } = useMutation({
-    mutationFn: postTransmitLog,
-    onSuccess: () => {
-      setMessage('');
-      setFieldErrors({});
-      setFormError('');
+    mutationFn: ({ input }: TransmitSubmission) => postTransmitLog(input),
+    onSuccess: (_entry, submission) => {
+      // A receipt belongs to the submitted draft, even if editing continued in flight.
+      if (draftRevisionRef.current === submission.draftRevision) {
+        setMessage('');
+        setFieldErrors({});
+        setFormError('');
+        idempotencyKeyRef.current = null;
+      }
       setSent(true);
-      idempotencyKeyRef.current = null;
       setCurrentPage(1);
       queryClient.invalidateQueries({ queryKey: transmitKeys.all });
-      setTimeout(() => setSent(false), 2500);
     },
     onError: (mutationError) => {
       const errorKey = mutationError instanceof Error ? mutationError.message : '';
@@ -77,15 +82,19 @@ export function useTransmit() {
   });
 
   const handleHandleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    draftRevisionRef.current += 1;
     setHandle(event.target.value);
     setNodeId(event.target.value);
     idempotencyKeyRef.current = null;
+    setSent(false);
     clearFieldError('handle');
   };
 
   const handleMessageChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    draftRevisionRef.current += 1;
     setMessage(event.target.value);
     idempotencyKeyRef.current = null;
+    setSent(false);
     clearFieldError('message');
   };
 
@@ -106,11 +115,15 @@ export function useTransmit() {
 
     setFieldErrors({});
     setFormError('');
+    setSent(false);
     idempotencyKeyRef.current ??= crypto.randomUUID().replaceAll('-', '');
     submitLog({
-      handle: handle.trim(),
-      message: message.trim(),
-      idempotencyKey: idempotencyKeyRef.current,
+      input: {
+        handle: handle.trim(),
+        message: message.trim(),
+        idempotencyKey: idempotencyKeyRef.current,
+      },
+      draftRevision: draftRevisionRef.current,
     });
   };
 

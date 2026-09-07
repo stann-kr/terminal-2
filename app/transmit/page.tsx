@@ -6,7 +6,7 @@ import TerminalPanel from '@/components/TerminalPanel';
 import TerminalButton from '@/components/TerminalButton';
 import SubmitButton from '@/components/SubmitButton';
 import PageLayout, { itemVariants } from '@/components/shell/PageLayout';
-import { LabelText, SubtitleText, MetaText, DataText } from '@/components/ui/TerminalText';
+import { LabelText, MetaText, DataText } from '@/components/ui/TerminalText';
 import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import FieldError from '@/components/ui/FieldError';
@@ -43,13 +43,16 @@ export default function TransmitPage() {
   } = useTransmit();
 
   return (
-    <PageLayout>
+    <PageLayout width="reading">
       <ReturnLink variants={itemVariants} />
-      <PageHeader path="/terminal/transmit" title="TRANSMIT.LOG" accent="primary" variants={itemVariants} />
+      <PageHeader path="/terminal/transmit" title={t.transmit.title} accent="primary" variants={itemVariants} />
 
       <motion.div variants={itemVariants} className="mb-8">
-        <TerminalPanel title="VISITOR_LOG — NODE_SYNC" accent="alert" headingLevel={2}>
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <TerminalPanel title={t.transmit.formTitle} accent="primary" headingLevel={2}>
+          <p id="transmit-public-notice" className="mb-6 text-base leading-relaxed text-terminal-subdued">
+            {t.transmit.publicNotice}
+          </p>
+          <form onSubmit={handleSubmit} noValidate aria-describedby="transmit-public-notice" className="space-y-4">
             <FormField label={t.transmit.labelAlias} htmlFor="transmit-handle">
               <input
                 id="transmit-handle"
@@ -98,7 +101,7 @@ export default function TransmitPage() {
             <AnimatePresence mode="wait">
               {formError && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-terminal-accent-alert" role="alert" aria-live="assertive">
-                  <LabelText text={`⚠ ERROR: ${formError}`} />
+                  <LabelText text={formError} />
                 </motion.div>
               )}
               {sent && (
@@ -108,14 +111,14 @@ export default function TransmitPage() {
               )}
             </AnimatePresence>
             <div className="flex justify-end pt-2">
-              <SubmitButton isSubmitting={isSubmitting} variant="danger" defaultText={t.transmit.submitBtn} loadingText={t.transmit.submitting} />
+              <SubmitButton isSubmitting={isSubmitting} variant="primary" defaultText={t.transmit.submitBtn} loadingText={t.transmit.submitting} />
             </div>
           </form>
         </TerminalPanel>
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <TerminalPanel title={isInitialLoad ? t.transmit.logSyncing : t.transmit.logTitle(total)} accent="primary" headingLevel={2}>
+        <TerminalPanel title={isInitialLoad ? t.transmit.logSyncing : isLogError ? t.transmit.title : t.transmit.logTitle(total)} accent="primary" headingLevel={2}>
           <div className="space-y-4">
             <AnimatedHeight>
               <AnimatePresence mode="popLayout" initial={false}>
@@ -136,11 +139,11 @@ export default function TransmitPage() {
                   <motion.div key="content" animate={{ opacity: isFetching ? 0.4 : 1 }} transition={{ duration: 0.15 }} className="space-y-4 w-full">
                     {logs.map((entry) => (
                       <div key={entry.id} className="border-b border-terminal-accent-secondary/10 pb-4 last:border-0 last:pb-0">
-                        <div className="flex items-baseline gap-2 mb-1.5 overflow-hidden">
-                          <span className="font-bold tracking-wider font-mono text-terminal-accent-tertiary shrink-0"><SubtitleText autoHeight text={entry.handle} /></span>
-                          <span className="font-mono text-terminal-muted/50 shrink-0"><MetaText text={formatLocalTime(entry.createdAt)} /></span>
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
+                          <span className="font-bold font-mono text-terminal-accent-tertiary break-words">{entry.handle}</span>
+                          <span className="font-mono text-terminal-muted"><MetaText text={formatLocalTime(entry.createdAt)} /></span>
                         </div>
-                        <div className="font-mono whitespace-pre-wrap break-words"><SubtitleText autoHeight text={entry.message} className="text-terminal-subdued" /></div>
+                        <p className="text-base leading-relaxed whitespace-pre-wrap break-words text-terminal-primary">{entry.message}</p>
                       </div>
                     ))}
                   </motion.div>
@@ -149,11 +152,11 @@ export default function TransmitPage() {
             </AnimatedHeight>
 
             <div className="flex items-center justify-between pt-2 border-t border-terminal-accent-secondary/10">
-              <button onClick={showPreviousPage} disabled={currentPage <= 1 || isFetching || isInitialLoad || isSubmitting} className="text-small font-mono tracking-widest text-terminal-subdued hover:text-terminal-accent-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <button type="button" aria-label={t.transmit.previousPageLabel} onClick={showPreviousPage} disabled={currentPage <= 1 || isFetching || isInitialLoad || isSubmitting} className="min-h-11 min-w-11 px-2 text-sm font-mono text-terminal-subdued hover:text-terminal-accent-primary focus-visible:text-terminal-accent-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
                 {t.transmit.prevBtn}
               </button>
               <span className="text-small font-mono text-terminal-subdued" aria-live="polite">{currentPage} / {Math.max(1, totalPages)}</span>
-              <button onClick={showNextPage} disabled={currentPage >= totalPages || isFetching || isInitialLoad || isSubmitting} className="text-small font-mono tracking-widest text-terminal-subdued hover:text-terminal-accent-primary disabled:opacity-25 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <button type="button" aria-label={t.transmit.nextPageLabel} onClick={showNextPage} disabled={currentPage >= totalPages || isFetching || isInitialLoad || isSubmitting} className="min-h-11 min-w-11 px-2 text-sm font-mono text-terminal-subdued hover:text-terminal-accent-primary focus-visible:text-terminal-accent-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
                 {t.transmit.nextBtn}
               </button>
             </div>

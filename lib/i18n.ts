@@ -1,9 +1,9 @@
 /** 홈 DIRS 설명 — KO */
 export const dirDescKo: Record<string, string> = {
-  about: "플랫폼 매니페스토 / 시스템 정보",
-  gate: "이벤트 안내 / 카운트다운 / 게스트 신청",
-  lineup: "아티스트 라인업 / 도크",
-  status: "시스템 진단 / 네트워크 텔레메트리",
+  about: "서울 기반 테크노 플랫폼 TERMINAL",
+  gate: "일정·장소·게스트 신청 안내",
+  lineup: "참여 아티스트와 공연 시간",
+  status: "이벤트와 참여 아티스트 기록",
   transmit: "방문자 로그",
   signal: "소식 구독 / 마케팅 수신 신청",
   link: "외부 채널 / 공식 링크",
@@ -11,33 +11,10 @@ export const dirDescKo: Record<string, string> = {
 
 /** About 페이지 MANIFESTO — KO */
 export const manifestoKo: string[] = [
-  "TERMINAL",
-  "A Voyage to the Unknown Sector.",
-  "",
-  "TERMINAL은 서울 기반의 플랫폼입니다.",
-  "",
-  "[ DEFINITION ]",
-  "터미널은 단순한 이벤트가 아닙니다.",
-  "",
-  "이곳은 다양한 형태의 감각과 사람들이 모여드는 정거장이자,",
-  "",
-  "미지의 영역(Unknown Sector)을 향해 함께 떠나는 여정의 출발점입니다.",
-  "",
-  "[ DESIGN PRINCIPLE ]",
-  "우리는 불필요한 시각적 노이즈를 덜어내고, 꼭 필요한 빛과 소리만으로 공간을 채웁니다.",
-  "",
-  "오직 텍스트로만 본질에 접근하는 CLI(Command Line Interface) 시스템처럼,",
-  "",
-  "화려한 장식보다는 경험 그 자체에 깊게 빠져들 수 있는 미니멀한 환경을 지향합니다.",
-  "",
-  "[ OBJECTIVE ]",
-  "TERMINAL은 일방적인 관람을 위한 무대가 아닙니다.",
-  "",
-  "이곳에 발을 들인 모든 사람은 공간을 완성하는 주체입니다.",
-  "",
-  "우리는 이 공간을 매개로 모두가 교감하며, 끝없이 나아가는 거대한 흐름 안에서 완전하게 연결되는 순간을 지향합니다.",
-  "",
-  "Terminal Architect : STANN LUMO",
+  "TERMINAL은 서울 기반의 테크노 플랫폼입니다.",
+  "음악과 사람들이 만나는 공간을 만들고, 이벤트와 참여 아티스트의 기록을 이어갑니다.",
+  "이곳에서 행사 일정과 장소, 라인업을 확인하고 게스트 신청을 할 수 있습니다.",
+  "Terminal Architect: STANN LUMO",
 ];
 
 // ─────────────────────────────────────────────
@@ -45,8 +22,8 @@ export const manifestoKo: string[] = [
 // ─────────────────────────────────────────────
 
 export const commonKo = {
-  signalUnstable: "⚠ 신호 링크 불안정",
-  dbUnreachable: "데이터베이스 연결 실패 — 나중에 재시도",
+  signalUnstable: "정보를 불러오지 못했습니다.",
+  dbUnreachable: "연결을 확인한 뒤 다시 시도해 주세요.",
   retry: "다시 시도",
   skipToContent: "본문으로 건너뛰기",
   signalNetAria: "STANN OS 표면 간 이동",
@@ -57,10 +34,10 @@ export const commonKo = {
 // ─────────────────────────────────────────────
 
 export const homeKo = {
-  loading: "▸ 이벤트 데이터 로딩 중...",
+  loading: "이벤트를 불러오는 중입니다.",
   noEvents: "표시할 이벤트가 없습니다.",
-  nextEntry: "다음 발사 —",
-  lastEntry: "지난 발사 —",
+  nextEntry: "다음 이벤트",
+  lastEntry: "지난 이벤트",
   viewEvent: "▶ 이벤트 보기",
   viewArchive: "▶ 아카이브 보기",
   rootDir: "▶ 루트 디렉토리 — /terminal/",
@@ -72,11 +49,11 @@ export const homeKo = {
 // ─────────────────────────────────────────────
 
 export const gateKo = {
-  tabUpcoming: "▶ 예정",
-  tabArchive: "◼ 아카이브",
-  loading: "▸ 게이트 데이터 로딩 중...",
+  tabUpcoming: "진행 중·예정",
+  tabArchive: "지난 이벤트",
+  loading: "이벤트를 불러오는 중입니다.",
   requestBtn: "▶ 게스트 신청",
-  archivedLabel: "◼ 아카이브됨",
+  archivedLabel: "지난 이벤트됨",
   noArchive: "기록된 아카이브가 없습니다.",
   locationWarning: "⚠ 세션 참가를 위한 상세 위치 및 게이트 정보입니다.",
   /** `◼ 세션 종료 — ${date}` */
@@ -100,15 +77,13 @@ export const requestKo = {
   /** `신청 가능까지 T-${n}일` */
   windowCountdown: (n: number) => `신청 가능까지 T-${n}일`,
   eventElapsed: "이벤트가 종료되어 신청이 닫혔습니다.",
-  noEvent: "예정된 이벤트 없음. 나중에 다시 확인하세요.",
-  committed: "✓ 신청 완료",
-  committedSub: "여정에 함께해 주셔서 감사합니다.",
+  noEvent: "현재 신청 가능한 예정 이벤트가 없습니다.",
+  committed: "신청 접수 완료",
+  committedSub: "접수는 입장 확정을 뜻하지 않습니다.",
   invitationLines: [
-    "이 채널에 대한 접근 권한이 부여되었습니다.",
-    "이 초대는 개인적이며 양도 불가합니다.",
-    "TERMINAL은 RSVP 기반 이벤트입니다 — 신청 절차를 완료해주세요.",
-    "입장 심사를 위해 아래 양식을 작성해 제출하세요.",
-    "인증 코드가 필요합니다. 없는 경우 초대인에게 문의하세요.",
+    "초대인에게 받은 인증 코드를 입력해 주세요.",
+    "신청 대상 이벤트와 이름·연락처를 확인한 뒤 제출하세요.",
+    "신청 접수는 입장 확정을 뜻하지 않습니다.",
   ],
   // 폼 레이블
   labelCode: "인증 코드:",
@@ -117,7 +92,7 @@ export const requestKo = {
   labelEmail: "이메일:",
   labelInstagram: "인스타그램 ID:",
   // 플레이스홀더
-  placeholderCode: "세션 인증 코드",
+  placeholderCode: "초대인에게 받은 코드",
   placeholderInvitedBy: "초대인 이름",
   placeholderName: "전체 이름",
   placeholderEmail: "이메일@주소.COM",
@@ -126,7 +101,7 @@ export const requestKo = {
   privacyConsent:
     "이름·이메일·인스타그램 ID를 게스트 접근 관리 목적으로 수집합니다. 보존 기간: 이벤트 종료 후 1개월. 제3자 미공개.",
   marketingConsent:
-    "[선택] 차기 이벤트 신호를 이메일·인스타그램 채널로 수신합니다. 보존 기간: 수신 거부 시까지.",
+    "[선택] 차기 이벤트 소식를 이메일·인스타그램 채널로 수신합니다. 보존 기간: 수신 거부 시까지.",
   // 버튼
   submitting: "▸ 전송 중...",
   submitBtn: "▶ 신청 제출",
@@ -166,8 +141,8 @@ export const lineupKo = {
   colArtist: "아티스트",
   colTimeslot: "타임슬롯",
   colStatus: "상태",
-  footerUpcoming: "— 추가 라인업 복호화 중 — 대기 —",
-  footerArchived: "— 섹터 01 완료 — 아날로그 데이터 소거됨 —",
+  footerUpcoming: "공개된 라인업입니다.",
+  footerArchived: "이 이벤트에 참여한 아티스트 기록입니다.",
   /** `도크 ${dock}` */
   dock: (dock: string) => `도크 ${dock}`,
 };
@@ -177,19 +152,19 @@ export const lineupKo = {
 // ─────────────────────────────────────────────
 
 export const statusKo = {
-  labelSessionsRun: "진행 세션",
-  labelNextLaunch: "다음 발사",
+  labelSessionsRun: "지난 이벤트",
+  labelNextLaunch: "다음 이벤트",
   labelArtistNodes: "참여 아티스트",
   unitArchived: "SESSIONS",
   unitStandby: "STANDBY",
   unitConfirmed: "ARTISTS",
-  sessionLogTitle: "SESSION_LOG.rec",
+  sessionLogTitle: "이벤트 기록",
   colSession: "세션",
   colDate: "날짜",
   colArtists: "아티스트",
   colStatus: "상태",
-  loading: "▸ 시스템 데이터 로딩 중...",
-  noSessions: "기록된 세션 없음.",
+  loading: "이벤트 기록을 불러오는 중입니다.",
+  noSessions: "기록된 이벤트가 없습니다.",
 };
 
 // ─────────────────────────────────────────────
@@ -197,21 +172,26 @@ export const statusKo = {
 // ─────────────────────────────────────────────
 
 export const transmitKo = {
+  title: "방명록",
+  formTitle: "글 남기기",
+  publicNotice: "별칭과 메시지는 누구나 볼 수 있는 방명록에 게시됩니다. 연락처 등 개인정보를 남기지 마세요.",
+  previousPageLabel: "이전 글 페이지",
+  nextPageLabel: "다음 글 페이지",
   labelAlias: "별칭:",
   labelMessage: "메시지:",
   placeholderAlias: "별칭 입력",
-  placeholderMsg: "데이터베이스에 기록...",
-  committed: "✓ 신호 전송 완료",
+  placeholderMsg: "남기고 싶은 메시지",
+  committed: "제출한 메시지를 게시했습니다.",
   submitting: "▸ 전송 중...",
-  submitBtn: "▶ 신호 전송",
-  syncing: "▸ 데이터베이스 동기화 중...",
+  submitBtn: "메시지 게시",
+  syncing: "글을 불러오는 중입니다.",
   noEntries: "기록 없음.",
-  /** `신호 로그 — ${n}개 기록` */
-  logTitle: (n: number) => `신호 로그 — ${n}개 기록`,
-  logSyncing: "신호 로그 — 동기화 중...",
+  /** `방명록 — ${n}개 기록` */
+  logTitle: (n: number) => `방명록 — ${n}개 기록`,
+  logSyncing: "방명록 — 동기화 중...",
   prevBtn: "◀ 이전",
   nextBtn: "다음 ▶",
-  logLoadFailed: "신호 로그를 불러오지 못했습니다. 다시 시도하세요.",
+  logLoadFailed: "방명록를 불러오지 못했습니다. 다시 시도하세요.",
   retry: "다시 시도",
   errors: {
     required: "별칭과 메시지를 입력해주세요.",
@@ -228,18 +208,18 @@ export const transmitKo = {
 
 export const signalKo = {
   description: [
-    "TERMINAL 이벤트 신호 수신을 위한 채널을 등록합니다.",
-    "신호는 등록된 이메일 또는 인스타그램 채널로 발신됩니다.",
+    "TERMINAL 이벤트 소식 수신을 위한 채널을 등록합니다.",
+    "이메일과 인스타그램 연락처를 저장합니다.",
   ],
   labelEmail: "이메일:",
   labelInstagram: "인스타그램 ID:",
   placeholderEmail: "이메일@주소.COM",
   consentLabel:
-    "이메일·인스타그램 계정을 TERMINAL 이벤트 신호 발신 목적으로 수집합니다. 보존 기간: 채널 해지 시까지.",
-  submitting: "▸ 채널 등록 중...",
-  submitBtn: "▶ 채널 등록",
-  committed: "✓ 채널 등록 완료",
-  committedSub: "신호 발신 시 등록된 채널로 전송됩니다.",
+    "이메일·인스타그램 계정을 TERMINAL 이벤트 소식 안내 목적으로 수집하는 데 동의합니다.",
+  submitting: "저장 중...",
+  submitBtn: "소식 신청",
+  committed: "소식 신청을 저장했습니다.",
+  committedSub: "이벤트 소식을 위한 연락처가 저장되었습니다.",
   errors: {
     ALL_FIELDS_REQUIRED: "이메일과 인스타그램을 입력해주세요.",
     CONSENT_REQUIRED: "동의가 필요합니다.",
@@ -256,13 +236,13 @@ export const signalKo = {
 // ─────────────────────────────────────────────
 
 export const linkKo = {
-  externalChannels: "▶ 외부 채널 — /terminal/link/",
-  nodeCount: "4 노드",
+  externalChannels: "공식 채널",
+  nodeCount: "4개 채널",
   descriptions: {
-    stannHub: "STANN OS 허브 — 오퍼레이터 본부",
+    stannHub: "STANN의 프로젝트와 작업",
     stannWeb: "공식 웹사이트 / 비주얼 아카이브",
     stannInsta: "소셜 채널 / 업데이트",
-    terminalInsta: "이벤트 피드 / 신호 방송",
+    terminalInsta: "이벤트 소식",
   },
 };
 
@@ -272,49 +252,26 @@ export const linkKo = {
 
 /** 홈 DIRS 설명 — EN */
 export const dirDescEn: Record<string, string> = {
-  about: "PLATFORM MANIFESTO / SYSTEM INFORMATION",
-  gate: "EVENT INFORMATION / COUNTDOWN / GUEST REQUEST",
-  lineup: "ARTIST ROSTER / DOCK",
-  status: "SYSTEM DIAGNOSTICS / NETWORK TELEMETRY",
-  transmit: "VISITOR LOG",
-  signal: "SIGNAL SUBSCRIPTION / MARKETING OPT-IN",
+  about: "About TERMINAL",
+  gate: "Dates, venues and guest requests",
+  lineup: "Artists and set times",
+  status: "Event and artist history",
+  transmit: "Public guestbook",
+  signal: "Sign up for event updates",
   link: "EXTERNAL CHANNELS / OFFICIAL LINKS",
 };
 
 /** About 페이지 MANIFESTO — EN */
 export const manifestoEn: string[] = [
-  "TERMINAL",
-  "A Voyage to the Unknown Sector.",
-  "",
-  "TERMINAL is a Seoul-based platform.",
-  "",
-  "[ DEFINITION ]",
-  "TERMINAL is not merely an event.",
-  "",
-  "It is a station where diverse senses and individuals converge,",
-  "",
-  "and the departure point for a collective voyage into the Unknown Sector.",
-  "",
-  "[ DESIGN PRINCIPLE ]",
-  "We strip away unnecessary visual noise, filling the space with only essential light and sound.",
-  "",
-  "Like a CLI (Command Line Interface) system that accesses the core through text alone,",
-  "",
-  "we pursue a minimal environment that allows for deep immersion into the experience itself, rather than superficial decoration.",
-  "",
-  "[ OBJECTIVE ]",
-  "TERMINAL is not a stage for one-sided observation.",
-  "",
-  "Every individual who steps inside becomes a vital entity that completes the space.",
-  "",
-  "Through this medium, we aim for a moment of absolute connection and resonance within an endless, massive flow.",
-  "",
-  "Terminal Architect : STANN LUMO",
+  "TERMINAL is a Seoul-based techno platform.",
+  "We create spaces for music and people, and keep a record of our events and artists.",
+  "Explore event dates, venues and lineups, and submit a guest request here.",
+  "Terminal Architect: STANN LUMO",
 ];
 
 export const commonEn = {
-  signalUnstable: "⚠ SIGNAL LINK UNSTABLE",
-  dbUnreachable: "DATABASE UNREACHABLE — RETRY LATER",
+  signalUnstable: "Information could not be loaded.",
+  dbUnreachable: "Check your connection and try again.",
   retry: "RETRY",
   skipToContent: "SKIP TO CONTENT",
   signalNetAria: "Navigate between STANN OS surfaces",
@@ -323,8 +280,8 @@ export const commonEn = {
 export const homeEn = {
   loading: "▸ LOADING EVENT DATA...",
   noEvents: "NO EVENTS AVAILABLE.",
-  nextEntry: "NEXT LAUNCH —",
-  lastEntry: "LAST LAUNCH —",
+  nextEntry: "Next event —",
+  lastEntry: "Past event —",
   viewEvent: "▶ VIEW EVENT",
   viewArchive: "▶ VIEW ARCHIVE",
   rootDir: "▶ ROOT DIRECTORY — /terminal/",
@@ -332,16 +289,16 @@ export const homeEn = {
 };
 
 export const gateEn = {
-  tabUpcoming: "▶ UPCOMING",
-  tabArchive: "◼ ARCHIVE",
-  loading: "▸ LOADING GATE DATA...",
+  tabUpcoming: "Live & upcoming",
+  tabArchive: "Past events",
+  loading: "Loading event details...",
   requestBtn: "▶ GUEST REQUEST",
-  archivedLabel: "◼ ARCHIVED",
+  archivedLabel: "Past eventsD",
   noArchive: "NO ARCHIVED SESSIONS AVAILABLE.",
   locationWarning:
     "⚠ DETAILED LOCATION AND GATE INFORMATION FOR SESSION ENTRY.",
   sessionArchived: (date: string) => `◼ SESSION ARCHIVED — ${date}`,
-  eventInfoTitle: "EVENT_INFO.dec",
+  eventInfoTitle: "About this event",
 };
 
 export const requestEn = {
@@ -354,15 +311,13 @@ export const requestEn = {
   eventDate: (date: string, time: string) => `EVENT DATE — ${date} · ${time}`,
   windowCountdown: (n: number) => `WINDOW OPENS IN T-${n} DAYS`,
   eventElapsed: "EVENT HAS ELAPSED — REQUEST WINDOW CLOSED.",
-  noEvent: "NO UPCOMING EVENT SCHEDULED. CHECK BACK LATER.",
-  committed: "✓ REQUEST SUBMITTED",
-  committedSub: "Thank you for joining the voyage.",
+  noEvent: "There is no upcoming event accepting requests.",
+  committed: "Request received",
+  committedSub: "Submission does not confirm admission.",
   invitationLines: [
-    "YOU HAVE BEEN GRANTED ACCESS TO THIS CHANNEL.",
-    "THIS INVITATION IS PERSONAL AND NON-TRANSFERABLE.",
-    "TERMINAL IS A PRIVATE EVENT — ENTRY BY AUTHORIZATION ONLY.",
-    "SUBMIT YOUR REQUEST BELOW TO BE CONSIDERED FOR ADMISSION.",
-    "AN ACCESS CODE IS REQUIRED. IF YOU DO NOT HAVE ONE, CONTACT YOUR INVITER.",
+    "Enter the access code provided by your inviter.",
+    "Check the event, name and contact details before submitting.",
+    "Submitting a request does not confirm admission.",
   ],
   labelCode: "ACCESS CODE:",
   labelInvitedBy: "INVITED BY:",
@@ -411,42 +366,47 @@ export const lineupEn = {
   colArtist: "ARTIST",
   colTimeslot: "TIMESLOT",
   colStatus: "STATUS",
-  footerUpcoming: "— ADDITIONAL LINEUP DECRYPTING — STANDBY —",
-  footerArchived: "— SECTOR 01 COMPLETE — ANALOG DATA PURGED —",
+  footerUpcoming: "Published lineup.",
+  footerArchived: "Artists who took part in this event.",
   dock: (dock: string) => `DOCK ${dock}`,
 };
 
 export const statusEn = {
-  labelSessionsRun: "SESSIONS RUN",
-  labelNextLaunch: "NEXT LAUNCH",
-  labelArtistNodes: "TOTAL ARTISTS",
+  labelSessionsRun: "Past events",
+  labelNextLaunch: "Next event",
+  labelArtistNodes: "Participating artists",
   unitArchived: "SESSIONS",
   unitStandby: "STANDBY",
   unitConfirmed: "ARTISTS",
-  sessionLogTitle: "SESSION_LOG.rec",
+  sessionLogTitle: "Event history",
   colSession: "SESSION",
   colDate: "DATE",
   colArtists: "ARTISTS",
   colStatus: "STATUS",
-  loading: "▸ LOADING SYSTEM DATA...",
-  noSessions: "NO SESSIONS RECORDED.",
+  loading: "Loading event history...",
+  noSessions: "No events recorded.",
 };
 
 export const transmitEn = {
+  title: "Guestbook",
+  formTitle: "Leave a message",
+  publicNotice: "Your alias and message are posted publicly. Do not include contact details or other personal information.",
+  previousPageLabel: "Previous entries page",
+  nextPageLabel: "Next entries page",
   labelAlias: "ALIAS:",
   labelMessage: "MESSAGE:",
   placeholderAlias: "ENTER ALIAS",
-  placeholderMsg: "WRITE TO DATABASE...",
-  committed: "✓ SIGNAL TRANSMITTED",
+  placeholderMsg: "Leave a message",
+  committed: "Your submitted message has been posted.",
   submitting: "▸ TRANSMITTING...",
-  submitBtn: "▶ TRANSMIT SIGNAL",
-  syncing: "▸ SYNCING DATABASE...",
+  submitBtn: "Post message",
+  syncing: "Loading entries...",
   noEntries: "NO ENTRIES.",
-  logTitle: (n: number) => `SIGNAL LOG — ${n} ENTRIES`,
-  logSyncing: "SIGNAL LOG — SYNCING...",
+  logTitle: (n: number) => `Guestbook — ${n} ENTRIES`,
+  logSyncing: "Guestbook — SYNCING...",
   prevBtn: "◀ PREV",
   nextBtn: "NEXT ▶",
-  logLoadFailed: "SIGNAL LOG COULD NOT BE LOADED. RETRY.",
+  logLoadFailed: "Guestbook COULD NOT BE LOADED. RETRY.",
   retry: "RETRY",
   errors: {
     required: "ENTER ALIAS AND MESSAGE.",
@@ -460,17 +420,17 @@ export const transmitEn = {
 export const signalEn = {
   description: [
     "REGISTER YOUR RECEPTION CHANNEL FOR TERMINAL EVENT SIGNALS.",
-    "SIGNALS WILL BE TRANSMITTED TO YOUR REGISTERED EMAIL OR INSTAGRAM CHANNEL.",
+    "We save your email and Instagram contact details.",
   ],
   labelEmail: "EMAIL:",
   labelInstagram: "INSTAGRAM ID:",
   placeholderEmail: "EMAIL@ADDRESS.COM",
   consentLabel:
-    "Email and Instagram account will be collected for TERMINAL event signal transmission only. Retention: until channel is closed.",
-  submitting: "▸ REGISTERING CHANNEL...",
-  submitBtn: "▶ REGISTER CHANNEL",
-  committed: "✓ CHANNEL REGISTERED",
-  committedSub: "SIGNAL WILL BE ROUTED TO YOUR CHANNEL ON NEXT TRANSMISSION.",
+    "I agree to the collection of my email and Instagram account for TERMINAL event updates.",
+  submitting: "Saving...",
+  submitBtn: "Sign up for updates",
+  committed: "Your request for updates is saved.",
+  committedSub: "Your contact details have been saved for event updates.",
   errors: {
     ALL_FIELDS_REQUIRED: "EMAIL AND INSTAGRAM ARE REQUIRED.",
     CONSENT_REQUIRED: "CONSENT IS REQUIRED.",
@@ -483,8 +443,8 @@ export const signalEn = {
 };
 
 export const linkEn = {
-  externalChannels: "▶ EXTERNAL CHANNELS — /terminal/link/",
-  nodeCount: "4 NODES",
+  externalChannels: "Official channels",
+  nodeCount: "4 channels",
   descriptions: {
     stannHub: "STANN OS HUB — OPERATOR HQ",
     stannWeb: "OFFICIAL WEBSITE / VISUAL ARCHIVE",
