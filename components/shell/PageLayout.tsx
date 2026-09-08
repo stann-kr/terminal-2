@@ -23,6 +23,7 @@ export default function PageLayout({ children, centerContent = false, width = 'r
   const rootRef = useRef<HTMLDivElement>(null);
   const { allowMotion } = useMotionPolicy();
   const current = getActiveDirectory(pathname);
+  const currentLabel = pathname === '/link' ? (lang === 'ko' ? '공식 채널' : 'Official channels') : current?.[lang] ?? (lang === 'ko' ? '홈' : 'Home');
   useGSAP(() => {
     if (!allowMotion) return;
     gsap.timeline({ defaults: { ease: 'expo.out', duration: 0.65 } })
@@ -38,7 +39,7 @@ export default function PageLayout({ children, centerContent = false, width = 'r
     </main>
     <footer className={styles.footer}>
       <SignalNet />
-      <p className={styles.current}><span aria-hidden="true">&gt; </span>{current?.[lang] ?? (lang === 'ko' ? '홈' : 'Home')}<span aria-hidden="true" className={styles.cursor} /></p>
+      <p className={styles.current}><span aria-hidden="true">&gt; </span>{currentLabel}<span aria-hidden="true" className={styles.cursor} /></p>
     </footer>
   </div>;
 }

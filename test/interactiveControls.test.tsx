@@ -51,7 +51,7 @@ function FieldErrorHarness() {
 describe('interactive control behavior', () => {
   it('selects the request directory precisely and returns focus when the expanded menu closes', async () => {
     const user = userEvent.setup();
-    render(<TerminalNavigation pathname="/gate/request" />);
+    const { rerender } = render(<TerminalNavigation pathname="/gate/request" />);
     const navigation = within(screen.getByRole('navigation', { name: '주요 메뉴' }));
     expect(navigation.getByRole('link', { name: '게스트 신청' })).toHaveAttribute('aria-current', 'page');
     expect(navigation.getByRole('link', { name: '이벤트' })).not.toHaveAttribute('aria-current');
@@ -63,6 +63,8 @@ describe('interactive control behavior', () => {
     await user.keyboard('{Escape}');
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
+    rerender(<TerminalNavigation pathname="/link" />);
+    for (const link of screen.getAllByRole('link', { name: '공식 채널' })) expect(link).toHaveAttribute('aria-current', 'page');
   });
 
   it('activates the shared button with keyboard input', async () => {

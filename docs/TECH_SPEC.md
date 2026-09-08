@@ -6,12 +6,12 @@
 
 - **프레임워크:** Next.js 16.2.11 (App Router 기반), React 19
 - **런타임 및 개발 환경:** 공개 배포는 OpenNext 기반 Cloudflare Worker bundle을 사용한다. 로컬 개발은 npm 스크립트를 기본으로 하며 Docker 환경도 지원한다.
-- **UI/UX 미학(Aesthetics):** 심우주와 모노크롬 블루프린트 테마를 유지한다. Bloom 기반 WebGL ambient는 Home hero에서만 조건부로 로드하고, 나머지 route의 정보·폼은 정적 shell을 기본으로 한다.
+- **UI/UX 미학(Aesthetics):** 검정 바탕·오렌지 제목줄·반전 디렉터리와 각진 패널을 사용한다. 화면별 작업 영역은 문서 스크롤 안에서 늘어나며 모바일에서는 읽기 순서에 맞게 단일 열로 전환한다. 일반 Home은 ASCII 표현, WebGL ambient는 선택형 터미널 체험에서만 조건부로 로드한다.
 - **명명 규칙 및 코드 스타일:** 명확한 시맨틱 네이밍, 하드 코딩 지양. CSS 스타일링 시 Tailwind를 기본으로 하되, 복잡한 인라인 동적 속성은 `style` 객체로 관리함.
 
 ## 2. 타이포그래피 시스템
 
-본문·입력은 system sans 16px, 보조 문구 14px, 메타 12px를 기본으로 한다. Orbit/Pixie는 브랜드·제목, 로드된 JetBrains Mono는 탐색·버튼·경로·날짜·코드에 사용한다. `app/globals.css`의 terminal 역할 토큰만 변경하며 `app/stann-os.css` 정본은 보존한다.
+본문·입력은 system sans 16px, 보조 문구와 조작 label은 14px, 메타는 12px를 기본으로 한다. Pixie는 브랜드, 로드된 JetBrains Mono는 제목·탐색·버튼·날짜·코드에 사용한다. `app/globals.css`의 terminal 역할 토큰과 capability별 CSS Modules가 표현을 소유하며 `app/stann-os.css` 정본은 보존한다. 장식 번호·브랜드 메타는 의미 label과 분리한다.
 
 | 토큰 | 값 |
 |---|---|
@@ -25,16 +25,16 @@
 
 `BodyText`는 모든 폭에서 16px plain text다. 공통 `PageHeader`는 cipher를 명시적으로 요청할 때만 연출하며 보통 제목을 즉시 표시한다.
 
-- 페이지 제목 위에는 경로를, 디렉터리에는 고정 번호·설명·이동 열을 표시한다. 모바일에서는 설명과 시간을 별도 행으로 배치한다.
+- 페이지 제목 위에는 module label을, 디렉터리에는 번호·화면명·이동 표식을 표시한다. 모바일에서는 설명과 시간을 별도 행으로 배치한다.
 - 주요 버튼과 언어 선택은 반전 표시하며, 공통 버튼·라벨은 14px와 최소 44px 높이를 유지한다. 현재 탐색 위치는 `aria-current`로 표시한다.
-- 행사 요약은 포스터와 정보의 상단을 맞추고 날짜·장소를 라벨/값 열로 정렬한다. 포스터는 원본 비율을 보존한다.
+- 행사 요약은 포스터와 정보의 상단을 맞추고 날짜·장소를 라벨/값 열로 정렬한다. 포스터는 안정된 영역 안에 `object-fit: contain`으로 전체 이미지를 보여준다. 이미지가 없거나 로드에 실패하면 실제 행사 정보의 타이포 면으로 대체한다.
 
 ### FormField 컴포넌트 API (`components/ui/FormField.tsx`)
 
 ```tsx
 // 폼 필드 래퍼
-<FormField label="NAME:">
-  <input className={`${inputClassBase} ${inputAccentClass.secondary}`} />
+<FormField label="NAME:" htmlFor="name">
+  <input id="name" name="name" className={`${inputClassBase} ${inputAccentClass.secondary}`} />
 </FormField>
 
 // accent 종류: secondary | tertiary | alert | warn | primary
@@ -71,18 +71,21 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 ### 3.2 페이지 구조 (PageLayout & Transition)
 
 - **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
-- **동작 원리:** route wrapper는 scroll 위치를 복원한다. `PageLayout`은 헤더 진입과 스크롤 진행선, event/reading/form 폭(1120/760/560px), 주요 탐색과 언어 제어를 소유한다. 기능 화면 전체를 가리거나 전환 완료까지 입력을 막는 단계는 없다.
+- **동작 원리:** route wrapper는 pathname 이동 시 문서 상단으로 이동하며 query 선택만 바뀔 때는 전체 화면을 전환하지 않는다. `PageLayout`은 프레임·헤더 진입·탐색·언어·footer를 소유한다. `flush` 화면은 최대 1600px 안에서 capability가 grid와 여백을 결정한다. 기본 event/reading/form 폭은 1600/1024/672px다. 기능 화면 전체를 가리거나 전환 완료까지 입력을 막는 단계는 없다.
 - `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 360ms·닫기 252ms이며, 새 요청은 현재 높이에서 반전한다. ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
-- **landmark:** `PageLayout`이 유일한 `main#main-content`를 소유하고 전역 skip link의 목적지가 된다.
+- **landmark:** header·navigation·footer와 분리된 `main#main-content`가 전역 skip link의 목적지가 된다. 독립적인 체험·복구 화면은 자체 main을 가진다.
+- **탐색:** GATE·LINEUP·GUEST_REQ·STATUS·TRANSMIT·SIGNAL·ABOUT의 7개 디렉터리를 제공한다. `/gate/request`는 GUEST_REQ만 현재 메뉴로 표시한다. 모바일 보조 메뉴는 문서 안에서 펼쳐지고 Escape로 닫으면 메뉴 버튼으로 focus가 돌아간다.
 
 ### 3.3 모션 소유권과 입력 반응
 
 | 영역 | 연출 | 소유 위치 |
 |---|---|---|
-| Home 브랜드 | 프레임 기동, 순차 디코드, 스캔·커서 반복, 포인터에 반응하는 grid | `app/home/HomeMasthead.tsx` |
+| Home 브랜드 | 짧은 프레임 기동, 디코드, 스캔·커서 반복, 포인터에 반응하는 ASCII | `app/home/HomeMasthead.tsx` |
 | 행사 요약 | 포스터·정보 진입, 스캔, 스크롤 진행선, fine pointer 기울기 | `components/events/useEventSummaryMotion.ts` |
 | 버튼·메뉴 | 고정된 hit target 안에서 글자·화살표 이동, 선택 광선, 키보드 focus 반응 | `components/ui/useControlMotion.ts` |
-| 디렉터리·라인업 | viewport 진입에 따른 짧은 stagger, 빠르게 반전되는 펼침 표시 | 해당 row component |
+| 디렉터리·라인업 | viewport 진입의 짧은 stagger, 명단 선택과 반전 표시 | 해당 row component |
+| 아티스트 프로필 | 실제 프로필 정보와 분리된 장식 파형·경계선 | `app/lineup/ArtistProfile.tsx` |
+| 신청 접수 결과 | 서버 성공 뒤 결과 heading focus와 경계선 | `app/gate/request/RequestReceipt.tsx` |
 | 공통 제목·panel | 경로·제목 진입, 경계선 그리기 | `PageHeader`, `TerminalPanel` |
 
 - [공식 React 연동](https://gsap.com/resources/React/)의 `useGSAP` scope와 cleanup을 사용한다. 비동기 ResizeObserver에서 만드는 tween도 context에 포함한다.
@@ -91,6 +94,16 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 - 콘텐츠 높이·이미지 로딩 뒤의 scroll 위치 재계산은 `ScrollTrigger.refresh(true)`로 묶는다. 화면 이탈 시 scene의 trigger, timeline, observer와 event listener를 정리한다.
 - 동일 요소의 transform·opacity를 GSAP과 CSS/Framer Motion이 동시에 제어하지 않는다. 기존 Boot/Sleep 상태 전환과 Transmit 상태 표현의 Framer Motion은 별도 owner로 유지한다.
 
+### 3.4 화면별 작업 영역과 상태
+
+- Home/Gate는 현재 행사와 원본 포스터를 연결한다. Gate의 신청 행동은 기존 행사 선택·신청 기간 정책을 따르며 코드 입력은 신청 화면 한 곳에서 관리한다.
+- Request는 입력과 실제 코드 상태를 나눠 보여준다. 마감 상태에서는 신청 단계 패널을 표시하지 않으며, 성공 결과는 같은 URL의 제출된 행사 snapshot에 귀속한다. 코드 확인·신청 접수·입장 확정은 서로 다른 상태다.
+- Lineup은 명단과 프로필로 구성한다. `/lineup?event=…&artist=…`의 아티스트는 선택 행사에 속해야 한다. 행사 변경은 artist 해제와 함께 한 번의 history 갱신으로 처리한다. 모바일 선택은 프로필 제목으로, 명단 복귀는 원래 행으로 focus를 이동한다. 외부 artist 링크·음원 데이터는 현재 공개 DTO에 없다.
+- Transmit는 작성/공개 기록, Signal은 설명/연락처 입력으로 구성한다. 모바일에서는 같은 form DOM을 세로로 재배치한다. 조회·제출 실패와 실제 성공을 구분하고 기존 초안·동의·idempotency 규칙을 유지한다.
+- Status는 실제 지표와 날짜 기준의 행사 기록을 사용한다. About과 공식 채널은 실제 소개·링크를 제공한다. 임의 서버 상태·대기열·QR·입장권을 생성하지 않는다.
+- 선택형 Boot는 버튼으로 연출을 건너뛰고 언어를 직접 선택한다. 일반 Tab·pointer 입력이 단계 전환을 실행하지 않는다. Sleep은 KST 시계를 표시하고 탭을 숨기면 타이머를 정지한다. 완료·복귀는 한 번만 실행한다.
+- 404는 자체 의미 텍스트와 이동 링크를, global-error는 provider·root CSS에 의존하지 않는 inline 스타일과 reset/Home 복구를 제공한다. 원본 오류 메시지는 출력하지 않는다.
+
 ## 4. 개발 가이드라인
 
 1. **신규 페이지 혹은 컴포넌트 개발 시 규칙:**
@@ -98,7 +111,7 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
    - 새 장식 모션은 `lib/motion/gsap.ts`를 통해 등록된 GSAP과 `useGSAP`을 사용한다. 각 component의 ref로 scope를 제한하고 기존 motion 정책을 따른다.
 2. **TypeScript 무결성 확보 규칙:**
    - hook, 브라우저 API, Framer Motion을 사용하는 컴포넌트만 client boundary로 선언한다.
-   - `@react-three/fiber`는 Home ambient에만 사용한다. `/` 또는 `/home`, motion 허용, hero viewport 진입, WebGL 지원이 모두 참일 때 dynamic chunk를 로드하며 오류 시 semantic page를 그대로 유지한다.
+   - `@react-three/fiber`는 `/?experience=terminal`의 선택형 ambient에 사용한다. motion 허용, 체험 viewport 진입, WebGL 지원이 모두 참일 때 dynamic chunk를 로드하며 오류 시 의미 텍스트와 조작을 그대로 유지한다.
 3. **환경 관리 가이드 (Docker):**
    - 호스트 개발은 저장소 루트의 npm 스크립트를 사용한다. Docker 전용 환경에서 패키지를 추가할 때는 실행 중인 컨테이너의 `docker compose exec web npm install <패키지>`를 사용해 anonymous `node_modules` volume과의 불일치를 피한다.
 
@@ -110,7 +123,8 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 
 - **위치:** `tailwind.config.js`, `app/globals.css`
 - **핵심 테마 변수:**
-  - `terminal-primary`: 시스템 기본 텍스트 색상 (밝은 미색/화이트 계열)
+  - `terminal-primary`: 기본 텍스트 `#D0D0D0`
+  - `terminal-accent-primary`: 브랜드 강조 `#FF5D00`; 오렌지 면의 텍스트는 어두운 배경색 역할 사용
   - `terminal-accent-*`: 강조색 토큰 (`primary`, `secondary`, `tertiary`, `alert`, `warn`)
   - `terminal-bg-*`: 배경색 토큰 (`panel`, `panel-border`)
   - `terminal-muted`, `terminal-subdued`: 보조 및 비활성 텍스트 테마
@@ -119,7 +133,7 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 
 ### 5.2 컴포넌트 표준화 원칙
 
-- 모든 페이지는 `<PageLayout>`을 최상위 랩퍼로 사용하며, 내부 요소는 `<motion.div variants={itemVariants}>`를 사용하여 스태거 애니메이션을 일관되게 적용함.
+- 기능 페이지는 `<PageLayout>`을 사용하고 각 capability가 화면 구성과 필요한 모션을 소유한다. 모든 자식에 일괄 stagger를 적용하지 않는다. 체험과 복구 경계는 독립적인 layout을 사용한다.
 - 공통 UI 요소(`ReturnLink`, `PageHeader`, `TerminalPanel`, `TerminalButton`)를 적극 활용하여 인라인 스타일 및 중복 마크업을 최소화함.
 
 ## 6. 데이터 모델 및 DB 아키텍처 (Flexible JSON Schema)

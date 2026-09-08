@@ -47,6 +47,10 @@ export default function TerminalNavigation({ pathname }: { pathname: string | nu
   const secondaryRef = useRef<HTMLUListElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
   const current = getActiveDirectory(pathname);
+  const closeMenu = (destination: string) => {
+    if (isOpen && pathname === destination) menuRef.current?.focus();
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 640px)');
@@ -65,7 +69,7 @@ export default function TerminalNavigation({ pathname }: { pathname: string | nu
     <div className={styles.rail}>
       <Link ref={brandRef} data-shell="brand" href="/home" className={styles.brand} aria-current={pathname === '/' || pathname === '/home' ? 'page' : undefined}>TERMINAL<span aria-hidden="true" className={styles.location}>{' // SEOUL'}</span></Link>
       <div className={styles.utilities}>
-        <Link href="/link" className={styles.channels}>{lang === 'ko' ? '공식 채널' : 'Official channels'} <span aria-hidden="true">↗</span></Link>
+        <Link href="/link" className={styles.channels} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'} <span aria-hidden="true">↗</span></Link>
         <div data-shell="language"><LangToggle /></div>
         <button ref={menuRef} type="button" className={styles.menu} aria-expanded={isOpen} aria-controls={secondaryId} onClick={() => setIsOpen(open => !open)}>
           {lang === 'ko' ? '메뉴' : 'Menu'} <span aria-hidden="true">[{isOpen ? '−' : '+'}]</span>
@@ -73,10 +77,10 @@ export default function TerminalNavigation({ pathname }: { pathname: string | nu
       </div>
     </div>
     <nav data-shell="navigation" aria-label={lang === 'ko' ? '주요 메뉴' : 'Main navigation'} className={styles.navigation}>
-      <ul className={styles.core}>{DIRECTORY.slice(0, 3).map((item, index) => <DirectoryItem key={item.href} item={item} index={index} current={current?.href === item.href} onNavigate={() => setIsOpen(false)} />)}</ul>
+      <ul className={styles.core}>{DIRECTORY.slice(0, 3).map((item, index) => <DirectoryItem key={item.href} item={item} index={index} current={current?.href === item.href} onNavigate={() => closeMenu(item.href)} />)}</ul>
       <ul ref={secondaryRef} id={secondaryId} className={styles.secondary} data-open={isOpen}>
-        {DIRECTORY.slice(3).map((item, index) => <DirectoryItem key={item.href} item={item} index={index + 3} current={current?.href === item.href} onNavigate={() => setIsOpen(false)} />)}
-        <li className={styles.mobileChannels}><Link href="/link" onClick={() => setIsOpen(false)}>{lang === 'ko' ? '공식 채널' : 'Official channels'} ↗</Link></li>
+        {DIRECTORY.slice(3).map((item, index) => <DirectoryItem key={item.href} item={item} index={index + 3} current={current?.href === item.href} onNavigate={() => closeMenu(item.href)} />)}
+        <li className={styles.mobileChannels}><Link href="/link" onClick={() => closeMenu('/link')} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'} <span aria-hidden="true">↗</span></Link></li>
       </ul>
     </nav>
     <span aria-hidden="true" data-shell="line" className={styles.rule} />

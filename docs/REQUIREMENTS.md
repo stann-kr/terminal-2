@@ -6,7 +6,7 @@
 * 프로젝트 명: terminal-2 / STANN OS LIVE
 * 표면 역할: LIVE (`TM-02`) — 공개 URL `https://terminal.stann.kr`
 * 주요 기술 스택: Next.js 16 App Router, React 19, Tailwind CSS, Docker (Apple Silicon), Cloudflare OpenNext Worker, Cloudflare D1, Drizzle ORM, TanStack Query
-* 디자인 시스템: STANN OS 공통 토큰 + terminal-2 이벤트 스킨, 모던 터미널 인터페이스 / 레트로 퓨처리즘 스타일 적용
+* 디자인 시스템: STANN OS 공통 토큰 + 검정·오렌지 terminal 워크스페이스. 각진 패널, 7개 디렉터리와 모바일 재배치를 사용한다.
 
 ## 2. 주요 아키텍처 원칙
 * **Apple Silicon 최적화 Docker 환경:** Docker는 로컬/dev 또는 prod-like smoke 용도로 사용한다. 공개 배포의 정본 artifact는 `@opennextjs/cloudflare` Worker bundle이다.
@@ -18,11 +18,11 @@
 ## 3. 기능 요구 사항
 * HOME: `/`·`/home`에서 LIVE→가까운 예정→최근 지난 이벤트 순서로 정보·원본 포스터·주요 행동을 제공한다. Boot/Sleep은 `/?experience=terminal` 선택형 체험이다.
 * GATE: LIVE/upcoming/archive 정보와 동일 행사 Lineup 연결을 제공하며 서버의 실제 신청 대상·기간에 해당할 때만 신청 CTA를 표시한다.
-* REQUEST: 화면 eventId와 서버 신청 대상을 일치 검증하고 코드·기간·정원 정책을 적용한다. 대상 변경 시 입력을 보존한 채 행사 재확인·코드 재검증을 요구한다. 접수는 입장 확정을 뜻하지 않는다.
-* LINEUP: 유효 event URL을 우선하여 아티스트·시간·정적 상태를 표시한다. 설명 펼침은 키보드·접근성 상태와 DOM 수명을 함께 유지한다.
+* REQUEST: 화면 eventId와 서버 신청 대상을 일치 검증하고 코드·기간·정원 정책을 적용한다. 입력/검증 상태 패널은 같은 hook 결과를 사용한다. 대상 변경 시 입력을 보존한 채 행사 재확인·코드 재검증을 요구한다. 서버 성공 후 같은 페이지에 접수 결과를 표시하며 접수는 입장 확정을 뜻하지 않는다.
+* LINEUP: 유효 event URL을 우선하여 명단과 프로필을 표시한다. `artist` query는 선택 행사 소속을 확인하며 행사 변경 시 함께 해제한다. 키보드 선택·모바일 프로필 진입·명단으로 focus 복귀를 지원한다.
 * STATUS: 이벤트 레지스트리 기반 세션 요약과 정적 노드 시각화 표시. 실제 telemetry 또는 realtime 상태로 표현하지 않는다.
 * TRANSMIT: 공개 별칭·메시지 게시를 사전에 안내하고 idempotency key를 유지한다. 전송 중 수정한 새 초안은 이전 요청 성공으로 지우지 않는다.
-* SIGNAL: 이벤트 신호 수신 채널 등록.
+* SIGNAL: 이메일·Instagram·동의 입력과 이벤트 소식 연락처 저장 결과를 제공한다. 제출 실패 시 입력을 유지하며 저장 결과를 메일 발송 완료로 표현하지 않는다.
 * LINK: STANN OS HUB / ARCHIVE / LIVE 및 외부 채널 연결.
 
 ## 4. 검증 및 배포 게이트

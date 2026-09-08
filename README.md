@@ -13,6 +13,10 @@ terminal-2 is the STANN OS LIVE surface for `https://terminal.stann.kr`.
 
 `/` and `/home` open the event overview. The optional boot/sleep experience is available at `/?experience=terminal`. Event selection prefers live events, then the nearest upcoming event, then the latest past event. Dates are displayed in Korea Standard Time. Gate and Lineup preserve the selected event in `?event=`.
 
+The interface uses a black-and-orange workspace with seven directory entries, responsive panels, and a single document scroll. Artist profiles can be linked with `/lineup?event=…&artist=…`; changing the event clears its artist selection. Guest requests show a receipt only after the server accepts the submission. A receipt does not confirm admission.
+
+Home uses a lightweight ASCII brand treatment. WebGL is loaded only for the optional terminal experience, subject to motion preferences, visibility, and device support.
+
 ## Stack
 
 - Next.js 16 App Router

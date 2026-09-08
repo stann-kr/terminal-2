@@ -23,6 +23,7 @@ export default function LineupPage() {
   const now = useEventClock(events);
   const selectedEvent = selectEvent(events, selectedId, now);
   const selectedArtist = selectedEvent?.artists.find(artist => artist.id === artistId);
+  const hasArtists = Boolean(selectedEvent?.artists.length);
   const profileId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const focusProfile = useRef(false);
@@ -66,7 +67,7 @@ export default function LineupPage() {
           </div>
           <div id={profileId} className={styles.profileRegion}>
             {selectedArtist ? <ArtistProfile key={selectedArtist.id} artist={selectedArtist} event={selectedEvent} headingRef={headingRef} onReturn={returnToRoster} />
-              : <section className={styles.context} aria-labelledby="lineup-context-title"><span aria-hidden="true" className={styles.contextMark}>[+]</span><h2 id="lineup-context-title">{lang === 'ko' ? '아티스트를 만나보세요' : 'Meet the artists'}</h2><p>{artistId ? (lang === 'ko' ? '선택한 아티스트를 이 행사에서 찾을 수 없습니다. 명단에서 다시 선택해 주세요.' : 'This artist is not in this event. Choose from the roster.') : (lang === 'ko' ? '명단에서 아티스트를 선택하면 출연 정보와 소개를 볼 수 있습니다.' : 'Choose an artist to view their set details and biography.')}</p><p>{selectedEvent.session} · {t.lineup.actCount(selectedEvent.artists.length)}</p></section>}
+              : <section className={styles.context} aria-labelledby="lineup-context-title"><span aria-hidden="true" className={styles.contextMark}>[+]</span><h2 id="lineup-context-title">{hasArtists ? (lang === 'ko' ? '아티스트를 만나보세요' : 'Meet the artists') : (lang === 'ko' ? '공개된 라인업이 없습니다.' : 'No lineup has been announced.')}</h2><p>{artistId ? (lang === 'ko' ? '선택한 아티스트를 이 행사에서 찾을 수 없습니다. 명단에서 다시 선택해 주세요.' : 'This artist is not in this event. Choose from the roster.') : !hasArtists ? (lang === 'ko' ? '이벤트 정보는 계속 확인할 수 있습니다.' : 'You can still explore the event details.') : (lang === 'ko' ? '명단에서 아티스트를 선택하면 출연 정보와 소개를 볼 수 있습니다.' : 'Choose an artist to view their set details and biography.')}</p><p>{selectedEvent.session} · {t.lineup.actCount(selectedEvent.artists.length)}</p></section>}
           </div>
         </div>
         <p className="sr-only" aria-live="polite">{selectedArtist ? (lang === 'ko' ? '선택한 아티스트: ' : 'Selected artist: ') + selectedArtist.name : ''}</p>
