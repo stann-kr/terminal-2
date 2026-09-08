@@ -12,6 +12,7 @@ export function useEventSummaryMotion(eventId: string, posterUrl?: string) {
   useGSAP(() => {
     const root = rootRef.current;
     if (!root || !allowMotion) return;
+    const scroller = root.closest<HTMLElement>('[data-scroll-region]') ?? undefined;
     const key = `${eventId}:${posterUrl ?? ''}`;
     const poster = root.querySelector<HTMLElement>('[data-event="poster"]');
     const surface = root.querySelector<HTMLElement>('[data-event="surface"]');
@@ -24,7 +25,7 @@ export function useEventSummaryMotion(eventId: string, posterUrl?: string) {
       const entry = gsap.timeline({
         defaults: { duration: 0.75, ease: 'expo.out' },
         onStart: () => { enteredKey.current = key; scan?.restart(); },
-        scrollTrigger: { trigger: root, start: 'top 94%', once: true },
+        scrollTrigger: { trigger: root, scroller, start: 'top 94%', once: true },
       });
       if (poster) entry.from(poster, { y: 24, scale: 0.965, opacity: 0.65, duration: 1 }, 0);
       entry.from('[data-event="status"]', { x: -18, opacity: 0.5, duration: 0.5 }, 0.06)
@@ -37,7 +38,7 @@ export function useEventSummaryMotion(eventId: string, posterUrl?: string) {
     if (poster) {
       gsap.fromTo('[data-event="progress"]', { scaleY: 0.08 }, {
         scaleY: 1, ease: 'none',
-        scrollTrigger: { trigger: poster, start: 'clamp(top 80%)', end: 'clamp(bottom 20%)', scrub: 0.45 },
+        scrollTrigger: { trigger: poster, scroller, start: 'clamp(top 80%)', end: 'clamp(bottom 20%)', scrub: 0.45 },
       });
     }
     const imageReady = () => {

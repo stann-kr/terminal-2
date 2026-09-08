@@ -26,7 +26,7 @@ export default function ArtistProfile({ artist, event, onReturn, headingRef }: {
   useGSAP(() => {
     if (!allowMotion) return;
     gsap.from('[data-profile-rule]', { scaleX: 0, duration: 0.65, ease: 'expo.out' });
-    gsap.to('[data-profile-wave]', { x: -12, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut', scrollTrigger: { trigger: rootRef.current, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' } });
+    gsap.to('[data-profile-wave]', { x: -12, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut', scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current?.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' } });
   }, { scope: rootRef, dependencies: [allowMotion, artist.id], revertOnUpdate: true });
 
   return <section ref={rootRef} aria-labelledby={titleId} className={styles.profile} onKeyDown={e => { if (e.key === 'Escape') onReturn(); }}>

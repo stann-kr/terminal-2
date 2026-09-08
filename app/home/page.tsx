@@ -27,7 +27,7 @@ export default function HomePage() {
   ];
   return (
     <PageLayout width="event" flush>
-      <HomeMasthead />
+      <HomeMasthead event={!isLoading && !isError ? event : null} />
       {isLoading ? <div role="status" className={styles.state}><h1>{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.home.loading}</div>
         : isError ? <div role="alert" className={styles.state}><h1>{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
         : event ? <EventSummary key={event.id} event={event}>

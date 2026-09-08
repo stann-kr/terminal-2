@@ -25,7 +25,7 @@ export default function ArtistRow({ artist, index = 0, selected, onSelect, profi
     if (!allowMotion || hasEntered.current) return;
     gsap.from(rootRef.current, {
       x: 14, opacity: 0.65, duration: 0.55, delay: Math.min(index, 5) * 0.045, ease: 'expo.out',
-      scrollTrigger: { trigger: rootRef.current, start: 'top 97%', once: true },
+      scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current?.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top 97%', once: true },
       onStart: () => { hasEntered.current = true; }, clearProps: 'transform,opacity',
     });
   }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });

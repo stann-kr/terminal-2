@@ -1,10 +1,7 @@
 'use client';
 import type { Variants } from 'framer-motion';
-import { useRef } from 'react';
 import { HeadingText } from '@/components/ui/TerminalText';
 import styles from './PageHeader.module.css';
-import { gsap, useGSAP } from '@/lib/motion/gsap';
-import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 interface PageHeaderProps {
   path: string;
@@ -24,19 +21,8 @@ const accentClassMap: Record<NonNullable<PageHeaderProps['accent']>, string> = {
 
 export default function PageHeader({ path, title, accent = 'primary', cipher = false }: PageHeaderProps) {
   const accentClass = accentClassMap[accent] || accentClassMap.primary;
-  const rootRef = useRef<HTMLDivElement>(null);
-  const hasEntered = useRef(false);
-  const { allowMotion } = useMotionPolicy();
-  useGSAP(() => {
-    if (!allowMotion || hasEntered.current) return;
-    hasEntered.current = true;
-    gsap.timeline({ defaults: { ease: 'expo.out' } })
-      .from('[data-heading="path"]', { x: -16, opacity: 0.45, duration: 0.55 }, 0)
-      .from('h1', { y: 20, opacity: 0.55, duration: 0.8 }, 0.08)
-      .from('[data-heading="rule"]', { scaleX: 0, duration: 0.8 }, 0.16);
-  }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
   return (
-    <div ref={rootRef} className={styles.header}>
+    <div className={styles.header}>
       <p data-heading="path" aria-hidden="true" className={styles.path}><span>&gt; {path.split('/').filter(Boolean).slice(-1)[0]?.replace(/-/g, '_').toUpperCase()}</span><span>[TERMINAL]</span></p>
       <HeadingText
         text={title}

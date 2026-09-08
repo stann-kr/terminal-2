@@ -48,7 +48,7 @@
 
 ## 3. GSAP 터미널 모션과 `DecodeText`
 
-GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉시 제공하면서 Home, 이벤트, 디렉터리, 공통 shell과 accordion에 각각의 모션을 적용한다. Cipher는 Home 브랜드 영역과 선택형 체험에 사용한다.
+GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉시 제공하며 공통 헤더·메뉴·페이지 제목은 이동 시 진입 모션을 재생하지 않는다. Cipher는 선택형 터미널 체험에 사용한다.
 
 ### 3.1 통합 컴포넌트 `<DecodeText>` 및 `<TerminalText>` 분석
 
@@ -71,32 +71,32 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 ### 3.2 페이지 구조 (PageLayout & Transition)
 
 - **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
-- **동작 원리:** route wrapper는 pathname 이동 시 문서 상단으로 이동하며 query 선택만 바뀔 때는 전체 화면을 전환하지 않는다. `PageLayout`은 프레임·헤더 진입·탐색·언어·footer를 소유한다. `flush` 화면은 최대 1600px 안에서 capability가 grid와 여백을 결정한다. 기본 event/reading/form 폭은 1600/1024/672px다. 기능 화면 전체를 가리거나 전환 완료까지 입력을 막는 단계는 없다.
+- **동작 원리:** `PageLayout`은 `100dvh` 프레임에 헤더·메뉴·footer를 고정하고 남은 높이를 `main`의 내부 스크롤에 할당한다. pathname 이동 시 내부 스크롤은 상단으로 돌아가며 query 선택만 바뀔 때는 위치를 유지한다. `flush` 화면은 전체 너비를 사용하고 capability가 grid와 여백을 결정한다. 기본 event/reading/form 폭은 1600/1024/672px다. 데스크톱 상단 rail·메뉴는 약 32/41px이며 모바일·터치 컨트롤은 최소 44px 높이를 유지한다.
 - `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 360ms·닫기 252ms이며, 새 요청은 현재 높이에서 반전한다. ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
 - **landmark:** header·navigation·footer와 분리된 `main#main-content`가 전역 skip link의 목적지가 된다. 독립적인 체험·복구 화면은 자체 main을 가진다.
-- **탐색:** GATE·LINEUP·GUEST_REQ·STATUS·TRANSMIT·SIGNAL·ABOUT의 7개 디렉터리를 제공한다. `/gate/request`는 GUEST_REQ만 현재 메뉴로 표시한다. 모바일 보조 메뉴는 문서 안에서 펼쳐지고 Escape로 닫으면 메뉴 버튼으로 focus가 돌아간다.
+- **탐색:** GATE·LINEUP·GUEST_REQ·STATUS·TRANSMIT·SIGNAL·ABOUT의 7개 디렉터리를 제공한다. `/gate/request`는 GUEST_REQ만 현재 메뉴로 표시한다. 모바일 보조 메뉴는 헤더 아래에서 펼쳐지고 높이가 부족하면 메뉴 내부가 스크롤된다. Escape로 닫으면 메뉴 버튼으로 focus가 돌아간다.
 
 ### 3.3 모션 소유권과 입력 반응
 
 | 영역 | 연출 | 소유 위치 |
 |---|---|---|
-| Home 브랜드 | 짧은 프레임 기동, 디코드, 스캔·커서 반복, 포인터에 반응하는 ASCII | `app/home/HomeMasthead.tsx` |
+| Home 시간 표시 | 현재 행사의 KST 시작 시각 기준 T- 카운트다운 / T+ 경과 시간, 초 단위 갱신 | `app/home/HomeMasthead.tsx`, `components/events/CountdownBlock.tsx` |
 | 행사 요약 | 포스터·정보 진입, 스캔, 스크롤 진행선, fine pointer 기울기 | `components/events/useEventSummaryMotion.ts` |
 | 버튼·메뉴 | 고정된 hit target 안에서 글자·화살표 이동, 선택 광선, 키보드 focus 반응 | `components/ui/useControlMotion.ts` |
 | 디렉터리·라인업 | viewport 진입의 짧은 stagger, 명단 선택과 반전 표시 | 해당 row component |
 | 아티스트 프로필 | 실제 프로필 정보와 분리된 장식 파형·경계선 | `app/lineup/ArtistProfile.tsx` |
 | 신청 접수 결과 | 서버 성공 뒤 결과 heading focus와 경계선 | `app/gate/request/RequestReceipt.tsx` |
-| 공통 제목·panel | 경로·제목 진입, 경계선 그리기 | `PageHeader`, `TerminalPanel` |
+| 공통 제목·panel | 제목은 즉시 표시, panel 경계선 그리기 | `PageHeader`, `TerminalPanel` |
 
 - [공식 React 연동](https://gsap.com/resources/React/)의 `useGSAP` scope와 cleanup을 사용한다. 비동기 ResizeObserver에서 만드는 tween도 context에 포함한다.
-- [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 일반 문서 스크롤을 유지한다. Home 반복 모션은 viewport 밖에서 멈추고 다시 진입하면 이어진다. 장식 pointer 반응은 fine pointer에서만 활성화한다.
+- [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 가장 가까운 `data-scroll-region`을 scroller로 사용한다. 본문의 native 스크롤과 모션 위치를 일치시키며, 장식 pointer 반응은 fine pointer에서만 활성화한다.
 - `quickTo`는 포인터 움직임마다 tween을 새로 만들지 않고 재사용한다. 버튼 hover timeline도 재생·역재생으로 재사용하며, 조작 영역 자체를 포인터에 따라 이동시키지 않는다.
 - 콘텐츠 높이·이미지 로딩 뒤의 scroll 위치 재계산은 `ScrollTrigger.refresh(true)`로 묶는다. 화면 이탈 시 scene의 trigger, timeline, observer와 event listener를 정리한다.
 - 동일 요소의 transform·opacity를 GSAP과 CSS/Framer Motion이 동시에 제어하지 않는다. 기존 Boot/Sleep 상태 전환과 Transmit 상태 표현의 Framer Motion은 별도 owner로 유지한다.
 
 ### 3.4 화면별 작업 영역과 상태
 
-- Home/Gate는 현재 행사와 원본 포스터를 연결한다. Gate의 신청 행동은 기존 행사 선택·신청 기간 정책을 따르며 코드 입력은 신청 화면 한 곳에서 관리한다.
+- Home/Gate는 현재 행사와 원본 포스터를 연결한다. Home 상단의 시간 표시줄은 동일 행사의 시작 시각을 사용하며 데이터가 없거나 시각이 잘못된 경우에는 표시하지 않는다. Gate의 신청 행동은 기존 행사 선택·신청 기간 정책을 따르며 코드 입력은 신청 화면 한 곳에서 관리한다.
 - Request는 입력과 실제 코드 상태를 나눠 보여준다. 마감 상태에서는 신청 단계 패널을 표시하지 않으며, 성공 결과는 같은 URL의 제출된 행사 snapshot에 귀속한다. 코드 확인·신청 접수·입장 확정은 서로 다른 상태다.
 - Lineup은 명단과 프로필로 구성한다. `/lineup?event=…&artist=…`의 아티스트는 선택 행사에 속해야 한다. 행사 변경은 artist 해제와 함께 한 번의 history 갱신으로 처리한다. 모바일 선택은 프로필 제목으로, 명단 복귀는 원래 행으로 focus를 이동한다. 외부 artist 링크·음원 데이터는 현재 공개 DTO에 없다.
 - Transmit는 작성/공개 기록, Signal은 설명/연락처 입력으로 구성한다. 모바일에서는 같은 form DOM을 세로로 재배치한다. 조회·제출 실패와 실제 성공을 구분하고 기존 초안·동의·idempotency 규칙을 유지한다.

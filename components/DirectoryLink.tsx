@@ -20,7 +20,7 @@ export default function DirectoryLink({ href, label, description, index, externa
     gsap.from(rootRef.current, {
       y: 18, opacity: 0.65, duration: 0.65, ease: 'expo.out',
       delay: Math.min(index - 1, 3) * 0.055,
-      scrollTrigger: { trigger: rootRef.current, start: 'top 96%', once: true },
+      scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top 96%', once: true },
       onStart: () => { hasEntered.current = true; },
       clearProps: 'transform,opacity',
     });

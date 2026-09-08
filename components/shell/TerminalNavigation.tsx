@@ -31,10 +31,10 @@ function DirectoryItem({ item, index, current, onNavigate }: {
     <Link ref={ref} href={item.href} onClick={onNavigate} aria-current={current ? 'page' : undefined} className={styles.link}>
       <span aria-hidden="true" data-control-scan className={styles.scan} />
       <span data-control-label className={styles.label}>
-        <span aria-hidden="true" className={styles.code}><span>{String(index + 1).padStart(2, '0')}</span> {item.code}</span>
+        <span aria-hidden="true" className={styles.code}><span>[{String(index + 1).padStart(2, '0')}]</span> {item.code}</span>
         <span className={styles.name}>{item[lang]}</span>
       </span>
-      <span aria-hidden="true" data-control-arrow className={styles.marker}>↗</span>
+      <span aria-hidden="true" data-control-arrow className={styles.marker}>[+]</span>
     </Link>
   </li>;
 }
@@ -70,7 +70,7 @@ export default function TerminalNavigation({ pathname }: { pathname: string | nu
       <Link ref={brandRef} data-shell="brand" href="/home" className={styles.brand} aria-current={pathname === '/' || pathname === '/home' ? 'page' : undefined}>TERMINAL<span aria-hidden="true" className={styles.location}>{' // SEOUL'}</span></Link>
       <div className={styles.utilities}>
         <Link href="/link" className={styles.channels} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'} <span aria-hidden="true">↗</span></Link>
-        <div data-shell="language"><LangToggle /></div>
+        <div data-shell="language"><LangToggle className={styles.language} /></div>
         <button ref={menuRef} type="button" className={styles.menu} aria-expanded={isOpen} aria-controls={secondaryId} onClick={() => setIsOpen(open => !open)}>
           {lang === 'ko' ? '메뉴' : 'Menu'} <span aria-hidden="true">[{isOpen ? '−' : '+'}]</span>
         </button>

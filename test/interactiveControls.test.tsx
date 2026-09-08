@@ -217,7 +217,10 @@ describe('brand text motion', () => {
   it('releases a scene\'s scroll triggers when it unmounts', () => {
     const before = ScrollTrigger.getAll();
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
-    const { unmount } = render(<HomeMasthead />);
+    const { unmount } = render(<EventSummary event={{
+      id: 'scene', session: 'Scene event', subtitle: '', date: '2026-09-10', time: '12:00 KST', status: 'UPCOMING',
+      venue: 'Venue', district: '', coords: '', capacity: '', sound: '', artists: [],
+    }} />);
     expect(ScrollTrigger.getAll().length).toBeGreaterThan(before.length);
     unmount();
     expect(ScrollTrigger.getAll()).toEqual(before);
@@ -341,6 +344,22 @@ describe('event clock policy updates', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it('shows the Home event countdown in KST, ticks into elapsed time and omits invalid targets', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-10T11:59:59+09:00'));
+    const { container, rerender } = render(<HomeMasthead event={event} />);
+    expect(screen.getByRole('region', { name: 'Clock event 카운트다운' })).toHaveTextContent('T- COUNTDOWN');
+    expect(container.querySelector('time')).toHaveAttribute('datetime', '2026-09-10T03:00:00.000Z');
+    expect(screen.getByText('01')).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(2_000));
+    expect(screen.getByRole('region')).toHaveTextContent('T+ ELAPSED');
+    expect(screen.getByText('01')).toBeInTheDocument();
+    rerender(<HomeMasthead event={{ ...event, date: 'invalid' }} />);
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    rerender(<HomeMasthead event={null} />);
+    expect(screen.queryByText(/COUNTDOWN|ELAPSED/)).not.toBeInTheDocument();
   });
 
   it('opens requests and archives a started event at their boundaries without ticking between them', () => {
@@ -495,6 +514,7 @@ describe('event page states and optional entry', () => {
     render(<QueryClientProvider client={queryClient}><HomePage /></QueryClientProvider>);
     const main = screen.getByRole('main');
     expect(within(main).getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
+    expect(within(main).getByRole('region', { name: 'Next event 카운트다운' })).toBeInTheDocument();
     expect(main.querySelector('a[href^="/gate?"]')).toHaveAttribute('href', status === 'ARCHIVED' ? '/gate?view=archive&event=next' : '/gate?event=next');
   });
 

@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { DataText, MetaText } from '@/components/ui/TerminalText';
+import styles from './CountdownBlock.module.css';
 import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 interface Props {
@@ -32,51 +31,8 @@ function getTimeDelta(target: Date): TimeDelta {
   };
 }
 
-interface AccentStyle {
-  border: string;
-  value: string;
-  glow: string;
-  label: string;
-  wrapperClass: string;
-  cellClass: string;
-  valueSize: string;
-  labelClass: string;
-  modeLabel: string;
-}
-
-const primaryStyle: AccentStyle = {
-  border: 'border-terminal-accent-primary/25',
-  value: 'text-terminal-accent-primary',
-  glow: 'drop-shadow-[0_0_24px_rgb(var(--color-accent-primary)/0.6)]',
-  label: 'text-terminal-muted',
-  wrapperClass: 'grid grid-cols-4 gap-2 sm:gap-4',
-  cellClass: 'text-center border py-3 sm:py-4 bg-terminal-bg-overlay/50',
-  // 카운트다운 큰 숫자 — 디스플레이 성격: font-orbit 핀 (라벨 글루 font-mono와 분리)
-  valueSize: 'text-4xl md:text-5xl lg:text-6xl font-bold font-orbit flex items-center justify-center',
-  labelClass: 'text-nano sm:text-small mt-2 tracking-wider sm:tracking-widest font-mono',
-  modeLabel: 'text-terminal-accent-primary/60',
-};
-
-const secondaryStyle: AccentStyle = {
-  border: 'border-terminal-accent-secondary/20',
-  value: 'text-terminal-accent-secondary text-shadow-glow-secondary',
-  glow: '',
-  label: 'text-terminal-accent-secondary/50',
-  wrapperClass: 'grid grid-cols-4 gap-3 font-mono',
-  cellClass: 'text-center border bg-terminal-bg-overlay/40 py-4',
-  // 카운트다운 큰 숫자 — 디스플레이 성격: font-orbit 핀 (wrapperClass의 font-mono 오버라이드)
-  valueSize: 'text-3xl sm:text-4xl md:text-5xl font-bold font-orbit flex items-center justify-center',
-  labelClass: 'text-nano sm:text-small mt-1 tracking-wider sm:tracking-widest',
-  modeLabel: 'text-terminal-accent-secondary/60',
-};
-
-const accentStyles: Record<NonNullable<Props['accent']>, AccentStyle> = {
-  primary: primaryStyle,
-  secondary: secondaryStyle,
-};
-
 export default function CountdownBlock({ targetDate, accent = 'primary', compact = false }: Props) {
-  const { allowMotion, isDocumentVisible } = useMotionPolicy();
+  const { isDocumentVisible } = useMotionPolicy();
   const [delta, setDelta] = useState<TimeDelta>(() => getTimeDelta(targetDate));
 
   useEffect(() => {
@@ -96,46 +52,17 @@ export default function CountdownBlock({ targetDate, accent = 'primary', compact
     { label: 'SECONDS', val: String(delta.s).padStart(2, '0') },
   ];
 
-  const s = accentStyles[accent] || accentStyles.primary;
-
-  const cellClass = compact
-    ? `text-center border py-2 bg-terminal-bg-overlay/50 ${s.border}`
-    : `${s.cellClass} ${s.border}`;
-  const valueSizeClass = compact
-    // 카운트다운 큰 숫자 — 디스플레이 성격: font-orbit 핀
-    ? `text-xl sm:text-2xl font-bold font-orbit flex items-center justify-center ${s.value}`
-    : `${s.valueSize} ${s.value}`;
-  const labelSizeClass = compact
-    ? `text-nano mt-1 tracking-wider font-mono ${s.label}`
-    : `${s.labelClass} ${s.label}`;
-
   return (
-    <motion.div
-      suppressHydrationWarning={true}
-      initial={allowMotion ? { y: 8 } : false}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-    >
-      {/* T+/T- 모드 레이블 */}
-      <div className={`text-center mb-2 text-micro tracking-[0.2em] font-mono font-bold ${s.modeLabel}`}>
-        <MetaText text={delta.elapsed ? 'T+ ELAPSED' : 'T- COUNTDOWN'} autoHeight />
-      </div>
-
-      <div className={s.wrapperClass}>
-        {blocks.map((b) => (
-          <div key={b.label} className={cellClass}>
-            <div className={s.glow}>
-              <DataText
-                text={b.val}
-                className={valueSizeClass}
-              />
-            </div>
-            <div className={labelSizeClass}>
-              <MetaText text={b.label} autoHeight />
-            </div>
+    <div className={styles.countdown} data-accent={accent} data-compact={compact} role="timer" aria-live="off">
+      <p className={styles.mode}>{delta.elapsed ? 'T+ ELAPSED' : 'T- COUNTDOWN'}</p>
+      <dl className={styles.units}>
+        {blocks.map(block => (
+          <div key={block.label} className={styles.unit}>
+            <dt className={styles.label}>{block.label}</dt>
+            <dd className={styles.value}>{block.val}</dd>
           </div>
         ))}
-      </div>
-    </motion.div>
+      </dl>
+    </div>
   );
 }

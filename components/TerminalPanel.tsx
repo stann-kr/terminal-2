@@ -21,7 +21,7 @@ export default function TerminalPanel({ children, className = '', bodyClassName 
   const { allowMotion } = useMotionPolicy();
   useGSAP(() => {
     if (!allowMotion) return;
-    gsap.from('[data-panel="line"]', { scaleX: 0, duration: 0.75, ease: 'expo.out', scrollTrigger: { trigger: rootRef.current, start: 'top 96%', once: true } });
+    gsap.from('[data-panel="line"]', { scaleX: 0, duration: 0.75, ease: 'expo.out', scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current?.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top 96%', once: true } });
   }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
 
   return <RootTag ref={node => { rootRef.current = node; }} aria-labelledby={title ? titleId : undefined} data-accent={accent} className={`${styles.panel} ${className}`}>
