@@ -23,21 +23,19 @@ export default function HomePage() {
   const links = [
     { href: '/status', label: lang === 'ko' ? '지난 기록' : 'Event history', description: t.dirDesc.status },
     { href: '/signal', label: lang === 'ko' ? '소식 신청' : 'Event updates', description: t.dirDesc.signal },
-    { href: '/transmit', label: lang === 'ko' ? '방명록' : 'Guestbook', description: t.dirDesc.transmit },
-    { href: '/about', label: lang === 'ko' ? '소개' : 'About', description: t.dirDesc.about },
     { href: '/link', label: lang === 'ko' ? '공식 채널' : 'Official channels', description: t.dirDesc.link },
   ];
   return (
-    <PageLayout width="event">
+    <PageLayout width="event" flush>
       <HomeMasthead />
-      {isLoading ? <div role="status"><h1 className="sr-only">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.home.loading}</div>
-        : isError ? <div role="alert" className="py-10 space-y-4"><h1 className="text-h1">{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
-        : event ? <EventSummary event={event}>
+      {isLoading ? <div role="status" className={styles.state}><h1>{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.home.loading}</div>
+        : isError ? <div role="alert" className={styles.state}><h1>{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
+        : event ? <EventSummary key={event.id} event={event}>
           <TerminalActionLink href={`/gate?${event.status === 'ARCHIVED' ? 'view=archive&' : ''}event=${encodeURIComponent(event.id)}`}>{event.status === 'ARCHIVED' ? t.home.viewArchive : t.home.viewEvent}</TerminalActionLink>
           <TerminalActionLink variant="ghost" href={`/lineup?event=${encodeURIComponent(event.id)}`}>{lang === 'ko' ? '라인업' : 'Lineup'}</TerminalActionLink>
         </EventSummary>
-        : <div role="status" className="py-12"><h1 className="text-h1 mb-4">{lang === 'ko' ? '이벤트' : 'Events'}</h1><p>{t.home.noEvents}</p></div>}
-      {liveEvents.length > 1 && <nav className="mt-8 space-y-2" aria-label={lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}>{liveEvents.filter(e => e.id !== event?.id).map(e => <Link className="block min-h-11 py-2 underline" key={e.id} href={`/gate?event=${encodeURIComponent(e.id)}`}>{e.session}</Link>)}</nav>}
+        : <div role="status" className={styles.state}><h1>{lang === 'ko' ? '이벤트' : 'Events'}</h1><p>{t.home.noEvents}</p></div>}
+      {liveEvents.length > 1 && <nav className={styles.liveEvents} aria-label={lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}><h2>{lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}</h2>{liveEvents.filter(e => e.id !== event?.id).map(e => <Link key={e.id} href={`/gate?event=${encodeURIComponent(e.id)}`}>{e.session}<span aria-hidden="true">↗</span></Link>)}</nav>}
       <nav className={styles.directory} aria-label={lang === 'ko' ? '더 알아보기' : 'Explore'}>
         {links.map((link, index) => <DirectoryLink key={link.href} {...link} index={index + 1} />)}
       </nav>

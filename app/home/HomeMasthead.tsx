@@ -7,6 +7,11 @@ import { gsap, ScrollTrigger, useGSAP } from '@/lib/motion/gsap';
 import { useMotionPolicy } from '@/lib/useMotionPolicy';
 import styles from './HomeMasthead.module.css';
 
+const ASCII_FIELD = Array.from({ length: 12 }, (_, row) => Array.from({ length: 64 }, (_, col) => {
+  const distance = Math.abs(row - 5.5) * 3 + Math.abs(col - 31.5) * 0.45;
+  return distance < 17 ? '/+:.|-'[(row * 7 + col * 3) % 6] : ' ';
+}).join('')).join('\n');
+
 export default function HomeMasthead() {
   const rootRef = useRef<HTMLDivElement>(null);
   const hasEntered = useRef(false);
@@ -65,10 +70,10 @@ export default function HomeMasthead() {
   return (
     <div ref={rootRef} id="home-ambient-anchor" className={styles.masthead}>
       <CRTWrapper>
-        <div aria-hidden="true" data-masthead="grid" className={styles.grid} />
+        <pre aria-hidden="true" data-masthead="grid" className={styles.grid}>{ASCII_FIELD}</pre>
         <div aria-hidden="true" data-masthead="scan" className={styles.scan} />
         <div className={styles.brand}>
-          <p data-masthead="path" className={styles.path}>/terminal/home</p>
+          <p data-masthead="path" className={styles.path}>[00] HOME / EVENT DIRECTORY</p>
           <div data-masthead="command" className={styles.command}>
             <span aria-hidden="true" className={styles.prompt}>&gt;</span>
             <TitleText text="TERMINAL" delay={160} className={`font-pixie ${styles.wordmark}`} />

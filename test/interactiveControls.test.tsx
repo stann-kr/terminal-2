@@ -24,6 +24,7 @@ import AnimatedHeight from '../components/ui/AnimatedHeight';
 import HomeMasthead from '../app/home/HomeMasthead';
 import TerminalNavigation from '../components/shell/TerminalNavigation';
 import EventSummary from '../components/events/EventSummary';
+import HomePage from '../app/home/page';
 import { gsap, ScrollTrigger } from '../lib/motion/gsap';
 
 afterEach(cleanup);
@@ -479,6 +480,15 @@ describe('event page states and optional entry', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByText('공개된 포스터가 없습니다.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
+  });
+
+  it.each(['UPCOMING', 'ARCHIVED'] as const)('connects the Home event to its correct %s destination', (status) => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
+    queryClient.setQueryData(eventKeys.list(), [{ ...event, status }]);
+    render(<QueryClientProvider client={queryClient}><HomePage /></QueryClientProvider>);
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
+    expect(main.querySelector('a[href^="/gate?"]')).toHaveAttribute('href', status === 'ARCHIVED' ? '/gate?view=archive&event=next' : '/gate?event=next');
   });
 
   it('distinguishes loading, failure and a confirmed empty event registry', async () => {

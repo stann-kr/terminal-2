@@ -7,6 +7,7 @@ import { useLang } from '@/lib/langContext';
 import { hasVisited, markVisited } from './visitState';
 import BootSequence from './BootSequence';
 import SleepScreen from './SleepScreen';
+import HomeAmbient from '../home/HomeAmbient';
 
 type Phase = 'pending' | 'boot' | 'sleep' | 'done';
 
@@ -34,7 +35,8 @@ export default function EntryExperience() {
   const isEntryVisible = phase === 'boot' || phase === 'sleep';
 
   return (
-    <main id="main-content" tabIndex={-1}>
+    <main id="main-content" tabIndex={-1} className="relative min-h-dvh">
+      <HomeAmbient anchorId="main-content" />
       <div className={isEntryVisible ? 'sr-only' : 'min-h-screen flex flex-col items-center justify-center gap-6 px-5'}>
         <h1 className="text-3xl font-mono">TERMINAL</h1>
         {!isEntryVisible && (
