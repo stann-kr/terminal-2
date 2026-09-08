@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
+import './setup-dom';
 import { createElement, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useAccessRequest } from '../app/gate/request/useAccessRequest';
 import { LangProvider, useLang } from '../lib/langContext';
@@ -9,6 +10,7 @@ import {
   resolveRequestEventState,
 } from '../app/gate/request/requestState';
 import type { TerminalEvent } from '../lib/events/types';
+import RequestAccessPage from '../app/gate/request/page';
 
 const futureEvent: TerminalEvent = {
   id: 'event-1',
@@ -58,6 +60,44 @@ afterEach(() => {
 });
 
 describe('request event binding and draft preservation', () => {
+  it('unlocks the real form after code verification and shows a receipt only after the server accepts it', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-08-15T12:00:00+09:00'));
+    localStorage.setItem('terminal_lang', 'ko');
+    window.history.replaceState(null, '', '/gate/request?event=event-1');
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('prefers-reduced-motion'), media: query,
+      addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {},
+    }));
+    let complete!: (response: Response) => void;
+    const fetchMock = vi.fn((url: string, _init?: RequestInit) => {
+      if (url === '/api/events') return Promise.resolve(Response.json([futureEvent]));
+      if (url === '/api/gate/code-info') return Promise.resolve(Response.json({ name: 'Inviter' }));
+      return new Promise<Response>(resolve => { complete = resolve; });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(createElement(LangProvider, null, createElement(RequestAccessPage)));
+    await act(async () => {});
+    expect(screen.getByRole('textbox', { name: '이름:' })).toBeDisabled();
+    fireEvent.change(screen.getByRole('textbox', { name: '인증 코드:' }), { target: { value: 'CODE-1' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(screen.getByRole('textbox', { name: '이름:' })).not.toBeDisabled();
+    expect(screen.queryByRole('heading', { name: '신청 접수 완료' })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox', { name: '이름:' }), { target: { value: 'Test guest' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '이메일:' }), { target: { value: 'guest@example.com' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '인스타그램 ID:' }), { target: { value: 'guest' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: /게스트 접근 관리/ }));
+    fireEvent.click(screen.getByRole('button', { name: /신청 제출/ }));
+    expect(screen.getByRole('button', { name: /전송 중/ })).toBeDisabled();
+    expect(screen.queryByRole('heading', { name: '신청 접수 완료' })).not.toBeInTheDocument();
+    const submitted = fetchMock.mock.calls.find(([url]) => url === '/api/gate/request');
+    expect(JSON.parse(submitted![1]!.body as string)).toMatchObject({ eventId: 'event-1', privacyConsent: true, marketingConsent: false });
+    await act(async () => { complete(Response.json({ ok: true })); });
+    expect(screen.getByRole('heading', { name: '신청 접수 완료' })).toHaveFocus();
+    expect(screen.getByText('접수는 입장 확정을 뜻하지 않습니다.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '라인업 보기' })).toHaveAttribute('href', '/lineup?event=event-1');
+  });
+
   it('keeps an explicit event query distinct from the current eligible event', () => {
     const nextEvent = { ...futureEvent, id: 'next', date: '2026-09-02' };
     expect(resolveRequestEventState([futureEvent, nextEvent], 30, new Date('2026-08-15T12:00:00+09:00'), 'next'))

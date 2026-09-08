@@ -14,6 +14,9 @@ import { formatEventDate } from '@/lib/events/lifecycle';
 import type { TerminalEvent } from '@/lib/events/types';
 import { ACCESS_WINDOW_DAYS } from '@/lib/gate/requestPolicy';
 import { useAccessRequest } from './useAccessRequest';
+import RequestStatusPanel from './RequestStatusPanel';
+import RequestReceipt from './RequestReceipt';
+import styles from './RequestPage.module.css';
 
 export default function RequestAccessPage() {
   const {
@@ -47,30 +50,28 @@ export default function RequestAccessPage() {
   } = useAccessRequest();
 
   return (
-    <PageLayout centerContent={false} width="form">
-      <ReturnLink href={gateHref} text={lang === 'ko' ? '← 이벤트로 돌아가기' : '← Back to event'} />
+    <PageLayout centerContent={false} width="event" flush>
+      <div className={styles.returnBar}><ReturnLink href={gateHref} text={lang === 'ko' ? '이벤트로 돌아가기' : 'Back to event'} /></div>
       <PageHeader path="/gate/request" title={lang === 'ko' ? '게스트 신청' : 'Guest request'} accent="secondary" />
 
-      {event && <RequestEventSummary event={event} lang={lang} />}
+      {event && !submitted && <RequestEventSummary event={event} lang={lang} />}
 
-      {submitted ? (
-        <section className="border-t border-terminal-bg-panel-border py-6" role="status" aria-live="polite" aria-atomic="true">
-          <h2 className="text-xl font-semibold">{t.request.committed}</h2>
-          <p className="mt-3 text-base leading-relaxed">{t.request.committedSub}</p>
-        </section>
+      {submitted && event ? (
+        <RequestReceipt event={event} />
       ) : eventState.kind === 'loading' ? (
-        <p className="py-8 text-base" role="status">{t.request.loading}</p>
+        <p className={styles.state} role="status">{t.request.loading}</p>
       ) : eventState.kind === 'load-error' ? (
-        <div className="space-y-4 py-6" role="alert">
+        <div className={`${styles.state} space-y-4`} role="alert">
           <p>{t.request.eventLoadFailed}</p>
           <TerminalButton onClick={retryEvent} variant="ghost">{t.request.retry}</TerminalButton>
         </div>
       ) : eventState.kind === 'empty' ? (
-        <p className="py-6" role="status">{t.request.noEvent}</p>
+        <p className={styles.state} role="status">{t.request.noEvent}</p>
       ) : (
-        <div className="space-y-6">
+        <div className={styles.workspace} data-inactive={eventState.kind === 'inactive' && !needsTargetReview}>
+          <div className={styles.formColumn}>
           {needsTargetReview && (
-            <section className="border border-terminal-accent-alert p-4 space-y-4" aria-labelledby="request-target-title">
+            <section className={styles.review} aria-labelledby="request-target-title">
               <h2 id="request-target-title" className="text-lg font-semibold">
                 {lang === 'ko' ? '신청 대상을 다시 확인해 주세요' : 'Review the request event'}
               </h2>
@@ -93,20 +94,20 @@ export default function RequestAccessPage() {
             </section>
           )}
           {eventState.kind === 'inactive' && !needsTargetReview ? (
-            <section className="border-t border-terminal-bg-panel-border py-6 space-y-3" role="status">
+            <section className={`${styles.state} space-y-3`} role="status">
               <h2 className="text-lg font-semibold">{t.request.periodInactive}</h2>
               <p>{t.request.windowInfo(ACCESS_WINDOW_DAYS)}</p>
               <p>{eventState.window.isElapsed ? t.request.eventElapsed : t.request.windowCountdown(eventState.window.opensInDays ?? 0)}</p>
             </section>
           ) : (
             <>
-              <section className="space-y-2 text-base leading-relaxed">
+              <section className={styles.introduction}>
                 {invitationLines.filter(line => /[a-zA-Z가-힣ㄱ-ㆎ\d]/.test(line)).map((line, index) => <p key={index}>{line}</p>)}
                 <p className="font-medium">
                   {lang === 'ko' ? '신청 접수는 입장 확정을 뜻하지 않습니다.' : 'Submitting a request does not confirm admission.'}
                 </p>
               </section>
-              <TerminalPanel title={lang === 'ko' ? '신청 정보' : 'Your details'} accent="secondary" headingLevel={2}>
+              <TerminalPanel title={lang === 'ko' ? '신청 정보' : 'Your details'} accent="secondary" headingLevel={2} className={styles.formPanel} bodyClassName={styles.formBody}>
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <FormField label={t.request.labelCode} htmlFor="request-accessCode">
                   <div className="relative">
@@ -118,10 +119,11 @@ export default function RequestAccessPage() {
                       onChange={handleCodeChange}
                       placeholder={t.request.placeholderCode}
                       autoComplete="off"
+                      maxLength={64}
                       required
                       aria-required="true"
                       aria-invalid={Boolean(codeError)}
-                      aria-describedby={codeError || codeStatus ? 'request-accessCode-message' : undefined}
+                      aria-describedby={`${codeError || codeStatus ? 'request-accessCode-message ' : ''}request-code-help`}
                       className={`${inputClassBase} ${inputAccentClass.secondary} pr-8`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-caption pointer-events-none" aria-hidden="true">
@@ -135,6 +137,7 @@ export default function RequestAccessPage() {
                     </span>
                   </div>
                 </FormField>
+                <p id="request-code-help" className={styles.codeHelp}>{lang === 'ko' ? '코드 확인 후 이름과 연락처를 작성할 수 있습니다.' : 'Verify your code to enter your name and contact details.'}</p>
                 {(codeError || codeStatus) && (
                   <div
                     id="request-accessCode-message"
@@ -264,12 +267,14 @@ export default function RequestAccessPage() {
                   )}
 
                 <div className="flex justify-end pt-2">
-                  <SubmitButton isSubmitting={isSubmitting} disabled={!isCodeVerified} variant="primary" defaultText={t.request.submitBtn} loadingText={t.request.submitting} />
+                  <SubmitButton isSubmitting={isSubmitting} disabled={!isCodeVerified} variant="primary" className="w-full" defaultText={t.request.submitBtn} loadingText={t.request.submitting} />
                 </div>
               </form>
               </TerminalPanel>
             </>
           )}
+          </div>
+          {(eventState.kind !== 'inactive' || needsTargetReview) && <RequestStatusPanel codeState={codeState} isCodeVerified={isCodeVerified} needsTargetReview={needsTargetReview} isSubmitting={isSubmitting} />}
         </div>
       )}
     </PageLayout>
@@ -278,7 +283,7 @@ export default function RequestAccessPage() {
 
 function RequestEventSummary({ event, lang }: { event: TerminalEvent; lang: 'ko' | 'en' }) {
   return (
-    <section className="mb-6 space-y-2" aria-label={lang === 'ko' ? '신청 대상 행사' : 'Request event'}>
+    <section className={styles.eventStrip} aria-label={lang === 'ko' ? '신청 대상 행사' : 'Request event'}>
       <h2 className="text-2xl font-semibold leading-tight">{event.session}</h2>
       {event.subtitle && <p>{event.subtitle}</p>}
       <p>{formatEventDate(event, lang === 'ko' ? 'ko-KR' : 'en-US')} · {event.time}</p>
