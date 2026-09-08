@@ -175,7 +175,7 @@ function LogoLayer({
         <bufferAttribute attach="attributes-position" args={[baseState.positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#D6E5ED"
+        color="#D0D0D0"
         size={0.05}
         map={circleMap}
         transparent
@@ -248,7 +248,7 @@ function AmbientParticles() {
         <bufferAttribute attach="attributes-position" args={[baseState.positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#c8a030"
+        color="#FF5D00"
         size={0.035}
         map={circleMap}
         transparent

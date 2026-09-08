@@ -17,6 +17,7 @@ import { LangProvider } from '../lib/langContext';
 import GatePage from '../app/gate/page';
 import StatusPage from '../app/status/page';
 import SleepScreen from '../app/_entry/SleepScreen';
+import BootSequence from '../app/_entry/BootSequence';
 import DecodeText from '../components/DecodeText';
 import AnimatedHeight from '../components/ui/AnimatedHeight';
 import HomeMasthead from '../app/home/HomeMasthead';
@@ -536,11 +537,34 @@ describe('event page states and optional entry', () => {
     const user = userEvent.setup();
     render(<SleepScreen onWake={onWake} />);
     await user.tab();
-    expect(screen.getByRole('button', { name: /RESUME SESSION/ })).toHaveFocus();
+    expect(screen.getByRole('button', { name: '이벤트로 돌아가기' })).toHaveFocus();
     expect(onWake).not.toHaveBeenCalled();
     await user.keyboard('{Enter}{Enter}');
-    fireEvent.click(screen.getByRole('button', { name: /RESUME SESSION/ }));
+    fireEvent.click(screen.getByRole('button', { name: '이벤트로 돌아가기' }));
     await waitFor(() => expect(onWake).toHaveBeenCalledTimes(1));
+  });
+
+  it('skips Boot only through its control, keeps language choice explicit and enters once', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} })));
+    localStorage.setItem('terminal_lang', 'ko');
+    const onComplete = vi.fn();
+    const { unmount } = render(<LangProvider><BootSequence onComplete={onComplete} /></LangProvider>);
+    fireEvent.keyDown(window, { key: 'Tab' });
+    expect(screen.queryByRole('button', { name: /한국어/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '애니메이션 건너뛰기' }));
+    expect(screen.getByRole('button', { name: /한국어/ })).toBeInTheDocument();
+    expect(onComplete).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /English/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Skip animation' }));
+    const enter = screen.getByRole('button', { name: /ENTER TERMINAL/ });
+    fireEvent.click(enter);
+    fireEvent.click(enter);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    unmount();
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
   });
 });
 

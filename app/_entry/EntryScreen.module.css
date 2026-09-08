@@ -1,0 +1,15 @@
+.screen { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100svh; min-height: 100dvh; background: rgb(var(--color-bg-base) / 0.78); color: rgb(var(--color-text-primary)); font-family: var(--font-mono); }
+.header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-panel) / 0.95); }
+.header h2 { font: 1.5rem / 1.3 'ProcrastinatingPixie', monospace; }
+.header h2 > span { font: 0.75rem / 1.5 var(--font-mono); color: rgb(var(--color-accent-primary)); }
+.headerActions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.headerActions > a { display: inline-flex; align-items: center; min-height: 2.75rem; text-decoration: underline; text-underline-offset: 4px; font-size: 0.875rem; }
+.console { position: relative; width: calc(100% - 2rem); max-width: 64rem; min-width: 0; margin: 2rem auto; padding: var(--workspace-padding); border: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-base) / 0.9); overflow-wrap: anywhere; }
+.console > .caption { margin-bottom: 1.5rem; }
+.caption { font: 0.75rem / 1.6 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.caption span { color: rgb(var(--color-text-muted)); }
+.beam { position: absolute; top: -1px; left: 0; width: 100%; height: 2px; background: rgb(var(--color-accent-primary)); transform-origin: left; pointer-events: none; }
+.hint { max-width: 64rem; width: calc(100% - 2rem); margin: 0 auto 2rem; color: rgb(var(--color-text-subdued)); font-size: 0.75rem; }
+.sleep { width: calc(100% - 2rem); max-width: 64rem; margin: auto; padding: clamp(2rem, 8vw, 6rem) var(--workspace-padding); }
+.clock { margin-block: 1rem 2rem; font: 700 clamp(2.25rem, 9vw, 6.5rem) / 1.2 var(--font-mono); color: rgb(var(--color-accent-primary)); font-variant-numeric: tabular-nums; letter-spacing: -0.05em; }
+.sleepMessage { margin-block: 1.5rem; font: 1rem / 1.7 sans-serif; color: rgb(var(--color-text-subdued)); }

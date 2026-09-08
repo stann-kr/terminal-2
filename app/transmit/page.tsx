@@ -8,6 +8,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import FieldError from '@/components/ui/FieldError';
 import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
 import { useTransmit } from './useTransmit';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
 import styles from './TransmitPage.module.css';
 
 function formatLocalTime(isoStr: string): string {
@@ -16,6 +17,7 @@ function formatLocalTime(isoStr: string): string {
 }
 
 export default function TransmitPage() {
+  const { allowMotion } = useMotionPolicy();
   const {
     t, currentPage, handle, message, sent, fieldErrors, formError, logs, total, totalPages,
     isInitialLoad, isFetching, isLogError, isSubmitting, handleHandleChange, handleMessageChange,
@@ -38,8 +40,8 @@ export default function TransmitPage() {
           </div>
           {fieldErrors.message && <FieldError id="transmit-message-error" message={fieldErrors.message} />}
           <AnimatePresence initial={false}>
-            {formError && <motion.p key="error" initial={{ opacity: 0.7 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={styles.error} role="alert">{formError}</motion.p>}
-            {sent && <motion.p key="sent" initial={{ opacity: 0.7 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={styles.sent} role="status" aria-live="polite" aria-atomic="true">{t.transmit.committed}</motion.p>}
+            {formError && <motion.p key="error" initial={allowMotion ? { opacity: 0.7 } : false} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: allowMotion ? 0.16 : 0 }} className={styles.error} role="alert">{formError}</motion.p>}
+            {sent && <motion.p key="sent" initial={allowMotion ? { opacity: 0.7 } : false} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: allowMotion ? 0.16 : 0 }} className={styles.sent} role="status" aria-live="polite" aria-atomic="true">{t.transmit.committed}</motion.p>}
           </AnimatePresence>
           <div className={styles.submit}><SubmitButton isSubmitting={isSubmitting} defaultText={t.transmit.submitBtn} loadingText={t.transmit.submitting} className="w-full" /></div>
         </form>

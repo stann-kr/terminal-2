@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import TerminalButton from '@/components/TerminalButton';
 import DecodeText from '@/components/DecodeText';
 import { useLang, type Lang } from '@/lib/langContext';
 import { useMotionPolicy } from '@/lib/useMotionPolicy';
+import styles from './EntryScreen.module.css';
 
 interface TextItem { type: 'text'; text: string; delay: number; accent?: boolean; warn?: boolean; cyan?: boolean }
 interface ProgressItem { type: 'progress'; label: string; delay: number }
@@ -26,13 +28,13 @@ const LANG_SELECT_DELAY = 1600;
 
 const getPhase3 = (lang: Lang): TextItem[] => [
   { type: 'text', text: `LANGUAGE SET : ${lang.toUpperCase()} ............... OK`, delay: 0,    cyan: true },
-  { type: 'text', text: 'INITIALIZING KIRSCH AUDIO SUBSYSTEM.. OK',                 delay: 200 },
-  { type: 'text', text: 'FILTERING ANALOG NOISE (SECTOR 01)... 100% PURGED',        delay: 500 },
-  { type: 'text', text: 'CALIBRATING TRAJECTORY TO HELIOPAUSE. SYNC OK',            delay: 800 },
-  { type: 'text', text: 'MOUNTING /dev/snd/pcmC0D0p........... OK',                 delay: 1000 },
-  { type: 'text', text: 'ACCESS REQUEST CHANNEL................. READY',             delay: 1200 },
-  { type: 'text', text: 'WARNING: DEEP SPACE ENTRY APPROACHING',                    delay: 1400, warn: true },
-  { type: 'text', text: 'SPAWNING TERMINAL PROCESS [PID:0x02]. OK',                 delay: 1600 },
+  { type: 'text', text: 'DRAWING DIRECTORY FRAME............... OK',                 delay: 200 },
+  { type: 'text', text: 'PREPARING EVENT VIEW.................. OK',                 delay: 500 },
+  { type: 'text', text: 'PREPARING ARTIST ROSTER................ OK',                 delay: 800 },
+  { type: 'text', text: 'PREPARING PUBLIC GUESTBOOK............. OK',                 delay: 1000 },
+  { type: 'text', text: 'TERMINAL / SEOUL',                                           delay: 1200 },
+  { type: 'text', text: 'A VOYAGE TO THE UNKNOWN SECTOR',                             delay: 1400, accent: true },
+  { type: 'text', text: 'VISUAL SEQUENCE COMPLETE',                                   delay: 1600 },
   { type: 'text', text: '──────────────────────────────────────────',               delay: 1750 },
   { type: 'text', text: 'SYSTEM READY. AWAITING INPUT.',                            delay: 1950, accent: true },
 ];
@@ -122,7 +124,7 @@ function LangSelectPrompt({ onSelect }: LangSelectPromptProps) {
         type="button"
         onClick={() => handle(target)}
         disabled={chosen !== null}
-        className={`font-mono text-small md:text-body tracking-widest px-3 py-1 border transition-colors cursor-pointer disabled:cursor-default ${
+        className={`min-h-11 font-mono text-small md:text-body tracking-normal px-3 py-2 border transition-colors cursor-pointer disabled:cursor-default ${
           active
             ? 'border-terminal-accent-secondary text-terminal-accent-secondary bg-terminal-accent-secondary/10'
             : inactive
@@ -153,7 +155,7 @@ interface BootSequenceProps {
 }
 
 export default function BootSequence({ onComplete }: BootSequenceProps) {
-  const { setLang } = useLang();
+  const { setLang, lang } = useLang();
   const { isReady: isMotionPolicyReady, allowMotion } = useMotionPolicy();
   const [visiblePhase1, setVisiblePhase1] = useState<number[]>([]);
   const [showLangSelect, setShowLangSelect] = useState(false);
@@ -161,8 +163,8 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
   const [visiblePhase3, setVisiblePhase3] = useState<number[]>([]);
   const [powering, setPowering] = useState(true);
   const [done, setDone] = useState(false);
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  const hasCompletedRef = useRef(false);
+  const skippedPhase1Ref = useRef(false);
 
   // 대기 중인 부트 출력 타이머 — 스킵 시 일괄 clear
   const phase1TimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -176,7 +178,7 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
   }, [allowMotion, isMotionPolicyReady]);
 
   useEffect(() => {
-    if (powering || !isMotionPolicyReady) return;
+    if (powering || !isMotionPolicyReady || skippedPhase1Ref.current) return;
 
     if (!allowMotion) {
       const timer = setTimeout(() => {
@@ -220,10 +222,11 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
    * 진행 중인 출력 애니메이션을 건너뛰고 다음 인터랙션 포인트로 점프.
    * - 언어 선택 전(phase1) → phase1 전체 즉시 표시 + 언어 선택 즉시 노출
    * - 언어 선택 후(phase3) → phase3 전체 즉시 표시 + done(ENTER TERMINAL)
-   * 언어 선택 자체는 스킵 대상이 아님(자동 선택 금지) — 호출 시점은 리스너 effect에서 가드.
+   * 언어 선택 대기 중에는 버튼을 비활성화해 자동 선택을 막는다.
    */
   const skipToNextGate = () => {
     if (powering) {
+      skippedPhase1Ref.current = true;
       setPowering(false);
       setVisiblePhase1(PHASE_1.map((_, i) => i));
       setShowLangSelect(true);
@@ -231,6 +234,7 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
     }
 
     if (!selectedLang) {
+      skippedPhase1Ref.current = true;
       phase1TimersRef.current.forEach(clearTimeout);
       if (langTimerRef.current) clearTimeout(langTimerRef.current);
       setVisiblePhase1(PHASE_1.map((_, i) => i));
@@ -246,20 +250,6 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
     }
   };
 
-  useEffect(() => {
-    // 언어 선택 대기 중(자동 선택 방지) 또는 부트 완료(ENTER 버튼 클릭과 충돌 방지) 시 리스너 해제
-    if ((showLangSelect && !selectedLang) || done) return;
-
-    const handleSkip = () => skipToNextGate();
-    window.addEventListener('keydown', handleSkip);
-    window.addEventListener('pointerdown', handleSkip);
-    return () => {
-      window.removeEventListener('keydown', handleSkip);
-      window.removeEventListener('pointerdown', handleSkip);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showLangSelect, selectedLang, done, powering]);
-
   const handleLangSelect = (lang: Lang) => {
     setLang(lang);
     setSelectedLang(lang);
@@ -269,22 +259,14 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
   const showSkipHint = !powering && !done && !(showLangSelect && !selectedLang);
 
   return (
-    <motion.div
-      className="fixed inset-0 z-50 flex flex-col justify-center items-center px-4 sm:px-6 overflow-hidden bg-terminal-bg-base font-mono"
-      animate={powering ? { scaleY: 0.001, filter: 'brightness(0)' } : { scaleY: 1, filter: 'brightness(1)' }}
-      transition={{ duration: allowMotion ? 0.6 : 0, ease: 'easeOut' }}
-      exit={allowMotion
-        ? { opacity: 0, filter: 'brightness(3) blur(8px)', transition: { duration: 0.5 } }
-        : { opacity: 0, filter: 'none', transition: { duration: 0 } }}
-    >
-      <TerminalButton
-        onClick={skipToNextGate}
-        variant="ghost"
-        className="absolute right-4 top-4 z-10 px-3 text-caption"
-      >
-        [ SKIP INTRO ]
-      </TerminalButton>
-      <div className="w-full sm:w-[700px] md:w-[800px]">
+    <motion.section className={styles.screen} aria-labelledby="boot-title" initial={false} exit={{ opacity: 0, transition: { duration: allowMotion ? 0.2 : 0 } }}>
+      <header className={styles.header}>
+        <h2 id="boot-title">TERMINAL <span>/ BOOT</span></h2>
+        <div className={styles.headerActions}><Link href="/home">{lang === 'ko' ? '이벤트 보기' : 'View events'}</Link><TerminalButton onClick={skipToNextGate} disabled={done || (showLangSelect && !selectedLang)} variant="ghost">{lang === 'ko' ? '애니메이션 건너뛰기' : 'Skip animation'}</TerminalButton></div>
+      </header>
+      <div className={styles.console}>
+        <p className={styles.caption}>{lang === 'ko' ? '터미널 체험' : 'Terminal experience'} <span aria-hidden="true">/ VISUAL BOOT SEQUENCE</span></p>
+        <motion.div aria-hidden="true" className={styles.beam} initial={false} animate={{ scaleX: powering ? 0.03 : 1 }} transition={{ duration: allowMotion ? 0.6 : 0 }} />
         {/* Phase 1 */}
         {PHASE_1.map((item, i) =>
           visiblePhase1.includes(i) ? (
@@ -320,25 +302,22 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
 
         {/* 커서 블링크 */}
         {allowMotion && !powering && !done && (
-          <span className="cursor-blink text-small text-terminal-accent-primary">█</span>
+          <span className="cursor-blink text-small text-terminal-accent-primary" aria-hidden="true">█</span>
         )}
 
         {/* ENTER TERMINAL 버튼 */}
         {done && (
           <motion.div initial={allowMotion ? { opacity: 0 } : false} animate={{ opacity: 1 }} className="mt-6">
-            <TerminalButton onClick={() => onCompleteRef.current()} variant="primary" className="px-6">
+            <TerminalButton onClick={() => { if (!hasCompletedRef.current) { hasCompletedRef.current = true; onComplete(); } }} variant="primary" className="px-6">
               [ ENTER TERMINAL ]
             </TerminalButton>
           </motion.div>
         )}
       </div>
 
-      {/* 스킵 힌트 — 언어 선택·완료 상태에서는 숨김 (시스템 라벨, KO/EN 분기 없음) */}
       {showSkipHint && (
-        <div className="absolute bottom-6 inset-x-0 flex justify-center font-mono text-micro text-terminal-muted/60 tracking-label">
-          [ PRESS ANY KEY TO SKIP ]
-        </div>
+        <p className={styles.hint}>{lang === 'ko' ? '위의 버튼으로 애니메이션을 건너뛸 수 있습니다.' : 'Use the button above to skip the animation.'}</p>
       )}
-    </motion.div>
+    </motion.section>
   );
 }
