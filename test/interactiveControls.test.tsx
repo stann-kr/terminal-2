@@ -23,6 +23,7 @@ import HomeMasthead from '../app/home/HomeMasthead';
 import TerminalNavigation from '../components/shell/TerminalNavigation';
 import EventSummary from '../components/events/EventSummary';
 import HomePage from '../app/home/page';
+import SignalPage from '../app/signal/page';
 import { gsap, ScrollTrigger } from '../lib/motion/gsap';
 
 afterEach(cleanup);
@@ -540,5 +541,29 @@ describe('event page states and optional entry', () => {
     await user.keyboard('{Enter}{Enter}');
     fireEvent.click(screen.getByRole('button', { name: /RESUME SESSION/ }));
     await waitFor(() => expect(onWake).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('Signal form results', () => {
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+
+  it('preserves contact details on a duplicate response and announces only a confirmed save', async () => {
+    localStorage.setItem('terminal_lang', 'ko');
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(Response.json({ error: 'EMAIL_ALREADY_SUBSCRIBED' }, { status: 409 }))
+      .mockResolvedValueOnce(Response.json({ ok: true }));
+    const user = userEvent.setup();
+    render(<LangProvider><SignalPage /></LangProvider>);
+    await user.type(screen.getByRole('textbox', { name: '이메일:' }), 'guest@example.com');
+    await user.type(screen.getByRole('textbox', { name: '인스타그램 ID:' }), 'guest');
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: '소식 신청' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('이미 구독 중인 이메일입니다.');
+    expect(screen.getByRole('textbox', { name: '이메일:' })).toHaveValue('guest@example.com');
+    expect(screen.queryByRole('heading', { name: '소식 신청을 저장했습니다.' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '소식 신청' }));
+    expect(await screen.findByRole('heading', { name: '소식 신청을 저장했습니다.' })).toHaveFocus();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/api/signal', '/api/signal']);
   });
 });
