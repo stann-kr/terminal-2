@@ -1,7 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import PageLayout from '@/components/shell/PageLayout';
-import ReturnLink from '@/components/ui/ReturnLink';
+import styles from './GatePage.module.css';
 import TerminalButton from '@/components/TerminalButton';
 import TerminalActionLink from '@/components/TerminalActionLink';
 import EventSummary from '@/components/events/EventSummary';
@@ -30,22 +30,22 @@ export default function GatePage() {
   const canRequest = event?.id === requestEvent?.id && requestWindow?.isActive;
   const switchView = (archive: boolean) => setView(archive ? 'archive' : 'upcoming', { event: '' });
   return (
-    <PageLayout width="event">
-      <ReturnLink />
-      <div role="group" aria-label={lang === 'ko' ? '이벤트 보기' : 'Event view'} className="flex flex-wrap gap-2 mb-8">
+    <PageLayout width="event" flush>
+      <div className={styles.toolbar}>
+      <div role="group" aria-label={lang === 'ko' ? '이벤트 보기' : 'Event view'} className={styles.tabs}>
         <TerminalButton variant={!isArchive ? 'primary' : 'ghost'} aria-pressed={!isArchive} onClick={() => switchView(false)}>{t.gate.tabUpcoming}</TerminalButton>
         <TerminalButton variant={isArchive ? 'primary' : 'ghost'} aria-pressed={isArchive} onClick={() => switchView(true)}>{t.gate.tabArchive}</TerminalButton>
       </div>
-      {isLoading ? <div role="status"><h1 className="sr-only">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.gate.loading}</div> : isError ? <div role="alert" className="space-y-4"><h1 className="text-h1">{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div> : <>
-        {candidates.length > 1 && <div className="mb-8"><label className="block text-small mb-2" htmlFor="gate-event">{lang === 'ko' ? '이벤트 선택' : 'Select event'}</label><select id="gate-event" className="w-full min-h-11 p-3 bg-terminal-bg-panel border border-terminal-bg-panel-border text-body" value={event?.id ?? ''} onChange={e => setSelectedId(e.target.value)}>{candidates.map(e => <option key={e.id} value={e.id}>{e.session} · {e.date}</option>)}</select></div>}
+      {!isLoading && !isError && candidates.length > 1 && <div className={styles.selector}><label htmlFor="gate-event">{lang === 'ko' ? '이벤트 선택' : 'Select event'}</label><select id="gate-event" value={event?.id ?? ''} onChange={e => setSelectedId(e.target.value)}>{candidates.map(e => <option key={e.id} value={e.id}>{e.session} · {e.date}</option>)}</select></div>}
+      </div>
+      {isLoading ? <div role="status" className={styles.state}><h1>{lang === 'ko' ? '이벤트' : 'Events'}</h1>{t.gate.loading}</div> : isError ? <div role="alert" className={styles.state}><h1>{t.common.signalUnstable}</h1><p>{t.common.dbUnreachable}</p><TerminalButton onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div> : <>
         {event ? <>
-          <EventSummary event={event}>
+          <EventSummary key={event.id} event={event} details={<EventDetail event={event} />}>
             {canRequest && <TerminalActionLink href={`/gate/request?event=${encodeURIComponent(event.id)}`}>{t.gate.requestBtn}</TerminalActionLink>}
             <TerminalActionLink variant="ghost" href={`/lineup?event=${encodeURIComponent(event.id)}`}>{lang === 'ko' ? '라인업 보기' : 'View lineup'}</TerminalActionLink>
             {!canRequest && <p className="w-full text-small text-terminal-subdued" role="status">{event.status === 'LIVE' ? (lang === 'ko' ? '이벤트가 진행 중입니다. 온라인 신청은 마감되었습니다.' : 'The event is live. Online requests are closed.') : event.status === 'ARCHIVED' ? t.request.eventElapsed : requestWindow?.opensInDays ? (lang === 'ko' ? '신청 시작: ' : 'Requests open: ') + new Intl.DateTimeFormat(lang === 'ko' ? 'ko-KR' : 'en-US', { timeZone: 'Asia/Seoul', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(getEventDateTime(event).getTime() - ACCESS_WINDOW_DAYS * 86400000)) + ' KST' : (lang === 'ko' ? '현재 이 이벤트는 온라인 신청을 받지 않습니다.' : 'Online requests are not available for this event.')}</p>}
           </EventSummary>
-          <div className="mt-12"><EventDetail event={event} /></div>
-        </> : <div role="status" className="py-10"><h1 className="text-h1 mb-4">{lang === 'ko' ? '이벤트' : 'Events'}</h1>{isArchive ? t.gate.noArchive : t.request.noEvent}</div>}
+        </> : <div role="status" className={styles.state}><h1>{lang === 'ko' ? '이벤트' : 'Events'}</h1>{isArchive ? t.gate.noArchive : t.request.noEvent}</div>}
       </>}
     </PageLayout>
   );

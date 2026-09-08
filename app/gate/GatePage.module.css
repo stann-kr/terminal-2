@@ -1,0 +1,8 @@
+.toolbar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; padding: var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.selector { flex: 1 1 15rem; max-width: 30rem; }
+.selector label { display: block; font-size: 0.875rem; margin-bottom: 0.5rem; color: rgb(var(--color-text-subdued)); }
+.selector select { width: 100%; min-height: 3rem; padding: 0.75rem; color: rgb(var(--color-text-primary)); background: rgb(var(--color-bg-panel)); border: 1px solid rgb(var(--color-text-muted)); font-size: 1rem; }
+.state { min-height: 24rem; padding: clamp(2rem, 6vw, 5rem) var(--workspace-padding); display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
+.state h1 { font: 700 clamp(1.75rem, 4vw, 2.5rem) / 1.3 var(--font-mono); }
+.state p { max-width: 60ch; color: rgb(var(--color-text-subdued)); }

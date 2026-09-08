@@ -37,12 +37,12 @@ export default function PageHeader({ path, title, accent = 'primary', cipher = f
   }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
   return (
     <div ref={rootRef} className={styles.header}>
-      <p data-heading="path" className={styles.path}><span aria-hidden="true">&gt;</span> {path}</p>
+      <p data-heading="path" aria-hidden="true" className={styles.path}><span>&gt; {path.split('/').filter(Boolean).slice(-1)[0]?.replace(/-/g, '_').toUpperCase()}</span><span>[TERMINAL]</span></p>
       <HeadingText
         text={title}
         cipher={cipher}
         autoHeight
-        className={`font-orbit text-h1 md:text-title tracking-normal ${accentClass.split(' ')[0]} ${styles.title}`}
+        className={`font-mono text-h1 tracking-normal ${accent === 'alert' || accent === 'warn' ? accentClass.split(' ')[0] : 'text-terminal-primary'} ${styles.title}`}
       />
       <span aria-hidden="true" data-heading="rule" className={styles.rule} />
     </div>

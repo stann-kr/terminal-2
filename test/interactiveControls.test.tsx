@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,6 +22,8 @@ import SleepScreen from '../app/_entry/SleepScreen';
 import DecodeText from '../components/DecodeText';
 import AnimatedHeight from '../components/ui/AnimatedHeight';
 import HomeMasthead from '../app/home/HomeMasthead';
+import TerminalNavigation from '../components/shell/TerminalNavigation';
+import EventSummary from '../components/events/EventSummary';
 import { gsap, ScrollTrigger } from '../lib/motion/gsap';
 
 afterEach(cleanup);
@@ -46,6 +48,22 @@ function FieldErrorHarness() {
 }
 
 describe('interactive control behavior', () => {
+  it('selects the request directory precisely and returns focus when the expanded menu closes', async () => {
+    const user = userEvent.setup();
+    render(<TerminalNavigation pathname="/gate/request" />);
+    const navigation = within(screen.getByRole('navigation', { name: '주요 메뉴' }));
+    expect(navigation.getByRole('link', { name: '게스트 신청' })).toHaveAttribute('aria-current', 'page');
+    expect(navigation.getByRole('link', { name: '이벤트' })).not.toHaveAttribute('aria-current');
+    const toggle = screen.getByRole('button', { name: /메뉴/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    navigation.getByRole('link', { name: '소식 신청' }).focus();
+    await user.keyboard('{Escape}');
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveFocus();
+  });
+
   it('activates the shared button with keyboard input', async () => {
     const user = userEvent.setup();
     const Harness = () => {
@@ -455,6 +473,14 @@ describe('event page states and optional entry', () => {
   });
   afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
+  it('keeps the real event information available when its poster fails', () => {
+    render(<EventSummary event={{ ...event, posterUrl: '/missing-poster.png' }} />);
+    fireEvent.error(screen.getByRole('img', { name: 'Next event 포스터' }));
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText('공개된 포스터가 없습니다.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
+  });
+
   it('distinguishes loading, failure and a confirmed empty event registry', async () => {
     let complete!: (response: Response) => void;
     vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => new Promise(resolve => { complete = resolve; }));
@@ -481,7 +507,7 @@ describe('event page states and optional entry', () => {
     expect(push).toHaveBeenCalledTimes(1);
     expect(window.location.search).toBe('?view=upcoming&lang=ko');
     expect(screen.getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
+    expect(within(screen.getByRole('main')).queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('신청 시작:');
     act(() => {
       window.history.replaceState(null, '', '/gate?view=archive&event=old&lang=ko');

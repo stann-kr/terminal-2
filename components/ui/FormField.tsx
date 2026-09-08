@@ -24,7 +24,7 @@ export function FormField({ label, htmlFor, children }: FormFieldProps) {
 
 /** 폼 input/textarea 공통 기본 클래스 */
 export const inputClassBase =
-  'w-full min-h-11 bg-transparent outline-none px-3 py-2 text-body border transition-colors font-sans tracking-normal placeholder:text-terminal-subdued';
+  'w-full min-h-12 bg-terminal-bg-base px-3 py-3 text-body border transition-colors font-sans tracking-normal placeholder:text-terminal-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terminal-accent-primary';
 
 /** accent 색상별 추가 클래스 맵 */
 export const inputAccentClass: Record<string, string> = {

@@ -1,0 +1,7 @@
+.details { border-top: 1px solid rgb(var(--color-bg-panel-border)); }
+.details h2 { display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--workspace-padding); font: 700 0.875rem / 1.5 var(--font-mono); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
+.details h2 > span { font-size: 0.75rem; font-weight: 400; color: rgb(var(--color-text-subdued)); }
+.details dl { padding: 0 var(--workspace-padding) 1rem; }
+.details dl > div { display: grid; grid-template-columns: 7ch minmax(0, 1fr); align-items: baseline; gap: 1rem; padding-block: 1rem; border-bottom: 1px dashed rgb(var(--color-bg-panel-border)); }
+.details dt { font: 0.875rem / 1.6 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.details dd { min-width: 0; overflow-wrap: anywhere; }
