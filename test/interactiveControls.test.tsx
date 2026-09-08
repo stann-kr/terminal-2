@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import TerminalButton from '../components/TerminalButton';
+import SubmitButton from '../components/SubmitButton';
 import ConsentCheckbox from '../components/ui/ConsentCheckbox';
 import { useFieldErrors } from '../components/ui/useFieldErrors';
 import { useUrlQueryState } from '../lib/useUrlQueryState';
@@ -110,6 +111,15 @@ describe('interactive control behavior', () => {
 
     await user.click(screen.getByText('Privacy consent'));
     expect(screen.getByRole('checkbox', { name: 'Privacy consent' })).toBeChecked();
+  });
+
+  it('announces pending submission and restores the action when it settles', () => {
+    const { rerender } = render(<SubmitButton isSubmitting defaultText="Send request" loadingText="Sending" />);
+    expect(screen.getByRole('button', { name: 'Sending' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Sending' })).toHaveAttribute('aria-busy', 'true');
+    rerender(<SubmitButton isSubmitting={false} defaultText="Send request" loadingText="Sending" />);
+    expect(screen.getByRole('button', { name: 'Send request' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Send request' })).toHaveAttribute('aria-busy', 'false');
   });
 
   it('updates selector query state without navigating away', async () => {

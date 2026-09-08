@@ -1,6 +1,7 @@
 'use client';
 import { ReactNode } from 'react';
 import TerminalButton from './TerminalButton';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 interface SubmitButtonProps {
   isSubmitting: boolean;
@@ -22,11 +23,14 @@ export default function SubmitButton({
   variant = 'primary',
   className = '',
 }: SubmitButtonProps) {
+  const { allowMotion } = useMotionPolicy();
   return (
     <TerminalButton
       type="submit"
       variant={variant}
       disabled={isSubmitting || disabled}
+      aria-busy={isSubmitting}
+      data-busy-motion={isSubmitting && allowMotion}
       className={className}
     >
       {isSubmitting ? loadingText : defaultText}

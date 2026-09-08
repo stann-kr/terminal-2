@@ -1,10 +1,7 @@
 'use client';
-import { useRef } from 'react';
 import type { Artist, ArtistStatus } from '@/lib/events/types';
 import { useLang } from '@/lib/langContext';
 import { useControlMotion } from '@/components/ui/useControlMotion';
-import { gsap, useGSAP } from '@/lib/motion/gsap';
-import { useMotionPolicy } from '@/lib/useMotionPolicy';
 import styles from './ArtistRow.module.css';
 
 const STATUS_LABELS: Record<'ko' | 'en', Record<ArtistStatus, string>> = {
@@ -19,16 +16,6 @@ export default function ArtistRow({ artist, index = 0, selected, onSelect, profi
 }) {
   const { lang } = useLang();
   const rootRef = useControlMotion<HTMLButtonElement>();
-  const hasEntered = useRef(false);
-  const { allowMotion } = useMotionPolicy();
-  useGSAP(() => {
-    if (!allowMotion || hasEntered.current) return;
-    gsap.from(rootRef.current, {
-      x: 14, opacity: 0.65, duration: 0.55, delay: Math.min(index, 5) * 0.045, ease: 'expo.out',
-      scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current?.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top 97%', once: true },
-      onStart: () => { hasEntered.current = true; }, clearProps: 'transform,opacity',
-    });
-  }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
 
   return <button ref={rootRef} id={getArtistTriggerId(artist.id)} type="button" className={styles.row} aria-pressed={selected} aria-controls={profileId} onClick={onSelect}>
     <span aria-hidden="true" data-control-scan className={styles.scan} />

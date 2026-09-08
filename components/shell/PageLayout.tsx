@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import SignalNet from './SignalNet';
 import TerminalNavigation, { getActiveDirectory } from './TerminalNavigation';
 import { useLang } from '@/lib/langContext';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
 import styles from './PageLayout.module.css';
 
 export { containerVariants, itemVariants } from '@/lib/animationTokens';
@@ -18,6 +19,7 @@ interface PageLayoutProps {
 export default function PageLayout({ children, centerContent = false, width = 'reading', flush = false }: PageLayoutProps) {
   const pathname = usePathname();
   const { lang } = useLang();
+  const { allowMotion } = useMotionPolicy();
   const current = getActiveDirectory(pathname);
   const currentLabel = pathname === '/link' ? (lang === 'ko' ? '공식 채널' : 'Official channels') : current?.[lang] ?? (lang === 'ko' ? '홈' : 'Home');
   return <div className={styles.page}>
@@ -27,7 +29,7 @@ export default function PageLayout({ children, centerContent = false, width = 'r
     </main>
     <footer className={styles.footer}>
       <SignalNet />
-      <p className={styles.current}><span aria-hidden="true">&gt; </span>{currentLabel}<span aria-hidden="true" className={styles.cursor} /></p>
+      <p className={styles.current}><span aria-hidden="true">&gt; </span>{currentLabel}<span aria-hidden="true" className={styles.cursor} data-motion={allowMotion} /></p>
     </footer>
   </div>;
 }

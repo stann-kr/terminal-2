@@ -25,13 +25,13 @@ export default function ArtistProfile({ artist, event, onReturn, headingRef }: {
   const lines = (Array.isArray(description) ? description : description?.split('\n') ?? []).filter(line => line.trim());
   useGSAP(() => {
     if (!allowMotion) return;
-    gsap.from('[data-profile-rule]', { scaleX: 0, duration: 0.65, ease: 'expo.out' });
-    gsap.to('[data-profile-wave]', { x: -12, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut', scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current?.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' } });
+    gsap.from('[data-profile-rule]', { scaleX: 0, duration: 0.18, ease: 'steps(6)' });
+    gsap.fromTo('[data-profile-scan]', { scaleX: 0, opacity: 0.12 }, { scaleX: 1, opacity: 0, duration: 0.24, ease: 'steps(8)' });
   }, { scope: rootRef, dependencies: [allowMotion, artist.id], revertOnUpdate: true });
 
   return <section ref={rootRef} aria-labelledby={titleId} className={styles.profile} onKeyDown={e => { if (e.key === 'Escape') onReturn(); }}>
     <div className={styles.profileHeader}><span aria-hidden="true">ARTIST_PROFILE</span><TerminalButton variant="ghost" onClick={onReturn}>{lang === 'ko' ? '명단으로' : 'Back to list'}</TerminalButton></div>
-    <div aria-hidden="true" className={styles.waveform}><pre data-profile-wave>{WAVE}</pre><span data-profile-rule className={styles.rule} /></div>
+    <div aria-hidden="true" className={styles.waveform}><pre>{WAVE}</pre><span data-profile-scan className={styles.scan} /><span data-profile-rule className={styles.rule} /></div>
     <div className={styles.body}>
       <h2 ref={headingRef} id={titleId} tabIndex={-1}>{artist.name}</h2>
       <dl className={styles.data}>

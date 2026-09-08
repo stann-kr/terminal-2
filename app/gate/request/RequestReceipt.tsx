@@ -17,7 +17,7 @@ export default function RequestReceipt({ event }: { event: TerminalEvent }) {
   useEffect(() => { titleRef.current?.focus(); }, []);
   useGSAP(() => {
     if (!allowMotion) return;
-    gsap.from('[data-receipt-line]', { scaleX: 0, duration: 0.55, ease: 'expo.out' });
+    gsap.from('[data-receipt-line]', { scaleX: 0, duration: 0.2, ease: 'steps(8)' });
   }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
 
   return <section ref={rootRef} className={styles.receipt} aria-labelledby="request-receipt-title">

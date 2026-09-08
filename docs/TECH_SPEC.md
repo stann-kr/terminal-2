@@ -72,7 +72,7 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 
 - **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
 - **동작 원리:** `PageLayout`은 `100dvh` 프레임에 헤더·메뉴·footer를 고정하고 남은 높이를 `main`의 내부 스크롤에 할당한다. pathname 이동 시 내부 스크롤은 상단으로 돌아가며 query 선택만 바뀔 때는 위치를 유지한다. `flush` 화면은 전체 너비를 사용하고 capability가 grid와 여백을 결정한다. 기본 event/reading/form 폭은 1600/1024/672px다. 데스크톱 상단 rail·메뉴는 약 32/41px이며 모바일·터치 컨트롤은 최소 44px 높이를 유지한다.
-- `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 360ms·닫기 252ms이며, 새 요청은 현재 높이에서 반전한다. ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
+- `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 180ms·닫기 126ms이며, 새 요청은 현재 높이에서 반전한다. 내부 글자를 이동시키지 않으며 ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
 - **landmark:** header·navigation·footer와 분리된 `main#main-content`가 전역 skip link의 목적지가 된다. 독립적인 체험·복구 화면은 자체 main을 가진다.
 - **탐색:** GATE·LINEUP·GUEST_REQ·STATUS·TRANSMIT·SIGNAL·ABOUT의 7개 디렉터리를 제공한다. `/gate/request`는 GUEST_REQ만 현재 메뉴로 표시한다. 모바일 보조 메뉴는 헤더 아래에서 펼쳐지고 높이가 부족하면 메뉴 내부가 스크롤된다. Escape로 닫으면 메뉴 버튼으로 focus가 돌아간다.
 
@@ -81,16 +81,17 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 | 영역 | 연출 | 소유 위치 |
 |---|---|---|
 | Home 시간 표시 | 현재 행사의 KST 시작 시각 기준 T- 카운트다운 / T+ 경과 시간, 초 단위 갱신 | `app/home/HomeMasthead.tsx`, `components/events/CountdownBlock.tsx` |
-| 행사 요약 | 포스터·정보 진입, 스캔, 스크롤 진행선, fine pointer 기울기 | `components/events/useEventSummaryMotion.ts` |
-| 버튼·메뉴 | 고정된 hit target 안에서 글자·화살표 이동, 선택 광선, 키보드 focus 반응 | `components/ui/useControlMotion.ts` |
-| 디렉터리·라인업 | viewport 진입의 짧은 stagger, 명단 선택과 반전 표시 | 해당 row component |
-| 아티스트 프로필 | 실제 프로필 정보와 분리된 장식 파형·경계선 | `app/lineup/ArtistProfile.tsx` |
-| 신청 접수 결과 | 서버 성공 뒤 결과 heading focus와 경계선 | `app/gate/request/RequestReceipt.tsx` |
-| 공통 제목·panel | 제목은 즉시 표시, panel 경계선 그리기 | `PageHeader`, `TerminalPanel` |
+| 행사 요약 | 정보·포스터 고정, 표시 시 550ms 한 번 스캔, 내부 스크롤 진행선 | `components/events/useEventSummaryMotion.ts` |
+| 버튼·메뉴 | 텍스트 고정, pointer 선택면 160ms 4단 스캔, keyboard focus 즉시 표시 | `components/ui/useControlMotion.ts` |
+| 디렉터리·라인업 | 목록 즉시 표시, 선택과 반전으로 현재 대상 강조 | 해당 row component |
+| 아티스트 프로필 | 정적 파형 위 240ms 스캔과 180ms 경계선, 반복 재생 없음 | `app/lineup/ArtistProfile.tsx` |
+| 신청 접수 결과 | 서버 성공 뒤 결과 heading focus와 200ms 경계선 | `app/gate/request/RequestReceipt.tsx` |
+| 공통 제목·panel | 제목 즉시 표시, panel 경계선 180ms 6단 스캔 | `PageHeader`, `TerminalPanel` |
+| 현재 위치·전송 중 | footer 커서와 실제 pending 상태의 block 커서만 점멸 | `PageLayout`, `SubmitButton` |
 
 - [공식 React 연동](https://gsap.com/resources/React/)의 `useGSAP` scope와 cleanup을 사용한다. 비동기 ResizeObserver에서 만드는 tween도 context에 포함한다.
-- [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 가장 가까운 `data-scroll-region`을 scroller로 사용한다. 본문의 native 스크롤과 모션 위치를 일치시키며, 장식 pointer 반응은 fine pointer에서만 활성화한다.
-- `quickTo`는 포인터 움직임마다 tween을 새로 만들지 않고 재사용한다. 버튼 hover timeline도 재생·역재생으로 재사용하며, 조작 영역 자체를 포인터에 따라 이동시키지 않는다.
+- [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 가장 가까운 `data-scroll-region`을 scroller로 사용한다. 본문의 native 스크롤과 모션 위치를 일치시킨다. 포스터와 글자에는 pointer 추적·3D 기울기를 적용하지 않는다.
+- 버튼 hover timeline은 재생·역재생으로 재사용하며 키보드 focus는 선택된 최종 상태를 즉시 표시한다. 조작 영역·글자·화살표의 위치는 고정한다. 실제 전송 중일 때만 `aria-busy`와 block 커서를 표시하고 artificial delay를 추가하지 않는다. reduced-motion·save-data·hidden 정책은 scan과 커서 점멸도 해제한다.
 - 콘텐츠 높이·이미지 로딩 뒤의 scroll 위치 재계산은 `ScrollTrigger.refresh(true)`로 묶는다. 화면 이탈 시 scene의 trigger, timeline, observer와 event listener를 정리한다.
 - 동일 요소의 transform·opacity를 GSAP과 CSS/Framer Motion이 동시에 제어하지 않는다. 기존 Boot/Sleep 상태 전환과 Transmit 상태 표현의 Framer Motion은 별도 owner로 유지한다.
 

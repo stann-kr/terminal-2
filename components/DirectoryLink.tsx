@@ -3,9 +3,6 @@ import Link from 'next/link';
 import { useLang } from '@/lib/langContext';
 import styles from './DirectoryLink.module.css';
 import { useControlMotion } from './ui/useControlMotion';
-import { gsap, useGSAP } from '@/lib/motion/gsap';
-import { useMotionPolicy } from '@/lib/useMotionPolicy';
-import { useRef } from 'react';
 interface DirectoryLinkProps {
   href: string; label: string; description: string; index: number;
   accent?: 'primary' | 'secondary' | 'warn' | 'alert' | 'tertiary'; external?: boolean;
@@ -13,18 +10,6 @@ interface DirectoryLinkProps {
 export default function DirectoryLink({ href, label, description, index, external = false }: DirectoryLinkProps) {
   const { lang } = useLang();
   const rootRef = useControlMotion<HTMLAnchorElement>();
-  const { allowMotion } = useMotionPolicy();
-  const hasEntered = useRef(false);
-  useGSAP(() => {
-    if (!allowMotion || !rootRef.current || hasEntered.current) return;
-    gsap.from(rootRef.current, {
-      y: 18, opacity: 0.65, duration: 0.65, ease: 'expo.out',
-      delay: Math.min(index - 1, 3) * 0.055,
-      scrollTrigger: { trigger: rootRef.current, scroller: rootRef.current.closest<HTMLElement>('[data-scroll-region]') ?? undefined, start: 'top 96%', once: true },
-      onStart: () => { hasEntered.current = true; },
-      clearProps: 'transform,opacity',
-    });
-  }, { scope: rootRef, dependencies: [allowMotion], revertOnUpdate: true });
   const content = (
     <>
       <span aria-hidden="true" data-control-scan className={styles.scan} />

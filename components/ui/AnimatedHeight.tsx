@@ -24,7 +24,7 @@ interface AnimatedHeightProps {
 export default function AnimatedHeight({
   children,
   show = true,
-  duration = 360,
+  duration = 180,
   className,
   id,
 }: AnimatedHeightProps) {
@@ -54,7 +54,6 @@ export default function AnimatedHeight({
         ease: 'power3.out', overwrite: true,
         onComplete: seconds ? () => ScrollTrigger.refresh(true) : undefined,
       });
-      gsap.to(inner, { y: current.show ? 0 : -8, duration: seconds, ease: 'power3.out', overwrite: true });
     });
     syncRef.current = sync;
     const observer = new ResizeObserver(sync);
