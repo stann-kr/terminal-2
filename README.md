@@ -15,6 +15,8 @@ terminal-2 is the STANN OS LIVE surface for `https://terminal.stann.kr`.
 
 The interface uses a full-screen black-and-orange workspace with seven directory entries, fixed navigation, and internal content scrolling. Pages redraw inside the same terminal display; event and artist selections redraw their own readouts. Text stays in place, and keyboard or pointer input immediately completes the visual redraw. The Home time display follows the featured event's start time. Artist profiles can be linked with `/lineup?event=…&artist=…`; changing the event clears its artist selection. Guest requests show a receipt only after the server accepts the submission. A receipt does not confirm admission.
 
+The display has a CRT vignette, phosphor texture, glass reflections, fine grain, and a slow scan glow. The header's CRT button switches these effects off or on and remembers the choice. Texture softens around focused controls; reduced motion keeps the glass static, and high contrast removes the overlay.
+
 Home uses a lightweight ASCII brand treatment. WebGL is loaded only for the optional terminal experience, subject to motion preferences, visibility, and device support.
 
 ## Stack

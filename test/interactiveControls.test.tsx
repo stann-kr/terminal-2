@@ -23,6 +23,8 @@ import DecodeText from '../components/DecodeText';
 import AnimatedHeight from '../components/ui/AnimatedHeight';
 import HomeMasthead from '../app/home/HomeMasthead';
 import TerminalNavigation from '../components/shell/TerminalNavigation';
+import PageLayout from '../components/shell/PageLayout';
+import DisplayEffects from '../components/shell/DisplayEffects';
 import EventSummary from '../components/events/EventSummary';
 import HomePage from '../app/home/page';
 import SignalPage from '../app/signal/page';
@@ -140,6 +142,54 @@ describe('interactive control behavior', () => {
     await user.click(screen.getByRole('button', { name: 'Validate' }));
 
     await waitFor(() => expect(screen.getByRole('textbox', { name: 'Email' })).toHaveFocus());
+  });
+});
+
+describe('CRT display preferences', () => {
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it.each([false, true])('keeps keyboard control and the display choice across navigation (storage blocked: %s)', async (storageBlocked) => {
+    localStorage.removeItem('terminal_crt_enabled');
+    if (storageBlocked) {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Unavailable'); });
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Unavailable'); });
+    }
+    const user = userEvent.setup();
+    const { container, unmount } = render(<PageLayout><input aria-label="Draft" defaultValue="Keep my message" /></PageLayout>);
+    const toggle = screen.getByRole('button', { name: 'CRT 화면 효과' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    toggle.focus();
+    await user.keyboard('{Enter}');
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(toggle).toHaveFocus();
+    expect(container.querySelector('[data-crt-effects]')).toHaveAttribute('hidden');
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toHaveValue('Keep my message');
+    unmount();
+
+    render(<PageLayout><h1>Next screen</h1></PageLayout>);
+    const nextToggle = screen.getByRole('button', { name: 'CRT 화면 효과' });
+    expect(nextToggle).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('heading', { name: 'Next screen' })).toBeVisible();
+    await user.click(nextToggle);
+    expect(nextToggle).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('removes decorative motion when disabled by policy or the user and cleans up on unmount', () => {
+    const { container, rerender, unmount } = render(<DisplayEffects enabled allowMotion />);
+    const effects = container.querySelector('[data-crt-effects]');
+    const targets = container.querySelectorAll('[data-crt-sweep], [data-crt-grain]');
+    expect(effects).toHaveAttribute('aria-hidden', 'true');
+    expect(gsap.getTweensOf(targets).length).toBeGreaterThan(0);
+    rerender(<DisplayEffects enabled allowMotion={false} />);
+    expect(gsap.getTweensOf(targets)).toHaveLength(0);
+    expect(effects).not.toHaveAttribute('hidden');
+    rerender(<DisplayEffects enabled={false} allowMotion />);
+    expect(gsap.getTweensOf(targets)).toHaveLength(0);
+    expect(effects).toHaveAttribute('hidden');
+    rerender(<DisplayEffects enabled allowMotion />);
+    expect(gsap.getTweensOf(targets).length).toBeGreaterThan(0);
+    unmount();
+    expect(gsap.getTweensOf(targets)).toHaveLength(0);
   });
 });
 
