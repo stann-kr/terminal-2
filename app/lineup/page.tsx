@@ -1,86 +1,75 @@
 'use client';
+import { useEffect, useId, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import PageLayout from '@/components/shell/PageLayout';
-import ReturnLink from '@/components/ui/ReturnLink';
 import PageHeader from '@/components/ui/PageHeader';
 import TerminalButton from '@/components/TerminalButton';
 import TerminalActionLink from '@/components/TerminalActionLink';
-import ArtistRow from './ArtistRow';
+import ArtistRow, { getArtistTriggerId } from './ArtistRow';
+import ArtistProfile from './ArtistProfile';
 import { useLang, useT } from '@/lib/langContext';
 import { fetchEvents, eventKeys } from '@/lib/events/client';
 import { formatEventDate, selectEvent } from '@/lib/events/lifecycle';
 import { useEventClock } from '@/lib/events/useEventClock';
 import { useUrlQueryState } from '@/lib/useUrlQueryState';
+import styles from './LineupPage.module.css';
 
 export default function LineupPage() {
   const t = useT();
   const { lang } = useLang();
   const [selectedId, setSelectedId] = useUrlQueryState('event');
-  const { data: events = [], isLoading, isError, refetch } = useQuery({
-    queryKey: eventKeys.list(),
-    queryFn: fetchEvents,
-  });
+  const [artistId, setArtistId] = useUrlQueryState('artist');
+  const { data: events = [], isLoading, isError, refetch } = useQuery({ queryKey: eventKeys.list(), queryFn: fetchEvents });
   const now = useEventClock(events);
   const selectedEvent = selectEvent(events, selectedId, now);
+  const selectedArtist = selectedEvent?.artists.find(artist => artist.id === artistId);
+  const profileId = useId();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const focusProfile = useRef(false);
 
-  return (
-    <PageLayout width="event">
-      <ReturnLink />
-      <PageHeader path="/terminal/lineup" title={lang === 'ko' ? '라인업' : 'Lineup'} />
+  useEffect(() => {
+    if (focusProfile.current && selectedArtist) headingRef.current?.focus();
+    focusProfile.current = false;
+  }, [selectedArtist]);
 
-      {isLoading ? (
-        <p role="status" className="py-8">{t.lineup.loading}</p>
-      ) : isError ? (
-        <div role="alert" className="py-8 space-y-4">
-          <p>{t.common.signalUnstable}</p>
-          <p className="text-terminal-subdued">{t.common.dbUnreachable}</p>
-          <TerminalButton variant="ghost" onClick={() => void refetch()}>{t.common.retry}</TerminalButton>
+  const selectArtist = (id: string) => {
+    const isMobile = window.matchMedia('(max-width: 1023px)').matches;
+    if (artistId === id) { if (isMobile) headingRef.current?.focus(); return; }
+    focusProfile.current = isMobile;
+    setArtistId(id, { event: selectedEvent!.id });
+  };
+  const returnToRoster = () => {
+    const previousId = selectedArtist?.id;
+    setArtistId('');
+    if (previousId) document.getElementById(getArtistTriggerId(previousId))?.focus();
+  };
+
+  return <PageLayout width="event" flush>
+    <PageHeader path="/lineup" title={lang === 'ko' ? '라인업' : 'Lineup'} />
+    {isLoading ? <p role="status" className={styles.state}>{t.lineup.loading}</p>
+      : isError ? <div role="alert" className={styles.state}><p>{t.common.signalUnstable}</p><p>{t.common.dbUnreachable}</p><TerminalButton variant="ghost" onClick={() => void refetch()}>{t.common.retry}</TerminalButton></div>
+      : !selectedEvent ? <p role="status" className={styles.state}>{lang === 'ko' ? '등록된 이벤트가 없습니다.' : 'No events have been published.'}</p>
+      : <>
+        <div className={styles.eventHeader}>
+          <div><p className={styles.eventStatus}>{lang === 'ko' ? { LIVE: '진행 중', UPCOMING: '예정된 이벤트', ARCHIVED: '지난 이벤트' }[selectedEvent.status] : { LIVE: 'Live now', UPCOMING: 'Upcoming event', ARCHIVED: 'Past event' }[selectedEvent.status]}</p><h2>{selectedEvent.session}</h2><p>{formatEventDate(selectedEvent, lang === 'ko' ? 'ko-KR' : 'en-US')} · {selectedEvent.time}</p><p>{selectedEvent.venue}</p></div>
+          <div className={styles.eventActions}>
+            {events.length > 1 && <div><label htmlFor="lineup-event">{lang === 'ko' ? '이벤트 선택' : 'Select event'}</label><select id="lineup-event" value={selectedEvent.id} onChange={e => setSelectedId(e.target.value, { artist: '' })}>{events.map(event => <option key={event.id} value={event.id}>{event.session} · {event.date}</option>)}</select></div>}
+            <TerminalActionLink variant="ghost" href={`/gate?event=${encodeURIComponent(selectedEvent.id)}`}>{lang === 'ko' ? '이벤트 보기' : 'View event'}</TerminalActionLink>
+          </div>
         </div>
-      ) : !selectedEvent ? (
-        <p role="status" className="py-8">{lang === 'ko' ? '등록된 이벤트가 없습니다.' : 'No events have been published.'}</p>
-      ) : (
-        <>
-          {events.length > 1 && (
-            <div className="mb-8">
-              <label htmlFor="lineup-event" className="block text-small mb-2">{lang === 'ko' ? '이벤트 선택' : 'Select event'}</label>
-              <select
-                id="lineup-event"
-                value={selectedEvent.id}
-                onChange={(event) => setSelectedId(event.target.value)}
-                className="w-full min-h-11 p-3 bg-terminal-bg-panel border border-terminal-bg-panel-border text-body"
-              >
-                {events.map((event) => <option key={event.id} value={event.id}>{event.session} · {event.date}</option>)}
-              </select>
-            </div>
-          )}
-
-          <section key={selectedEvent.id} aria-labelledby="lineup-event-title">
-            <div className="pb-8 border-b border-terminal-bg-panel-border">
-              <p className="text-small text-terminal-subdued mb-3">
-                {lang === 'ko'
-                  ? { LIVE: '진행 중', UPCOMING: '예정된 이벤트', ARCHIVED: '지난 이벤트' }[selectedEvent.status]
-                  : { LIVE: 'Live now', UPCOMING: 'Upcoming event', ARCHIVED: 'Past event' }[selectedEvent.status]}
-              </p>
-              <h2 id="lineup-event-title" className="text-h1 md:text-title font-semibold break-words">{selectedEvent.session}</h2>
-              <p className="mt-4 font-mono text-small">{formatEventDate(selectedEvent, lang === 'ko' ? 'ko-KR' : 'en-US')} · {selectedEvent.time.replace(/ KST$/, '')} KST</p>
-              <p className="mt-2">{selectedEvent.venue}{selectedEvent.district ? ` · ${selectedEvent.district}` : ''}</p>
-              <div className="mt-5">
-                <TerminalActionLink variant="ghost" href={`/gate?event=${encodeURIComponent(selectedEvent.id)}`}>{lang === 'ko' ? '이벤트 보기' : 'View event'}</TerminalActionLink>
-              </div>
-            </div>
-
-            {selectedEvent.artists.length > 0 ? (
-              <ul aria-label={t.lineup.colArtist}>
-                {selectedEvent.artists.map((artist, index) => <li key={artist.id}><ArtistRow artist={artist} index={index} /></li>)}
-              </ul>
-            ) : <p role="status" className="py-8">{lang === 'ko' ? '아직 공개된 아티스트가 없습니다.' : 'The lineup has not been announced yet.'}</p>}
-
-            <p className="mt-6 text-small text-terminal-subdued">
-              {selectedEvent.status === 'ARCHIVED' ? t.lineup.footerArchived : t.lineup.footerUpcoming}
-            </p>
-          </section>
-        </>
-      )}
-    </PageLayout>
-  );
+        <div className={styles.workspace}>
+          <div className={styles.roster}>
+            <p className={styles.rosterHeader}><span aria-hidden="true">ARTIST_ROSTER</span><span>{t.lineup.actCount(selectedEvent.artists.length)}</span></p>
+            {selectedEvent.artists.length ? <ul aria-label={t.lineup.colArtist}>{selectedEvent.artists.map((artist, index) => <li key={artist.id}><ArtistRow artist={artist} index={index} selected={selectedArtist?.id === artist.id} profileId={profileId} onSelect={() => selectArtist(artist.id)} /></li>)}</ul>
+              : <p role="status" className={styles.state}>{lang === 'ko' ? '아직 공개된 아티스트가 없습니다.' : 'The lineup has not been announced yet.'}</p>}
+            <p className={styles.rosterNote}>{selectedEvent.status === 'ARCHIVED' ? t.lineup.footerArchived : t.lineup.footerUpcoming}</p>
+          </div>
+          <div id={profileId} className={styles.profileRegion}>
+            {selectedArtist ? <ArtistProfile key={selectedArtist.id} artist={selectedArtist} event={selectedEvent} headingRef={headingRef} onReturn={returnToRoster} />
+              : <section className={styles.context} aria-labelledby="lineup-context-title"><span aria-hidden="true" className={styles.contextMark}>[+]</span><h2 id="lineup-context-title">{lang === 'ko' ? '아티스트를 만나보세요' : 'Meet the artists'}</h2><p>{artistId ? (lang === 'ko' ? '선택한 아티스트를 이 행사에서 찾을 수 없습니다. 명단에서 다시 선택해 주세요.' : 'This artist is not in this event. Choose from the roster.') : (lang === 'ko' ? '명단에서 아티스트를 선택하면 출연 정보와 소개를 볼 수 있습니다.' : 'Choose an artist to view their set details and biography.')}</p><p>{selectedEvent.session} · {t.lineup.actCount(selectedEvent.artists.length)}</p></section>}
+          </div>
+        </div>
+        <p className="sr-only" aria-live="polite">{selectedArtist ? (lang === 'ko' ? '선택한 아티스트: ' : 'Selected artist: ') + selectedArtist.name : ''}</p>
+      </>}
+  </PageLayout>;
 }
