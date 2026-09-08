@@ -1,12 +1,13 @@
 'use client';
 
 import { useRef } from 'react';
-import { gsap, ScrollTrigger, useGSAP } from '@/lib/motion/gsap';
+import { gsap, ScrollTrigger, useGSAP, revealTerminalReadout } from '@/lib/motion/gsap';
 import { useMotionPolicy } from '@/lib/useMotionPolicy';
 
 export function useEventSummaryMotion(eventId: string, posterUrl?: string) {
   const rootRef = useRef<HTMLElement>(null);
   const scannedKey = useRef('');
+  const readoutKey = useRef('');
   const { allowMotion } = useMotionPolicy();
 
   useGSAP(() => {
@@ -18,6 +19,8 @@ export function useEventSummaryMotion(eventId: string, posterUrl?: string) {
     const image = root.querySelector('img');
     if (!poster) return;
 
+    const clearReadout = readoutKey.current !== key ? revealTerminalReadout(root, '[data-event="readout"]') : undefined;
+    readoutKey.current = key;
     if (scannedKey.current !== key) {
       gsap.timeline({
         scrollTrigger: { trigger: poster, scroller, start: 'top 94%', once: true },
@@ -33,7 +36,7 @@ export function useEventSummaryMotion(eventId: string, posterUrl?: string) {
     });
     const imageReady = () => ScrollTrigger.refresh(true);
     image?.addEventListener('load', imageReady);
-    return () => image?.removeEventListener('load', imageReady);
+    return () => { image?.removeEventListener('load', imageReady); clearReadout?.(); };
   }, { scope: rootRef, dependencies: [allowMotion, eventId, posterUrl], revertOnUpdate: true });
 
   return rootRef;

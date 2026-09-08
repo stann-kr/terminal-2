@@ -21,7 +21,7 @@
 .arrow { display: inline-block; flex-shrink: 0; }
 .arrow { font-size: 1rem; line-height: 1; }
 
-.primary { color: rgb(var(--color-bg-base)); background: rgb(var(--color-accent-primary)); border-color: rgb(var(--color-accent-primary)); }
+.primary { color: rgb(var(--color-accent-primary)); background: rgb(var(--color-accent-primary) / 0.06); border-color: rgb(var(--color-accent-primary) / 0.65); }
 .ghost { color: rgb(var(--color-text-primary)); background: transparent; border-color: rgb(var(--color-accent-primary) / 0.35); }
 .danger { color: rgb(var(--color-accent-alert)); background: rgb(var(--color-accent-alert) / 0.05); border-color: rgb(var(--color-accent-alert) / 0.65); }
 .control:focus-visible { outline: 2px solid rgb(var(--color-text-primary)); outline-offset: 3px; box-shadow: 0 0 0 2px rgb(var(--color-bg-base)); }
@@ -32,7 +32,7 @@
 @keyframes terminalBusyCursor { 0%, 49%, 100% { opacity: 1; } 50%, 99% { opacity: 0.25; } }
 
 @media (hover: hover) {
-  .primary:hover:not(:disabled) { background: rgb(var(--color-text-subdued)); border-color: rgb(var(--color-text-subdued)); }
+  .primary:hover:not(:disabled) { background: rgb(var(--color-accent-primary)); border-color: rgb(var(--color-accent-primary)); color: rgb(var(--color-bg-base)); }
   .ghost:hover:not(:disabled) { background: rgb(var(--color-accent-primary) / 0.1); border-color: rgb(var(--color-accent-primary)); }
   .danger:hover:not(:disabled) { background: rgb(var(--color-accent-alert) / 0.1); border-color: rgb(var(--color-accent-alert)); }
 }

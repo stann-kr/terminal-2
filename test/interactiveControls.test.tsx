@@ -26,7 +26,7 @@ import TerminalNavigation from '../components/shell/TerminalNavigation';
 import EventSummary from '../components/events/EventSummary';
 import HomePage from '../app/home/page';
 import SignalPage from '../app/signal/page';
-import { gsap, ScrollTrigger } from '../lib/motion/gsap';
+import { gsap, ScrollTrigger, revealTerminalReadout } from '../lib/motion/gsap';
 
 afterEach(cleanup);
 
@@ -234,6 +234,19 @@ describe('brand text motion', () => {
     expect(ScrollTrigger.getAll().length).toBeGreaterThan(before.length);
     unmount();
     expect(ScrollTrigger.getAll()).toEqual(before);
+  });
+
+  it.each(['before', 'during'])('keeps focused readout content unmasked when focus arrives %s its redraw', timing => {
+    const { container } = render(<section><div data-readout><button>Read event</button></div></section>);
+    const root = container.firstElementChild as HTMLElement;
+    const readout = root.querySelector<HTMLElement>('[data-readout]')!;
+    const action = screen.getByRole('button', { name: 'Read event' });
+    if (timing === 'before') action.focus();
+    const dispose = revealTerminalReadout(root, '[data-readout]');
+    if (timing === 'during') action.focus();
+    expect(action).toHaveFocus();
+    expect(readout.style.clipPath).toBe('');
+    dispose?.();
   });
 
   it('reverses an accordion from its current height and settles on resized content', () => {

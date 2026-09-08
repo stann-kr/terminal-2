@@ -5,7 +5,7 @@ import { useLang } from '@/lib/langContext';
 import TerminalButton from '@/components/TerminalButton';
 import TerminalActionLink from '@/components/TerminalActionLink';
 import { getArtistStatusLabel } from './ArtistRow';
-import { gsap, useGSAP } from '@/lib/motion/gsap';
+import { gsap, useGSAP, revealTerminalReadout } from '@/lib/motion/gsap';
 import { useMotionPolicy } from '@/lib/useMotionPolicy';
 import styles from './ArtistProfile.module.css';
 
@@ -27,12 +27,13 @@ export default function ArtistProfile({ artist, event, onReturn, headingRef }: {
     if (!allowMotion) return;
     gsap.from('[data-profile-rule]', { scaleX: 0, duration: 0.18, ease: 'steps(6)' });
     gsap.fromTo('[data-profile-scan]', { scaleX: 0, opacity: 0.12 }, { scaleX: 1, opacity: 0, duration: 0.24, ease: 'steps(8)' });
+    return revealTerminalReadout(rootRef.current, '[data-profile-content]');
   }, { scope: rootRef, dependencies: [allowMotion, artist.id], revertOnUpdate: true });
 
   return <section ref={rootRef} aria-labelledby={titleId} className={styles.profile} onKeyDown={e => { if (e.key === 'Escape') onReturn(); }}>
     <div className={styles.profileHeader}><span aria-hidden="true">ARTIST_PROFILE</span><TerminalButton variant="ghost" onClick={onReturn}>{lang === 'ko' ? '명단으로' : 'Back to list'}</TerminalButton></div>
     <div aria-hidden="true" className={styles.waveform}><pre>{WAVE}</pre><span data-profile-scan className={styles.scan} /><span data-profile-rule className={styles.rule} /></div>
-    <div className={styles.body}>
+    <div className={styles.body} data-profile-content>
       <h2 ref={headingRef} id={titleId} tabIndex={-1}>{artist.name}</h2>
       <dl className={styles.data}>
         <div><dt>{lang === 'ko' ? '출연 시간' : 'Set time'}</dt><dd>{artist.time}</dd></div>

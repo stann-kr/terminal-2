@@ -20,7 +20,7 @@ export default function EventSummary({ event, children, details }: { event: Term
   return <section ref={rootRef} className={styles.summary} aria-labelledby={titleId}>
     <div className={styles.information}>
       <p aria-hidden="true" className={styles.infoHeader}><span>{details ? 'GUEST_REQUEST' : 'EVENT_INFO'}</span><span>[{event.status}]</span></p>
-      <div className={styles.infoBody}>
+      <div data-event="readout" className={styles.infoBody}>
         <p data-event="status" className={styles.status}><span aria-hidden="true" />{status}</p>
         <h1 data-event="title" id={titleId} className={styles.title}>{event.session}</h1>
         {event.subtitle && <p className={styles.subtitle}>{event.subtitle}</p>}

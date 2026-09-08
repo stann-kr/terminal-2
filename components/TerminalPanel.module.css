@@ -1,7 +1,7 @@
-.panel { position: relative; min-width: 0; border-block: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-panel)); }
+.panel { position: relative; min-width: 0; border-block: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-base)); }
 .heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.75rem var(--workspace-padding); font: 700 0.875rem / 1.5 var(--font-mono); color: rgb(var(--color-text-primary)); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
 .heading > span { font-weight: 400; }
-.panel[data-accent='primary'] > .heading { background: rgb(var(--color-accent-primary)); color: rgb(var(--color-bg-base)); }
+.panel[data-accent='primary'] > .heading { color: rgb(var(--color-accent-primary)); }
 .panel[data-accent='alert'] > .heading { color: rgb(var(--color-accent-alert)); }
 .panel[data-accent='warn'] > .heading { color: rgb(var(--color-accent-warn)); }
 .body { padding: var(--workspace-padding); }

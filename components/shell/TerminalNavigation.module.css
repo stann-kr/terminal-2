@@ -21,13 +21,14 @@
 .scan { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: currentColor; opacity: 0.08; transform: scaleX(0); transform-origin: left; }
 .link[aria-current] { color: rgb(var(--color-bg-base)); background: rgb(var(--color-text-primary)); }
 .link[aria-current] .code > span { color: inherit; }
+.link[aria-current]::after { content: ''; position: absolute; inset: auto 0 0; height: 2px; background: rgb(var(--color-accent-primary)); }
 .link:focus-visible { outline: 2px solid rgb(var(--color-accent-primary)); outline-offset: -4px; box-shadow: inset 0 0 0 2px rgb(var(--color-bg-base)); }
 .mobileChannels { grid-column: 1 / -1; border-top: 1px solid rgb(var(--color-bg-panel-border)); }
 .mobileChannels a { display: flex; align-items: center; min-height: 2.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; }
 .rule { position: absolute; bottom: -1px; left: 0; width: 100%; height: 1px; background: rgb(var(--color-accent-primary)); transform-origin: left; pointer-events: none; }
 .channels[aria-current] { color: rgb(var(--color-accent-primary)); }
 @media (max-width: 639px) { .utilities { gap: 0.25rem; } .brand, .menu, .link, .language button { min-height: 2.75rem; } .language button { min-width: 2.75rem; } }
-@media (hover: hover) { .link:hover { color: rgb(var(--color-text-primary)); background: rgb(var(--color-accent-primary) / 0.12); } .link[aria-current]:hover { color: rgb(var(--color-bg-base)); background: rgb(var(--color-text-primary)); } }
+@media (hover: hover) { .link:hover { color: rgb(var(--color-bg-base)); background: rgb(var(--color-text-primary)); transition-duration: 0ms; } .link:hover .code > span { color: inherit; } }
 @media (min-width: 640px) {
   .location, .channels { display: inline-flex; }
   .utilities { gap: 1.5rem; }
