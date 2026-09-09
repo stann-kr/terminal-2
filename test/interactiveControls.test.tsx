@@ -24,7 +24,7 @@ import AnimatedHeight from '../components/ui/AnimatedHeight';
 import HomeMasthead from '../app/home/HomeMasthead';
 import TerminalNavigation from '../components/shell/TerminalNavigation';
 import PageLayout from '../components/shell/PageLayout';
-import DisplayEffects from '../components/shell/DisplayEffects';
+import { useTerminalScreen } from '../components/shell/useTerminalScreen';
 import EventSummary from '../components/events/EventSummary';
 import HomePage from '../app/home/page';
 import SignalPage from '../app/signal/page';
@@ -174,23 +174,6 @@ describe('CRT display preferences', () => {
     expect(nextToggle).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('removes decorative motion when disabled by policy or the user and cleans up on unmount', () => {
-    const { container, rerender, unmount } = render(<DisplayEffects enabled allowMotion />);
-    const effects = container.querySelector('[data-crt-effects]');
-    const targets = container.querySelectorAll('[data-crt-sweep], [data-crt-grain]');
-    expect(effects).toHaveAttribute('aria-hidden', 'true');
-    expect(gsap.getTweensOf(targets).length).toBeGreaterThan(0);
-    rerender(<DisplayEffects enabled allowMotion={false} />);
-    expect(gsap.getTweensOf(targets)).toHaveLength(0);
-    expect(effects).not.toHaveAttribute('hidden');
-    rerender(<DisplayEffects enabled={false} allowMotion />);
-    expect(gsap.getTweensOf(targets)).toHaveLength(0);
-    expect(effects).toHaveAttribute('hidden');
-    rerender(<DisplayEffects enabled allowMotion />);
-    expect(gsap.getTweensOf(targets).length).toBeGreaterThan(0);
-    unmount();
-    expect(gsap.getTweensOf(targets)).toHaveLength(0);
-  });
 });
 
 describe('brand text motion', () => {
@@ -286,7 +269,41 @@ describe('brand text motion', () => {
     expect(ScrollTrigger.getAll()).toEqual(before);
   });
 
-  it.each(['before', 'during'])('keeps focused readout content unmasked when focus arrives %s its redraw', timing => {
+  it('keeps the full readout available, cancels settling on input, and does not replay a route after policy changes', () => {
+    function ScreenHarness({ pathname, enabled = true }: { pathname: string; enabled?: boolean }) {
+      const ref = useTerminalScreen(pathname, enabled);
+      return <div ref={ref}><main data-scroll-region><button>Read screen</button></main></div>;
+    }
+    const { rerender, unmount } = render(<ScreenHarness pathname="/home" />);
+    const readout = screen.getByRole('main');
+    expect(screen.getByRole('button', { name: 'Read screen' })).toBeVisible();
+    expect(readout.style.clipPath).toBe('');
+    expect(readout.style.transform).toBe('');
+    expect(gsap.getTweensOf(readout)).toHaveLength(1);
+    fireEvent.keyDown(readout, { key: 'Tab' });
+    expect(readout.style.opacity).toBe('');
+    expect(gsap.getTweensOf(readout)).toHaveLength(0);
+
+    rerender(<ScreenHarness pathname="/gate" />);
+    expect(gsap.getTweensOf(readout)).toHaveLength(1);
+    rerender(<ScreenHarness pathname="/gate" enabled={false} />);
+    expect(readout.style.opacity).toBe('');
+    rerender(<ScreenHarness pathname="/gate" />);
+    expect(gsap.getTweensOf(readout)).toHaveLength(0);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    rerender(<ScreenHarness pathname="/lineup" />);
+    expect(gsap.getTweensOf(readout)).toHaveLength(0);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    expect(gsap.getTweensOf(readout)).toHaveLength(0);
+    rerender(<ScreenHarness pathname="/signal" />);
+    expect(gsap.getTweensOf(readout)).toHaveLength(1);
+    unmount();
+    expect(gsap.getTweensOf(readout)).toHaveLength(0);
+  });
+
+  it.each(['before', 'during'])('keeps focused readout content fully lit when focus arrives %s its settle', timing => {
     const { container } = render(<section><div data-readout><button>Read event</button></div></section>);
     const root = container.firstElementChild as HTMLElement;
     const readout = root.querySelector<HTMLElement>('[data-readout]')!;
@@ -296,6 +313,7 @@ describe('brand text motion', () => {
     if (timing === 'during') action.focus();
     expect(action).toHaveFocus();
     expect(readout.style.clipPath).toBe('');
+    expect(readout.style.opacity).toBe('');
     dispose?.();
   });
 

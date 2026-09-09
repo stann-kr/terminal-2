@@ -28,8 +28,6 @@
 .fallbackLabel { font: 0.75rem / 1.6 var(--font-mono); color: rgb(var(--color-text-subdued)); }
 .fallbackTitle { font: 700 1.25rem / 1.5 var(--font-mono); overflow-wrap: anywhere; letter-spacing: 0.025em; }
 .posterFallback p { font-size: 0.75rem; color: rgb(var(--color-text-subdued)); }
-.scanWindow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.scan { display: block; position: absolute; inset: 0 0 auto; height: 8%; opacity: 0; background: linear-gradient(transparent, rgb(var(--color-accent-primary) / 0.06)); border-bottom: 1px solid rgb(var(--color-accent-primary) / 0.5); }
 .progress { position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: rgb(var(--color-accent-primary)); transform: scaleY(0.08); transform-origin: top; pointer-events: none; }
 @media (min-width: 1024px) {
   .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }

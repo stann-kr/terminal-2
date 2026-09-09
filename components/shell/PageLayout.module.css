@@ -1,13 +1,12 @@
 .page { position: relative; display: flex; flex-direction: column; height: 100svh; height: 100dvh; overflow: hidden; width: 100%; background: rgb(var(--color-bg-panel)); color: rgb(var(--color-text-primary)); font-family: var(--font-mono); }
 .screen { position: relative; isolation: isolate; display: flex; flex: 1; min-height: 0; margin: 0.375rem 0.5rem; border: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-base)); overflow: hidden; box-shadow: inset 0 0 26px rgb(0 0 0 / 0.45), 0 1px 0 rgb(var(--color-text-primary) / 0.06); }
-.page[data-crt='true'] { background: linear-gradient(90deg, rgb(var(--color-bg-base) / 0.35), transparent 12% 88%, rgb(var(--color-bg-base) / 0.35)), rgb(var(--color-bg-panel)); }
-.page[data-crt='true'] .screen { border-radius: 10px / 8px; border-color: rgb(var(--color-text-primary) / 0.18); box-shadow: 0 0 0 1px rgb(var(--color-bg-base)), 0 0 0 3px rgb(var(--color-bg-base) / 0.4), 0 2px 0 3px rgb(var(--color-text-primary) / 0.055), 0 0 24px rgb(var(--color-accent-primary) / 0.055); }
-.page[data-crt='true'] .content { text-shadow: 0.4px 0 rgb(var(--color-accent-primary) / 0.18), -0.4px 0 rgb(var(--color-text-primary) / 0.12), 0 0 9px rgb(var(--color-accent-primary) / 0.12); }
-/* Ease the glass treatment while reading a focused control or entering text. */
-.screen:focus-within [data-crt-effects] { opacity: 0.45; }
-.screen:has(input:focus, textarea:focus, select:focus) [data-crt-effects] { opacity: 0.2; }
-.curtain { position: absolute; z-index: 3; inset: 0; opacity: 0; transform-origin: bottom; pointer-events: none; background: rgb(var(--color-bg-base)); }
-.beam { position: absolute; z-index: 4; inset: 0 0 auto; height: 24px; opacity: 0; pointer-events: none; background: linear-gradient(transparent, rgb(var(--color-accent-primary) / 0.09)); border-bottom: 1px solid rgb(var(--color-accent-primary) / 0.8); }
+.page[data-crt='true'] { background: linear-gradient(180deg, rgb(var(--color-text-primary) / 0.035), transparent 22% 75%, rgb(var(--color-bg-base) / 0.4)), linear-gradient(90deg, rgb(var(--color-bg-base) / 0.5), transparent 15% 85%, rgb(var(--color-bg-base) / 0.5)), rgb(var(--color-bg-panel)); }
+.page[data-crt='true'] .screen { border-radius: 18px / 14px; border-color: rgb(var(--color-text-primary) / 0.22); box-shadow: 0 0 0 1px rgb(var(--color-bg-base)), 0 0 0 4px rgb(var(--color-bg-panel-border) / 0.5), 0 2px 0 4px rgb(var(--color-text-primary) / 0.09), 0 0 28px rgb(var(--color-accent-primary) / 0.065); }
+.page[data-crt='true'] .content { text-shadow: 0 0 1px rgb(var(--color-text-primary) / 0.45), 0 0 5px rgb(var(--color-text-primary) / 0.2), 0 0 14px rgb(var(--color-accent-primary) / 0.22); }
+.page[data-crt='true'] .content :is(input, textarea, select) { text-shadow: none; }
+/* Reduce surface grain during input; the physical glass remains steady. */
+.screen:focus-within [data-crt-texture] { opacity: 0.45; }
+.screen:has(input:focus, textarea:focus, select:focus) [data-crt-texture] { opacity: 0.2; }
 .content { flex: 1; width: 100%; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; scroll-padding-block: 1rem; margin-inline: auto; padding: var(--workspace-padding); text-shadow: 0 0 8px rgb(var(--color-text-primary) / 0.06); }
 .content:focus { outline: none; }
 .event { max-width: 100rem; }
@@ -23,6 +22,7 @@
 .cursor[data-motion='true'] { animation: terminalCursor 1.2s steps(1, end) infinite; }
 @keyframes terminalCursor { 0%, 49%, 100% { opacity: 1; } 50%, 99% { opacity: 0; } }
 @media (max-width: 639px) {
+  .page[data-crt='true'] .screen { border-radius: 12px / 10px; }
   .footer > nav { width: 100%; font-size: 0.6875rem; }
   .footer > nav > span:first-child, .current { display: none; }
   .footer > nav > span:last-child { width: 100%; column-gap: 0.5rem; justify-content: space-between; }

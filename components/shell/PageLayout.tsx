@@ -24,7 +24,7 @@ export default function PageLayout({ children, centerContent = false, width = 'r
   const { lang } = useLang();
   const { allowMotion } = useMotionPolicy();
   const { enabled: effectsEnabled, toggleEffects } = useDisplayEffects();
-  const screenRef = useTerminalScreen(pathname);
+  const screenRef = useTerminalScreen(pathname, effectsEnabled);
   const current = getActiveDirectory(pathname);
   const currentLabel = pathname === '/link' ? (lang === 'ko' ? '공식 채널' : 'Official channels') : current?.[lang] ?? (lang === 'ko' ? '홈' : 'Home');
   return <div className={styles.page} data-crt={effectsEnabled}>
@@ -33,9 +33,7 @@ export default function PageLayout({ children, centerContent = false, width = 'r
       <main id="main-content" data-scroll-region tabIndex={-1} className={`${styles.content} ${flush ? styles.flush : styles[width]} ${centerContent ? styles.centered : ''}`}>
         {children}
       </main>
-      <DisplayEffects enabled={effectsEnabled} allowMotion={allowMotion} />
-      <div aria-hidden="true" data-screen-curtain className={styles.curtain} />
-      <div aria-hidden="true" data-screen-beam className={styles.beam} />
+      <DisplayEffects enabled={effectsEnabled} />
     </div>
     <footer className={styles.footer}>
       <SignalNet />

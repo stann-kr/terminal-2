@@ -43,7 +43,6 @@ export default function EventSummary({ event, children, details }: { event: Term
               <span aria-hidden="true" className={styles.fallbackTitle}>{event.session}</span>
               <p>{lang === 'ko' ? '공개된 포스터가 없습니다.' : 'No poster is available.'}</p>
             </div>}
-          <span aria-hidden="true" className={styles.scanWindow}><span data-event="scan" className={styles.scan} /></span>
         </div>
         <span aria-hidden="true" data-event="progress" className={styles.progress} />
       </div>

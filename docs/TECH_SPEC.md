@@ -72,8 +72,8 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 
 - **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
 - **동작 원리:** `PageLayout`은 `100dvh` 프레임에 헤더·메뉴·footer를 고정하고 남은 높이를 `main`의 내부 스크롤에 할당한다. pathname 이동 시 내부 스크롤은 상단으로 돌아가며 query 선택만 바뀔 때는 위치를 유지한다. `flush` 화면은 전체 너비를 사용하고 capability가 grid와 여백을 결정한다. 기본 event/reading/form 폭은 1600/1024/672px다. 데스크톱 상단 rail·메뉴는 약 32/41px이며 모바일·터치 컨트롤은 최소 44px 높이를 유지한다.
-- **화면 전환:** `useTerminalScreen`은 고정된 상단 아래의 본문 표시 영역만 320ms·14단 주사 방식으로 다시 그린다. 상단·메뉴에는 진입 모션을 적용하지 않는다. 장식 mask는 pointer를 받지 않으며 본문 pointer/keyboard 조작이 들어오면 즉시 최종 화면을 표시한다. 같은 화면에서 탭 복귀나 모션 설정 변경으로 재생을 반복하지 않는다. SSR과 모션 비활성 상태에서는 mask가 투명하다.
-- **CRT 질감:** `DisplayEffects`는 본문 스크롤 영역 위에 비네팅·유리 반사·주사선/형광체 격자·노이즈·16초 주사광을 겹친다. 텍스트에는 약한 형광체 번짐만 적용하고 내용이나 조작 영역을 변형하지 않는다. 장식은 `aria-hidden`·`pointer-events: none`이며 focus 중에는 약해지고 모바일은 강도를 낮춘다. 상단 CRT 토글은 `aria-pressed`를 제공하며 `useDisplayEffects`가 브라우저 저장소에 선택을 유지한다. 저장소 차단 시 같은 탭의 화면 이동 동안 선택을 유지한다. SSR은 효과를 숨긴 상태로 시작한다. reduced-motion·save-data·hidden에서는 GSAP 반복을 해제하고 정적 질감을 유지하며, 고대비/강제 색상에서는 오버레이와 글자 번짐을 숨긴다.
+- **화면 전환:** `useTerminalScreen`은 본문 전체를 즉시 표시하고 opacity 0.88→1을 110ms 동안 안정시킨다. 상단·메뉴와 본문 위치는 고정되며 내용에 clipping이나 이동을 적용하지 않는다. keyboard·focus·pointer 조작은 즉시 최종 밝기로 만든다. 같은 화면의 탭 복귀나 CRT/모션 설정 변경으로 재생을 반복하지 않는다. SSR·CRT OFF·reduced-motion·save-data·hidden에서는 이 전환을 실행하지 않는다.
+- **CRT 질감:** `DisplayEffects`는 두꺼운 곡면 유리·안쪽 프레임 음영·비네팅과 정적 형광체/래스터 질감을 소유한다. 유리 반사는 가장자리 음영 위에 겹치며 글자 주변에는 부드러운 형광체 번짐을 적용한다. 유리·노이즈는 정지해 있고 반복 주사광은 없다. 장식은 `aria-hidden`·`pointer-events: none`이며 focus/입력 중에는 표면 질감만 약해져 유리와 테두리는 유지된다. 모바일은 강도를 낮춘다. 상단 CRT 토글은 `aria-pressed`를 제공하며 `useDisplayEffects`가 브라우저 저장소에 선택을 유지한다. 저장소 차단 시 같은 탭의 화면 이동 동안 선택을 유지한다. SSR은 효과를 숨긴 상태로 시작한다. 고대비/강제 색상에서는 오버레이와 글자 번짐을 숨긴다.
 - `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 180ms·닫기 126ms이며, 새 요청은 현재 높이에서 반전한다. 내부 글자를 이동시키지 않으며 ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
 - **landmark:** header·navigation·footer와 분리된 `main#main-content`가 전역 skip link의 목적지가 된다. 독립적인 체험·복구 화면은 자체 main을 가진다.
 - **탐색:** GATE·LINEUP·GUEST_REQ·STATUS·TRANSMIT·SIGNAL·ABOUT의 7개 디렉터리를 제공한다. `/gate/request`는 GUEST_REQ만 현재 메뉴로 표시한다. 모바일 보조 메뉴는 헤더 아래에서 펼쳐지고 높이가 부족하면 메뉴 내부가 스크롤된다. Escape로 닫으면 메뉴 버튼으로 focus가 돌아간다.
@@ -82,13 +82,13 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 
 | 영역 | 연출 | 소유 위치 |
 |---|---|---|
-| 디렉터리 전환 | 고정된 본문 디스플레이 안에서 320ms 주사선과 화면 재표시 | `components/shell/useTerminalScreen.ts` |
-| 디스플레이 질감 | 정적 유리·래스터·비네팅, 선택 가능한 미세 노이즈와 16초 주사광 | `components/shell/DisplayEffects.tsx`, `useDisplayEffects.ts` |
+| 디렉터리 전환 | 전체 내용 즉시 표시, 110ms 형광체 밝기 안정 | `components/shell/useTerminalScreen.ts` |
+| 디스플레이 질감 | 두꺼운 곡면 유리·프레임 음영·형광체 번짐, 정적 래스터와 미세 질감 | `components/shell/DisplayEffects.tsx`, `useDisplayEffects.ts` |
 | Home 시간 표시 | 현재 행사의 KST 시작 시각 기준 T- 카운트다운 / T+ 경과 시간, 초 단위 갱신 | `app/home/HomeMasthead.tsx`, `components/events/CountdownBlock.tsx` |
-| 행사 요약 | 정보 위치 고정, 행사 정보 280ms 재표시, 포스터 550ms 스캔, 내부 스크롤 진행선 | `components/events/useEventSummaryMotion.ts` |
+| 행사 요약 | 정보 즉시 표시와 110ms 밝기 안정, 내부 스크롤 진행선 | `components/events/useEventSummaryMotion.ts` |
 | 버튼·메뉴 | 텍스트 고정, pointer 선택면 160ms 4단 스캔, keyboard focus 즉시 표시 | `components/ui/useControlMotion.ts` |
 | 디렉터리·라인업 | 목록 즉시 표시, 선택과 반전으로 현재 대상 강조 | 해당 row component |
-| 아티스트 프로필 | 선택한 프로필만 280ms 재표시, 정적 파형 위 스캔과 경계선, 반복 재생 없음 | `app/lineup/ArtistProfile.tsx` |
+| 아티스트 프로필 | 프로필 즉시 표시와 110ms 밝기 안정, 정적 파형 위 스캔과 경계선, 반복 재생 없음 | `app/lineup/ArtistProfile.tsx` |
 | 신청 접수 결과 | 서버 성공 뒤 결과 heading focus와 200ms 경계선 | `app/gate/request/RequestReceipt.tsx` |
 | 공통 제목·panel | 제목 즉시 표시, panel 경계선 180ms 6단 스캔 | `PageHeader`, `TerminalPanel` |
 | 현재 위치·전송 중 | footer 커서와 실제 pending 상태의 block 커서만 점멸 | `PageLayout`, `SubmitButton` |
@@ -96,7 +96,7 @@ GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉�
 - [공식 React 연동](https://gsap.com/resources/React/)의 `useGSAP` scope와 cleanup을 사용한다. 비동기 ResizeObserver에서 만드는 tween도 context에 포함한다.
 - [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 가장 가까운 `data-scroll-region`을 scroller로 사용한다. 본문의 native 스크롤과 모션 위치를 일치시킨다. 포스터와 글자에는 pointer 추적·3D 기울기를 적용하지 않는다.
 - 버튼 hover timeline은 재생·역재생으로 재사용하며 키보드 focus는 선택된 최종 상태를 즉시 표시한다. 조작 영역·글자·화살표의 위치는 고정한다. 실제 전송 중일 때만 `aria-busy`와 block 커서를 표시하고 artificial delay를 추가하지 않는다. reduced-motion·save-data·hidden 정책은 scan과 커서 점멸도 해제한다.
-- `revealTerminalReadout`은 행사·프로필 내용의 재표시와 cleanup을 공유한다. 영역에 focus나 pointer 입력이 오면 clipping을 즉시 해제하므로 읽기·조작을 위해 연출 완료를 기다릴 필요가 없다.
+- `revealTerminalReadout`은 페이지·행사·프로필의 짧은 밝기 안정과 cleanup을 공유한다. 전체 내용은 처음부터 읽을 수 있으며 focus·pointer·keyboard 입력 시 즉시 최종 밝기로 복원한다.
 - 콘텐츠 높이·이미지 로딩 뒤의 scroll 위치 재계산은 `ScrollTrigger.refresh(true)`로 묶는다. 화면 이탈 시 scene의 trigger, timeline, observer와 event listener를 정리한다.
 - 동일 요소의 transform·opacity를 GSAP과 CSS/Framer Motion이 동시에 제어하지 않는다. 기존 Boot/Sleep 상태 전환과 Transmit 상태 표현의 Framer Motion은 별도 owner로 유지한다.
 
