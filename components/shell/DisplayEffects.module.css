@@ -1,12 +1,22 @@
 .effects {
   position: absolute;
-  z-index: 2;
+  /* The glass sits above the navigation (z-index: 5), including its menu. */
+  z-index: 10;
   inset: 0;
   overflow: hidden;
   border-radius: inherit;
   pointer-events: none;
   user-select: none;
   contain: paint;
+}
+
+.effects::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(var(--color-text-primary) / 0.2);
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px rgb(var(--color-bg-base) / 0.85), inset 0 0 0 3px rgb(var(--color-text-primary) / 0.08);
 }
 
 .texture, .phosphor, .raster, .glass, .vignette { position: absolute; inset: 0; }

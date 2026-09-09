@@ -15,7 +15,7 @@ terminal-2 is the STANN OS LIVE surface for `https://terminal.stann.kr`.
 
 The interface uses a full-screen black-and-orange workspace with seven directory entries, fixed navigation, and internal content scrolling. Pages and selected event or artist readouts appear in place with a brief phosphor settle. Content remains readable throughout; keyboard, focus, or pointer input immediately completes the effect. The Home time display follows the featured event's start time. Artist profiles can be linked with `/lineup?event=…&artist=…`; changing the event clears its artist selection. Guest requests show a receipt only after the server accepts the submission. A receipt does not confirm admission.
 
-The display has thick curved glass, a recessed rim, a soft CRT vignette, and phosphor bloom around the text. Reflections and fine surface grain stay still. The header's CRT button switches the treatment off or on and remembers the choice. Surface texture softens around focused controls; reduced motion skips the page settle, and high contrast removes the overlay.
+One CRT surface covers the full page, including navigation and footer, with thick curved glass, an outer rim, a soft vignette, and phosphor bloom around the text. Reflections and fine surface grain stay still. The header's CRT button switches the treatment off or on and remembers the choice. Surface texture softens around focused controls; reduced motion skips the page settle, and high contrast removes the overlay.
 
 Home uses a lightweight ASCII brand treatment. WebGL is loaded only for the optional terminal experience, subject to motion preferences, visibility, and device support.
 

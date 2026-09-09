@@ -156,6 +156,12 @@ describe('CRT display preferences', () => {
     }
     const user = userEvent.setup();
     const { container, unmount } = render(<PageLayout><input aria-label="Draft" defaultValue="Keep my message" /></PageLayout>);
+    const effects = container.querySelector('[data-crt-effects]')!;
+    const display = effects.parentElement;
+    expect(display).toContainElement(screen.getByRole('banner'));
+    expect(display).toContainElement(screen.getByRole('main'));
+    expect(display).toContainElement(screen.getByRole('contentinfo'));
+    expect(effects).toHaveAttribute('aria-hidden', 'true');
     const toggle = screen.getByRole('button', { name: 'CRT 화면 효과' });
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
     toggle.focus();

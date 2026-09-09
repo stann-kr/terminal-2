@@ -33,11 +33,11 @@ export default function PageLayout({ children, centerContent = false, width = 'r
       <main id="main-content" data-scroll-region tabIndex={-1} className={`${styles.content} ${flush ? styles.flush : styles[width]} ${centerContent ? styles.centered : ''}`}>
         {children}
       </main>
-      <DisplayEffects enabled={effectsEnabled} />
     </div>
     <footer className={styles.footer}>
       <SignalNet />
       <p className={styles.current}><span aria-hidden="true">&gt; </span>{currentLabel}<span aria-hidden="true" className={styles.cursor} data-motion={allowMotion} /></p>
     </footer>
+    <DisplayEffects enabled={effectsEnabled} />
   </div>;
 }
