@@ -1,43 +1,26 @@
-.returnBar { padding: 0.5rem var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
+.page { width: 100%; max-width: 48rem; margin-inline: auto; padding-bottom: 2rem; }
+.returnBar { padding: 0.5rem var(--workspace-padding) 0; }
 .returnBar > div { margin: 0; }
 .eventStrip { padding: 1.25rem var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
 .eventStrip h2 { font: 700 1.125rem / 1.4 var(--font-mono); overflow-wrap: anywhere; }
 .eventStrip p { margin-top: 0.5rem; font-size: 0.875rem; color: rgb(var(--color-text-subdued)); }
-.workspace { display: grid; }
-.workspace[data-inactive='true'] { display: block; }
+.workspace { min-width: 0; }
 .formColumn { min-width: 0; }
 .formPanel { border-top: 0; }
-.formBody { max-width: 42rem; margin-inline: auto; }
 .formBody input:disabled { color: rgb(var(--color-text-muted)); background: rgb(var(--color-bg-overlay)); cursor: not-allowed; }
+.inviter { display: flex; min-height: 2.75rem; align-items: center; gap: 0.75rem; font-size: 0.875rem; }
 .introduction { padding: var(--workspace-padding); max-width: 68ch; line-height: 1.7; color: rgb(var(--color-text-subdued)); }
 .introduction p + p { margin-top: 0.5rem; }
 .state { padding: clamp(2rem, 5vw, 4rem) var(--workspace-padding); min-height: 18rem; }
 .review { padding: var(--workspace-padding); border-left: 3px solid rgb(var(--color-accent-alert)); background: rgb(var(--color-bg-panel)); }
 .review > * + * { margin-top: 1rem; }
 .codeHelp { font-size: 0.875rem; color: rgb(var(--color-text-subdued)); }
-.statusPanel { display: none; }
-.statusPanel > h2 { display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--workspace-padding); background: rgb(var(--color-accent-primary)); color: rgb(var(--color-bg-base)); font: 700 0.875rem / 1.5 var(--font-mono); }
-.statusPanel > h2 > span { font-weight: 400; }
-.steps { padding-inline: var(--workspace-padding); }
-.steps li { display: flex; align-items: baseline; gap: 1rem; padding-block: 2rem; border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
-.steps li > span { font: 1.75rem / 1 var(--font-mono); color: rgb(var(--color-text-muted)); }
-.steps li[data-complete='true'] > span { color: rgb(var(--color-accent-primary)); }
-.steps h3 { font: 700 0.875rem / 1.5 var(--font-mono); }
-.steps p, .statusNote { margin-top: 0.75rem; font-size: 0.875rem; line-height: 1.7; color: rgb(var(--color-text-subdued)); }
-.statusNote { padding: 0 var(--workspace-padding) 2rem; }
-.receipt { display: grid; background: rgb(var(--color-bg-panel)); }
-.receiptCode { display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--workspace-padding); background: rgb(var(--color-accent-primary)); color: rgb(var(--color-bg-base)); font: 700 0.875rem / 1.5 var(--font-mono); }
-.receiptBody { position: relative; padding: 3rem var(--workspace-padding); }
-.receiptBody h2 { font: 700 clamp(1.75rem, 3vw, 2.5rem) / 1.3 var(--font-mono); margin-bottom: 2rem; }
+.receipt { min-width: 0; }
+.receiptBody { position: relative; padding: 2rem var(--workspace-padding); }
+.receiptBody h2 { font: 700 clamp(1.5rem, 3vw, 2rem) / 1.3 var(--font-mono); margin-bottom: 1.5rem; }
 .receiptBody h2:focus { outline: none; }
 .receiptBody p { margin-top: 0.5rem; color: rgb(var(--color-text-subdued)); }
 .receiptBody .receiptEvent { font-size: 1.25rem; color: rgb(var(--color-text-primary)); overflow-wrap: anywhere; }
 .receiptLine { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgb(var(--color-accent-primary)); transform-origin: left; }
-.nextSteps { display: flex; flex-direction: column; align-items: stretch; gap: 1.25rem; padding: 2rem var(--workspace-padding); }
-.nextSteps h3 { font: 700 0.875rem / 1.5 var(--font-mono); }
+.nextSteps { display: flex; flex-direction: column; align-items: start; gap: 1.25rem; padding: 1.5rem var(--workspace-padding); }
 .nextSteps p { line-height: 1.7; }
-@media (min-width: 1024px) {
-  .workspace, .receipt { grid-template-columns: minmax(0, 60fr) minmax(0, 40fr); }
-  .statusPanel { display: block; border-left: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-panel)); }
-  .nextSteps { border-left: 1px solid rgb(var(--color-bg-panel-border)); }
-}

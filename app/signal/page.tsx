@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import PageLayout from '@/components/shell/PageLayout';
 import PageHeader from '@/components/ui/PageHeader';
@@ -21,19 +20,16 @@ export default function SignalPage() {
   useEffect(() => { if (submitted) resultRef.current?.focus(); }, [submitted]);
 
   return <PageLayout width="event" flush>
+    <div className={styles.page}>
     <PageHeader path="/signal" title={lang === 'ko' ? '소식 신청' : 'Event updates'} />
     {submitted ? <section className={styles.result} aria-labelledby="signal-result-title">
-      <p aria-hidden="true" className={styles.resultCode}>SIGNAL_SAVED [OK]</p>
       <h2 id="signal-result-title" ref={resultRef} tabIndex={-1}>{t.signal.committed}</h2>
       <p>{t.signal.committedSub}</p>
       <TerminalActionLink href="/gate">{lang === 'ko' ? '이벤트 보기' : 'Explore events'}</TerminalActionLink>
     </section> : <div className={styles.workspace}>
-      <section className={styles.introduction} aria-labelledby="signal-intro-title">
-        <span aria-hidden="true" className={styles.channel}>[06] SIGNAL</span>
-        <h2 id="signal-intro-title">{lang === 'ko' ? '이벤트 소식 받기' : 'Receive event updates'}</h2>
+      <div className={styles.introduction}>
         {t.signal.description.map((line, i) => <p key={i}>{line}</p>)}
-        <Link href="/link">{lang === 'ko' ? '공식 채널 보기' : 'Official channels'} <span aria-hidden="true">↗</span></Link>
-      </section>
+      </div>
       <TerminalPanel title={lang === 'ko' ? '연락처 등록' : 'Your contact details'} accent="secondary" className={styles.contactPanel} bodyClassName={styles.formBody}>
         <form onSubmit={handleSubmit} noValidate className={styles.form}>
           <FormField label={t.signal.labelEmail} htmlFor="signal-email">
@@ -56,5 +52,6 @@ export default function SignalPage() {
         </form>
       </TerminalPanel>
     </div>}
+    </div>
   </PageLayout>;
 }

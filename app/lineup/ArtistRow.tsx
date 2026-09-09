@@ -23,6 +23,6 @@ export default function ArtistRow({ artist, index = 0, selected, onSelect, profi
     <span data-control-label className={styles.name}>{artist.name}</span>
     <span className={styles.time}>{artist.time}</span>
     <span className={styles.metadata}>{artist.origin} · {getArtistStatusLabel(artist.status, lang)}</span>
-    <span aria-hidden="true" data-control-arrow className={styles.indicator}>{selected ? '−' : '+'}</span>
+    <span aria-hidden="true" data-control-arrow className={styles.indicator}>{selected ? '•' : '→'}</span>
   </button>;
 }

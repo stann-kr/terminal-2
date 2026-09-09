@@ -33,8 +33,8 @@ export default function GatePage() {
     <PageLayout width="event" flush>
       <div className={styles.toolbar}>
       <div role="group" aria-label={lang === 'ko' ? '이벤트 보기' : 'Event view'} className={styles.tabs}>
-        <TerminalButton variant={!isArchive ? 'primary' : 'ghost'} aria-pressed={!isArchive} onClick={() => switchView(false)}>{t.gate.tabUpcoming}</TerminalButton>
-        <TerminalButton variant={isArchive ? 'primary' : 'ghost'} aria-pressed={isArchive} onClick={() => switchView(true)}>{t.gate.tabArchive}</TerminalButton>
+        <button type="button" className={styles.tab} aria-pressed={!isArchive} onClick={() => { if (isArchive) switchView(false); }}>{t.gate.tabUpcoming}</button>
+        <button type="button" className={styles.tab} aria-pressed={isArchive} onClick={() => { if (!isArchive) switchView(true); }}>{t.gate.tabArchive}</button>
       </div>
       {!isLoading && !isError && candidates.length > 1 && <div className={styles.selector}><label htmlFor="gate-event">{lang === 'ko' ? '이벤트 선택' : 'Select event'}</label><select id="gate-event" value={event?.id ?? ''} onChange={e => setSelectedId(e.target.value)}>{candidates.map(e => <option key={e.id} value={e.id}>{e.session} · {e.date}</option>)}</select></div>}
       </div>

@@ -17,7 +17,6 @@ export default function LinkPage() {
   return <PageLayout width="event" flush>
     <PageHeader path="/link" title={lang === 'ko' ? '공식 채널' : 'Official channels'} />
     <nav aria-label={t.link.externalChannels} className={styles.directory}>
-      <div className={styles.directoryHeader}><span aria-hidden="true">EXTERNAL_CHANNELS</span><span>{lang === 'ko' ? `${links.length}개 채널` : `${links.length} channels`}</span></div>
       {links.map((link, i) => <DirectoryLink key={link.href} {...link} index={i + 1} external />)}
     </nav>
   </PageLayout>;

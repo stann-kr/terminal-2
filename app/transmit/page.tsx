@@ -27,16 +27,16 @@ export default function TransmitPage() {
   return <PageLayout width="event" flush>
     <PageHeader path="/transmit" title={t.transmit.title} />
     <div className={styles.workspace}>
-      <TerminalPanel title={t.transmit.formTitle} className={styles.editor} bodyClassName={styles.editorBody}>
+      <TerminalPanel title={t.transmit.formTitle} className={styles.editor}>
         <p id="transmit-public-notice" className={styles.notice}>{t.transmit.publicNotice}</p>
         <form onSubmit={handleSubmit} noValidate aria-describedby="transmit-public-notice" className={styles.form}>
           <FormField label={t.transmit.labelAlias} htmlFor="transmit-handle">
             <input id="transmit-handle" name="handle" type="text" value={handle} onChange={handleHandleChange} placeholder={t.transmit.placeholderAlias} autoComplete="nickname" required aria-required="true" aria-invalid={Boolean(fieldErrors.handle)} aria-describedby={fieldErrors.handle ? 'transmit-handle-error' : undefined} maxLength={24} className={`${inputClassBase} ${inputAccentClass.secondary}`} />
           </FormField>
           {fieldErrors.handle && <FieldError id="transmit-handle-error" message={fieldErrors.handle} />}
-          <div className={styles.messageField}>
+          <div>
             <div className={styles.messageHeader}><label htmlFor="transmit-message">{t.transmit.labelMessage}</label><span id="transmit-message-count">{message.length} / 280</span></div>
-            <textarea id="transmit-message" name="message" value={message} onChange={handleMessageChange} placeholder={t.transmit.placeholderMsg} autoComplete="off" required aria-required="true" aria-invalid={Boolean(fieldErrors.message)} aria-describedby={fieldErrors.message ? 'transmit-message-error transmit-message-count' : 'transmit-message-count'} maxLength={280} rows={9} className={`${inputClassBase} ${inputAccentClass.primary} ${styles.textarea}`} />
+            <textarea id="transmit-message" name="message" value={message} onChange={handleMessageChange} placeholder={t.transmit.placeholderMsg} autoComplete="off" required aria-required="true" aria-invalid={Boolean(fieldErrors.message)} aria-describedby={fieldErrors.message ? 'transmit-message-error transmit-message-count' : 'transmit-message-count'} maxLength={280} rows={5} className={`${inputClassBase} ${inputAccentClass.primary} ${styles.textarea}`} />
           </div>
           {fieldErrors.message && <FieldError id="transmit-message-error" message={fieldErrors.message} />}
           <AnimatePresence initial={false}>
@@ -54,11 +54,11 @@ export default function TransmitPage() {
             <div className={styles.logHeader}><span>{entry.handle}</span><time dateTime={entry.createdAt}>{formatLocalTime(entry.createdAt)}</time></div>
             <p>{entry.message}</p>
           </li>)}</ol>}
-        <nav className={styles.pagination} aria-label={t.transmit.title}>
+        {(totalPages > 1 || currentPage > 1) && <nav className={styles.pagination} aria-label={t.transmit.title}>
           <TerminalButton variant="ghost" aria-label={t.transmit.previousPageLabel} onClick={showPreviousPage} disabled={currentPage <= 1 || isFetching || isInitialLoad || isSubmitting}>{t.transmit.prevBtn}</TerminalButton>
-          <span aria-live="polite">{currentPage} / {Math.max(1, totalPages)}</span>
-          <TerminalButton variant="ghost" aria-label={t.transmit.nextPageLabel} onClick={showNextPage} disabled={currentPage >= totalPages || isFetching || isInitialLoad || isSubmitting}>{t.transmit.nextBtn}</TerminalButton>
-        </nav>
+          <span aria-live="polite">{isLogError ? currentPage : `${currentPage} / ${Math.max(currentPage, totalPages)}`}</span>
+          <TerminalButton variant="ghost" aria-label={t.transmit.nextPageLabel} onClick={showNextPage} disabled={currentPage >= totalPages || isFetching || isInitialLoad || isLogError || isSubmitting}>{t.transmit.nextBtn}</TerminalButton>
+        </nav>}
       </TerminalPanel>
     </div>
   </PageLayout>;

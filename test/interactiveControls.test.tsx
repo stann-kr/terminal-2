@@ -9,6 +9,8 @@ import ConsentCheckbox from '../components/ui/ConsentCheckbox';
 import { useFieldErrors } from '../components/ui/useFieldErrors';
 import { useUrlQueryState } from '../lib/useUrlQueryState';
 import { useTransmit } from '../app/transmit/useTransmit';
+import TransmitPage from '../app/transmit/page';
+import { transmitKeys } from '../lib/transmit/client';
 import { useEventClock } from '../lib/events/useEventClock';
 import { getEffectiveEventStatus, getRequestWindowState } from '../lib/events/lifecycle';
 import type { Artist, TerminalEvent } from '../lib/events/types';
@@ -379,6 +381,32 @@ describe('Transmit draft submission', () => {
     return render(<QueryClientProvider client={queryClient}><TransmitHarness /></QueryClientProvider>);
   }
 
+  it('shows pagination only when needed and preserves the draft when a later page fails', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
+    queryClient.setQueryData(transmitKeys.list(1), emptyPage);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({}, { status: 500 }));
+    const user = userEvent.setup();
+    render(<QueryClientProvider client={queryClient}><TransmitPage /></QueryClientProvider>);
+    expect(screen.queryByRole('navigation', { name: '방명록' })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('textbox', { name: '메시지:' }), { target: { value: 'Keep this draft' } });
+    act(() => {
+      queryClient.setQueryData(transmitKeys.list(1), { logs: [postedEntry], total: 21, page: 1, totalPages: 2 });
+    });
+    const next = await screen.findByRole('button', { name: '다음 글 페이지' });
+    expect(screen.getByRole('button', { name: '이전 글 페이지' })).toBeDisabled();
+    await user.click(next);
+    expect(await screen.findByRole('alert')).toHaveTextContent('불러오지 못했습니다');
+    expect(fetchMock).toHaveBeenCalledWith('/api/transmit?page=2');
+    expect(screen.getByRole('button', { name: '다음 글 페이지' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '이전 글 페이지' })).toBeEnabled();
+    await user.click(screen.getByRole('button', { name: '이전 글 페이지' }));
+    expect(await screen.findByText('Hello')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '메시지:' })).toHaveValue('Keep this draft');
+    expect(screen.getByRole('button', { name: '이전 글 페이지' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '다음 글 페이지' })).toBeEnabled();
+  });
+
   it('preserves a draft edited during a delayed submission and gives it a new idempotency key', async () => {
     const submittedKeys: string[] = [];
     let completeSubmission!: (response: Response) => void;
@@ -525,10 +553,13 @@ describe('lineup controls', () => {
     const user = userEvent.setup();
     render(<LangProvider><QueryClientProvider client={queryClient}><LineupPage /></QueryClientProvider></LangProvider>);
     const trigger = screen.getByRole('button', { name: /ARTIST ONE/ });
+    const profile = document.getElementById(trigger.getAttribute('aria-controls')!)!;
     expect(trigger).toHaveAttribute('aria-pressed', 'false');
+    expect(profile).not.toBeVisible();
     trigger.focus();
     await user.keyboard('{Enter}');
     expect(trigger).toHaveAttribute('aria-pressed', 'true');
+    expect(profile).toBeVisible();
     expect(screen.getByRole('heading', { name: 'ARTIST ONE' })).toHaveFocus();
     expect(window.location.search).toBe('?event=live&artist=artist-1');
     await user.click(screen.getByRole('button', { name: 'EN' }));
@@ -537,6 +568,7 @@ describe('lineup controls', () => {
     await user.click(screen.getByRole('button', { name: 'Back to list' }));
     expect(trigger).toHaveFocus();
     expect(trigger).toHaveAttribute('aria-pressed', 'false');
+    expect(profile).not.toBeVisible();
     expect(window.location.search).toBe('?event=live');
     act(() => {
       window.history.replaceState(null, '', '/lineup?event=live&artist=artist-1');
@@ -640,6 +672,8 @@ describe('event page states and optional entry', () => {
     fireEvent.click(screen.getByRole('button', { name: '진행 중·예정' }));
     expect(push).toHaveBeenCalledTimes(1);
     expect(window.location.search).toBe('?view=upcoming&lang=ko');
+    fireEvent.click(screen.getByRole('button', { name: '진행 중·예정' }));
+    expect(push).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
     expect(within(screen.getByRole('main')).queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('신청 시작:');

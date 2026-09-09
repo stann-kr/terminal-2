@@ -26,7 +26,7 @@ export default function TerminalPanel({ children, className = '', bodyClassName 
 
   return <RootTag ref={node => { rootRef.current = node; }} aria-labelledby={title ? titleId : undefined} data-accent={accent} className={`${styles.panel} ${className}`}>
     <span aria-hidden="true" data-panel="line" className={styles.rule} />
-    {title && <TitleTag id={titleId} className={styles.heading}>{title}<span aria-hidden="true">[+]</span></TitleTag>}
+    {title && <TitleTag id={titleId} className={styles.heading}>{title}</TitleTag>}
     <div className={`${styles.body} ${bodyClassName}`}>{children}</div>
   </RootTag>;
 }

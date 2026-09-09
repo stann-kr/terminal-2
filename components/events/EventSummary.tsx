@@ -19,7 +19,6 @@ export default function EventSummary({ event, children, details }: { event: Term
   const description = event.description?.[lang];
   return <section ref={rootRef} className={styles.summary} aria-labelledby={titleId}>
     <div className={styles.information}>
-      <p aria-hidden="true" className={styles.infoHeader}><span>{details ? 'GUEST_REQUEST' : 'EVENT_INFO'}</span><span>[{event.status}]</span></p>
       <div data-event="readout" className={styles.infoBody}>
         <p data-event="status" className={styles.status}><span aria-hidden="true" />{status}</p>
         <h1 data-event="title" id={titleId} className={styles.title}>{event.session}</h1>
@@ -29,16 +28,15 @@ export default function EventSummary({ event, children, details }: { event: Term
           <div><dt>{lang === 'ko' ? '장소' : 'Venue'}</dt><dd>{event.venue}{event.district && <span className={styles.district}> / {event.district}</span>}</dd></div>
         </dl>
         <div className={styles.actions}>{children}</div>
-        {!details && description && <p data-event="description" className={styles.description}>{description}</p>}
+        {description && <p data-event="description" className={styles.description}>{description}</p>}
+        {details}
       </div>
     </div>
     <div className={styles.visual}>
-      <p aria-hidden="true" className={styles.posterHeader}><span>CURRENT_EVENT</span><span>{event.id}</span></p>
       <div data-event="poster" className={styles.posterFrame}>
         <div data-event="surface" className={styles.posterSurface}>
           {hasPoster ? <Image src={event.posterUrl!} alt={`${event.session} ${lang === 'ko' ? '포스터' : 'poster'}`} width={900} height={1200} sizes="(min-width: 1024px) 512px, calc(100vw - 32px)" className={styles.poster} onError={() => setFailedPoster(event.posterUrl)} />
             : <div className={styles.posterFallback}>
-              <span aria-hidden="true" className={styles.cross}>+</span>
               <span aria-hidden="true" className={styles.fallbackLabel}>TERMINAL // {event.date}</span>
               <span aria-hidden="true" className={styles.fallbackTitle}>{event.session}</span>
               <p>{lang === 'ko' ? '공개된 포스터가 없습니다.' : 'No poster is available.'}</p>
@@ -46,8 +44,6 @@ export default function EventSummary({ event, children, details }: { event: Term
         </div>
         <span aria-hidden="true" data-event="progress" className={styles.progress} />
       </div>
-      {details && description && <p data-event="description" className={styles.eventDescription}>{description}</p>}
-      {details}
     </div>
   </section>;
 }

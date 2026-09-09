@@ -95,7 +95,7 @@ describe('request event binding and draft preservation', () => {
     await act(async () => { complete(Response.json({ ok: true })); });
     expect(screen.getByRole('heading', { name: '신청 접수 완료' })).toHaveFocus();
     expect(screen.getByText('접수는 입장 확정을 뜻하지 않습니다.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '라인업 보기' })).toHaveAttribute('href', '/lineup?event=event-1');
+    expect(screen.getByRole('link', { name: '이벤트로 돌아가기' })).toHaveAttribute('href', '/gate?event=event-1');
   });
 
   it('keeps an explicit event query distinct from the current eligible event', () => {

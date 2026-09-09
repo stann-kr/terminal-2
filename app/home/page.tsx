@@ -6,7 +6,6 @@ import HomeMasthead from './HomeMasthead';
 import TerminalButton from '@/components/TerminalButton';
 import TerminalActionLink from '@/components/TerminalActionLink';
 import EventSummary from '@/components/events/EventSummary';
-import DirectoryLink from '@/components/DirectoryLink';
 import { useLang, useT } from '@/lib/langContext';
 import { fetchEvents, eventKeys } from '@/lib/events/client';
 import { getDefaultEvent, getLiveEvents } from '@/lib/events/lifecycle';
@@ -20,11 +19,6 @@ export default function HomePage() {
   const now = useEventClock(events);
   const event = getDefaultEvent(events, now);
   const liveEvents = getLiveEvents(events, now);
-  const links = [
-    { href: '/status', label: lang === 'ko' ? '지난 기록' : 'Event history', description: t.dirDesc.status },
-    { href: '/signal', label: lang === 'ko' ? '소식 신청' : 'Event updates', description: t.dirDesc.signal },
-    { href: '/link', label: lang === 'ko' ? '공식 채널' : 'Official channels', description: t.dirDesc.link },
-  ];
   return (
     <PageLayout width="event" flush>
       <HomeMasthead event={!isLoading && !isError ? event : null} />
@@ -36,10 +30,10 @@ export default function HomePage() {
         </EventSummary>
         : <div role="status" className={styles.state}><h1>{lang === 'ko' ? '이벤트' : 'Events'}</h1><p>{t.home.noEvents}</p></div>}
       {liveEvents.length > 1 && <nav className={styles.liveEvents} aria-label={lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}><h2>{lang === 'ko' ? '진행 중인 다른 이벤트' : 'Other live events'}</h2>{liveEvents.filter(e => e.id !== event?.id).map(e => <Link key={e.id} href={`/gate?event=${encodeURIComponent(e.id)}`}>{e.session}<span aria-hidden="true">↗</span></Link>)}</nav>}
-      <nav className={styles.directory} aria-label={lang === 'ko' ? '더 알아보기' : 'Explore'}>
-        {links.map((link, index) => <DirectoryLink key={link.href} {...link} index={index + 1} />)}
-      </nav>
-      <Link href="/?experience=terminal" className={styles.experience}><span aria-hidden="true">[&gt;]</span>{lang === 'ko' ? '터미널 체험' : 'Terminal experience'}</Link>
+      {!isLoading && !isError && (!event || event.status === 'ARCHIVED') && <p className={styles.updates}>
+        {lang === 'ko' ? '다음 이벤트가 궁금하다면' : 'For news about the next event'}
+        <Link href="/signal">{lang === 'ko' ? '소식 신청' : 'Sign up for updates'} <span aria-hidden="true">→</span></Link>
+      </p>}
     </PageLayout>
   );
 }

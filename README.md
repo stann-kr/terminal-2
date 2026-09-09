@@ -11,13 +11,15 @@ terminal-2 is the STANN OS LIVE surface for `https://terminal.stann.kr`.
 
 ## Event experience
 
-`/` and `/home` open the event overview. The optional boot/sleep experience is available at `/?experience=terminal`. Event selection prefers live events, then the nearest upcoming event, then the latest past event. Dates are displayed in Korea Standard Time. Gate and Lineup preserve the selected event in `?event=`.
+`/` and `/home` open the event overview. The optional boot/sleep experience is linked from About and available at `/?experience=terminal`. Event selection prefers live events, then the nearest upcoming event, then the latest past event. Dates are displayed in Korea Standard Time. Gate and Lineup preserve the selected event in `?event=`.
 
 The interface uses a full-screen black-and-orange workspace with seven directory entries, fixed navigation, and internal content scrolling. Pages and selected event or artist readouts appear in place with a brief phosphor settle. Content remains readable throughout; keyboard, focus, or pointer input immediately completes the effect. The Home time display follows the featured event's start time. Artist profiles can be linked with `/lineup?event=…&artist=…`; changing the event clears its artist selection. Guest requests show a receipt only after the server accepts the submission. A receipt does not confirm admission.
 
+Navigation uses the selected language at every screen size. Event details keep the date, venue, description, and request action together. Lineup opens a profile after an artist is selected; on small screens, the profile replaces the roster and returning restores focus to the selected artist. Guest request and event update forms use a single column. Guestbook pagination appears when another page is available and keeps a return path if a later page fails to load.
+
 One CRT surface covers the full page, including navigation and footer, with thick curved glass, an outer rim, a soft vignette, and phosphor bloom around the text. Reflections and fine surface grain stay still. The header's CRT button switches the treatment off or on and remembers the choice. Surface texture softens around focused controls; reduced motion skips the page settle, and high contrast removes the overlay.
 
-Home uses a lightweight ASCII brand treatment. WebGL is loaded only for the optional terminal experience, subject to motion preferences, visibility, and device support.
+WebGL is loaded only for the optional terminal experience, subject to motion preferences, visibility, and device support.
 
 ## Stack
 

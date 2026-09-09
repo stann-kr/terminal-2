@@ -24,7 +24,7 @@ export default function TerminalActionLink({
   const rootRef = useControlMotion<HTMLAnchorElement>();
   return (
     <Link ref={rootRef} href={href} className={getTerminalButtonClassName(variant, className)}>
-      <TerminalControlContent>{children}</TerminalControlContent>
+      <TerminalControlContent navigation>{children}</TerminalControlContent>
     </Link>
   );
 }

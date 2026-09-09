@@ -22,19 +22,15 @@ export function getActiveDirectory(pathname: string | null) {
     .sort((a, b) => b.href.length - a.href.length)[0];
 }
 
-function DirectoryItem({ item, index, current, onNavigate }: {
-  item: typeof DIRECTORY[number]; index: number; current: boolean; onNavigate: () => void;
+function DirectoryItem({ item, current, onNavigate }: {
+  item: typeof DIRECTORY[number]; current: boolean; onNavigate: () => void;
 }) {
   const { lang } = useLang();
   const ref = useControlMotion<HTMLAnchorElement>();
   return <li className={styles.item}>
     <Link ref={ref} href={item.href} onClick={onNavigate} aria-current={current ? 'page' : undefined} className={styles.link}>
       <span aria-hidden="true" data-control-scan className={styles.scan} />
-      <span data-control-label className={styles.label}>
-        <span aria-hidden="true" className={styles.code}><span>[{String(index + 1).padStart(2, '0')}]</span> {item.code}</span>
-        <span className={styles.name}>{item[lang]}</span>
-      </span>
-      <span aria-hidden="true" data-control-arrow className={styles.marker}>[+]</span>
+      <span data-control-label className={styles.name}>{item[lang]}</span>
     </Link>
   </li>;
 }
@@ -72,7 +68,7 @@ export default function TerminalNavigation({ pathname, displayEffects }: {
     <div className={styles.rail}>
       <Link ref={brandRef} data-shell="brand" href="/home" className={styles.brand} aria-current={pathname === '/' || pathname === '/home' ? 'page' : undefined}>TERMINAL<span aria-hidden="true" className={styles.location}>{' // SEOUL'}</span></Link>
       <div className={styles.utilities}>
-        <Link href="/link" className={styles.channels} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'} <span aria-hidden="true">↗</span></Link>
+        <Link href="/link" className={styles.channels} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'}</Link>
         {displayEffects && <button type="button" className={styles.effects} aria-label={lang === 'ko' ? 'CRT 화면 효과' : 'CRT display effects'} aria-pressed={displayEffects.enabled} title={lang === 'ko' ? `CRT 화면 효과 ${displayEffects.enabled ? '끄기' : '켜기'}` : `Turn CRT effects ${displayEffects.enabled ? 'off' : 'on'}`} onClick={displayEffects.toggle}>CRT</button>}
         <div data-shell="language"><LangToggle className={styles.language} /></div>
         <button ref={menuRef} type="button" className={styles.menu} aria-expanded={isOpen} aria-controls={secondaryId} onClick={() => setIsOpen(open => !open)}>
@@ -81,10 +77,10 @@ export default function TerminalNavigation({ pathname, displayEffects }: {
       </div>
     </div>
     <nav data-shell="navigation" aria-label={lang === 'ko' ? '주요 메뉴' : 'Main navigation'} className={styles.navigation}>
-      <ul className={styles.core}>{DIRECTORY.slice(0, 3).map((item, index) => <DirectoryItem key={item.href} item={item} index={index} current={current?.href === item.href} onNavigate={() => closeMenu(item.href)} />)}</ul>
+      <ul className={styles.core}>{DIRECTORY.slice(0, 3).map(item => <DirectoryItem key={item.href} item={item} current={current?.href === item.href} onNavigate={() => closeMenu(item.href)} />)}</ul>
       <ul ref={secondaryRef} id={secondaryId} className={styles.secondary} data-open={isOpen}>
-        {DIRECTORY.slice(3).map((item, index) => <DirectoryItem key={item.href} item={item} index={index + 3} current={current?.href === item.href} onNavigate={() => closeMenu(item.href)} />)}
-        <li className={styles.mobileChannels}><Link href="/link" onClick={() => closeMenu('/link')} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'} <span aria-hidden="true">↗</span></Link></li>
+        {DIRECTORY.slice(3).map(item => <DirectoryItem key={item.href} item={item} current={current?.href === item.href} onNavigate={() => closeMenu(item.href)} />)}
+        <li className={styles.mobileChannels}><Link href="/link" onClick={() => closeMenu('/link')} aria-current={pathname === '/link' ? 'page' : undefined}>{lang === 'ko' ? '공식 채널' : 'Official channels'}</Link></li>
       </ul>
     </nav>
     <span aria-hidden="true" data-shell="line" className={styles.rule} />

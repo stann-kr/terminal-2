@@ -1,6 +1,5 @@
-.directory { padding-inline: var(--workspace-padding); border-top: 1px solid rgb(var(--color-bg-panel-border)); }
-.experience { display: inline-flex; align-items: center; align-self: flex-start; gap: 0.75rem; min-height: 3.5rem; padding: 1rem var(--workspace-padding); color: rgb(var(--color-text-subdued)); font: 0.875rem / 1.5 var(--font-mono); transition: color 160ms; }
-.experience:hover, .experience:focus-visible { color: rgb(var(--color-accent-primary)); }
+.updates { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1.5rem; padding: 0.75rem var(--workspace-padding); color: rgb(var(--color-text-subdued)); font-size: 0.875rem; line-height: 1.7; }
+.updates a { display: inline-flex; align-items: center; gap: 0.75rem; min-height: 2.75rem; color: rgb(var(--color-text-primary)); text-decoration: underline; text-underline-offset: 0.3em; }
 .state { min-height: 22rem; padding: clamp(2rem, 6vw, 5rem) var(--workspace-padding); display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
 .state h1 { font: 700 clamp(1.75rem, 4vw, 2.5rem) / 1.3 var(--font-mono); }
 .state p { max-width: 60ch; color: rgb(var(--color-text-subdued)); }

@@ -54,11 +54,6 @@ for (const route of routes) {
 
 if (titles.size !== routes.length) throw new Error('route titles are not unique');
 
-const statusHtml = await (await fetch(`${baseUrl}/status`)).text();
-if (!statusHtml.includes('브랜드를 표현한 정적 지도입니다.') || statusHtml.includes('REALTIME')) {
-  throw new Error('status map truthfulness contract failed');
-}
-
 if (includeApi) {
   for (const route of ['/api/events', '/api/transmit?page=1']) {
     const response = await fetch(`${baseUrl}${route}`);

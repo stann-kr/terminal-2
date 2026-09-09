@@ -23,14 +23,16 @@ export default function LineupPage() {
   const now = useEventClock(events);
   const selectedEvent = selectEvent(events, selectedId, now);
   const selectedArtist = selectedEvent?.artists.find(artist => artist.id === artistId);
-  const hasArtists = Boolean(selectedEvent?.artists.length);
   const profileId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const focusProfile = useRef(false);
+  const focusRoster = useRef<string | null>(null);
 
   useEffect(() => {
     if (focusProfile.current && selectedArtist) headingRef.current?.focus();
+    if (focusRoster.current && !selectedArtist) document.getElementById(getArtistTriggerId(focusRoster.current))?.focus();
     focusProfile.current = false;
+    focusRoster.current = null;
   }, [selectedArtist]);
 
   const selectArtist = (id: string) => {
@@ -40,9 +42,8 @@ export default function LineupPage() {
     setArtistId(id, { event: selectedEvent!.id });
   };
   const returnToRoster = () => {
-    const previousId = selectedArtist?.id;
+    focusRoster.current = selectedArtist?.id ?? null;
     setArtistId('');
-    if (previousId) document.getElementById(getArtistTriggerId(previousId))?.focus();
   };
 
   return <PageLayout width="event" flush>
@@ -58,16 +59,16 @@ export default function LineupPage() {
             <TerminalActionLink variant="ghost" href={`/gate?event=${encodeURIComponent(selectedEvent.id)}`}>{lang === 'ko' ? '이벤트 보기' : 'View event'}</TerminalActionLink>
           </div>
         </div>
-        <div className={styles.workspace}>
+        <div className={styles.workspace} data-has-profile={Boolean(selectedArtist)}>
           <div className={styles.roster}>
-            <p className={styles.rosterHeader}><span aria-hidden="true">ARTIST_ROSTER</span><span>{t.lineup.actCount(selectedEvent.artists.length)}</span></p>
+            <p className={styles.rosterHeader}><span>{lang === 'ko' ? '이름을 선택하면 소개를 볼 수 있습니다.' : 'Select a name to read their biography.'}</span><span>{t.lineup.actCount(selectedEvent.artists.length)}</span></p>
+            {artistId && !selectedArtist && <p role="status" className={styles.state}>{lang === 'ko' ? '선택한 아티스트를 이 행사에서 찾을 수 없습니다. 명단에서 다시 선택해 주세요.' : 'This artist is not in this event. Choose from the roster.'}</p>}
             {selectedEvent.artists.length ? <ul aria-label={t.lineup.colArtist}>{selectedEvent.artists.map((artist, index) => <li key={artist.id}><ArtistRow artist={artist} index={index} selected={selectedArtist?.id === artist.id} profileId={profileId} onSelect={() => selectArtist(artist.id)} /></li>)}</ul>
               : <p role="status" className={styles.state}>{lang === 'ko' ? '아직 공개된 아티스트가 없습니다.' : 'The lineup has not been announced yet.'}</p>}
             <p className={styles.rosterNote}>{selectedEvent.status === 'ARCHIVED' ? t.lineup.footerArchived : t.lineup.footerUpcoming}</p>
           </div>
-          <div id={profileId} className={styles.profileRegion}>
-            {selectedArtist ? <ArtistProfile key={selectedArtist.id} artist={selectedArtist} event={selectedEvent} headingRef={headingRef} onReturn={returnToRoster} />
-              : <section className={styles.context} aria-labelledby="lineup-context-title"><span aria-hidden="true" className={styles.contextMark}>[+]</span><h2 id="lineup-context-title">{hasArtists ? (lang === 'ko' ? '아티스트를 만나보세요' : 'Meet the artists') : (lang === 'ko' ? '공개된 라인업이 없습니다.' : 'No lineup has been announced.')}</h2><p>{artistId ? (lang === 'ko' ? '선택한 아티스트를 이 행사에서 찾을 수 없습니다. 명단에서 다시 선택해 주세요.' : 'This artist is not in this event. Choose from the roster.') : !hasArtists ? (lang === 'ko' ? '이벤트 정보는 계속 확인할 수 있습니다.' : 'You can still explore the event details.') : (lang === 'ko' ? '명단에서 아티스트를 선택하면 출연 정보와 소개를 볼 수 있습니다.' : 'Choose an artist to view their set details and biography.')}</p><p>{selectedEvent.session} · {t.lineup.actCount(selectedEvent.artists.length)}</p></section>}
+          <div id={profileId} className={styles.profileRegion} hidden={!selectedArtist}>
+            {selectedArtist && <ArtistProfile key={selectedArtist.id} artist={selectedArtist} headingRef={headingRef} onReturn={returnToRoster} />}
           </div>
         </div>
         <p className="sr-only" aria-live="polite">{selectedArtist ? (lang === 'ko' ? '선택한 아티스트: ' : 'Selected artist: ') + selectedArtist.name : ''}</p>

@@ -23,7 +23,7 @@ export default function PageHeader({ path, title, accent = 'primary', cipher = f
   const accentClass = accentClassMap[accent] || accentClassMap.primary;
   return (
     <div className={styles.header}>
-      <p data-heading="path" aria-hidden="true" className={styles.path}><span>&gt; {path.split('/').filter(Boolean).slice(-1)[0]?.replace(/-/g, '_').toUpperCase()}</span><span>[TERMINAL]</span></p>
+      <p data-heading="path" aria-hidden="true" className={styles.path}>{path.split('/').filter(Boolean).slice(-1)[0]?.replace(/-/g, '_').toUpperCase()}</p>
       <HeadingText
         text={title}
         cipher={cipher}

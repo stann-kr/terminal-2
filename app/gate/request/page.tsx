@@ -14,7 +14,6 @@ import { formatEventDate } from '@/lib/events/lifecycle';
 import type { TerminalEvent } from '@/lib/events/types';
 import { ACCESS_WINDOW_DAYS } from '@/lib/gate/requestPolicy';
 import { useAccessRequest } from './useAccessRequest';
-import RequestStatusPanel from './RequestStatusPanel';
 import RequestReceipt from './RequestReceipt';
 import styles from './RequestPage.module.css';
 
@@ -51,7 +50,8 @@ export default function RequestAccessPage() {
 
   return (
     <PageLayout centerContent={false} width="event" flush>
-      <div className={styles.returnBar}><ReturnLink href={gateHref} text={lang === 'ko' ? '이벤트로 돌아가기' : 'Back to event'} /></div>
+      <div className={styles.page}>
+      {!submitted && <div className={styles.returnBar}><ReturnLink href={gateHref} text={lang === 'ko' ? '이벤트로 돌아가기' : 'Back to event'} /></div>}
       <PageHeader path="/gate/request" title={lang === 'ko' ? '게스트 신청' : 'Guest request'} accent="secondary" />
 
       {event && !submitted && <RequestEventSummary event={event} lang={lang} />}
@@ -131,7 +131,7 @@ export default function RequestAccessPage() {
                         <span className="text-terminal-muted">···</span>
                       ) : isCodeVerified ? (
                         <span className="text-terminal-accent-secondary">✓</span>
-                      ) : form.accessCode ? (
+                      ) : codeState.kind === 'invalid' ? (
                         <span className="text-terminal-accent-alert">✗</span>
                       ) : null}
                     </span>
@@ -226,7 +226,7 @@ export default function RequestAccessPage() {
                         id="request-invitedBy"
                         htmlFor="request-accessCode"
                         aria-live="off"
-                        className="flex min-h-11 items-center gap-3 border border-terminal-accent-secondary/30 px-3 py-2 font-mono text-small tracking-wider text-terminal-primary"
+                        className={styles.inviter}
                       >
                         <span className="text-terminal-accent-secondary" aria-hidden="true">
                           {isCodeVerified ? '✓' : '○'}
@@ -274,9 +274,9 @@ export default function RequestAccessPage() {
             </>
           )}
           </div>
-          {(eventState.kind !== 'inactive' || needsTargetReview) && <RequestStatusPanel codeState={codeState} isCodeVerified={isCodeVerified} needsTargetReview={needsTargetReview} isSubmitting={isSubmitting} />}
         </div>
       )}
+      </div>
     </PageLayout>
   );
 }

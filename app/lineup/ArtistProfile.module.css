@@ -1,19 +1,13 @@
-.profile { min-width: 0; background: rgb(var(--color-bg-panel)); }
-.profileHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding: 0.5rem var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); font: 0.75rem / 1.5 var(--font-mono); }
+.profile { min-width: 0; }
+.profileHeader { display: flex; align-items: center; padding: 0.5rem var(--workspace-padding); }
 .profileHeader button { padding-inline: 0.75rem; }
-.waveform { position: relative; display: flex; justify-content: center; align-items: center; height: 7.5rem; overflow: hidden; background: rgb(var(--color-bg-base)); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
-.waveform pre { font: 10px / 10px var(--font-mono); letter-spacing: 0; white-space: pre; color: rgb(var(--color-accent-primary)); opacity: 0.6; }
-.rule { position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: rgb(var(--color-accent-primary)); transform-origin: left; }
-.scan { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: rgb(var(--color-accent-primary)); transform-origin: left; }
 .body { padding: var(--workspace-padding); }
 .body h2 { font: 700 clamp(1.75rem, 3vw, 2.75rem) / 1.3 var(--font-mono); overflow-wrap: anywhere; margin-bottom: 1.5rem; }
 .body h2:focus { outline: none; }
-.data > div { display: grid; grid-template-columns: 10ch minmax(0, 1fr); gap: 1rem; padding-block: 0.875rem; border-bottom: 1px dashed rgb(var(--color-bg-panel-border)); }
+.data > div { display: grid; grid-template-columns: 10ch minmax(0, 1fr); gap: 1rem; padding-block: 0.5rem; }
 .data dt { color: rgb(var(--color-text-subdued)); font-size: 0.875rem; }
 .data dd { font: 0.875rem / 1.6 var(--font-mono); overflow-wrap: anywhere; }
 .biography { padding-top: 2rem; max-width: 68ch; }
 .biography h3 { font: 700 0.875rem / 1.5 var(--font-mono); margin-bottom: 1rem; color: rgb(var(--color-text-subdued)); }
 .biography p { white-space: pre-wrap; line-height: 1.8; overflow-wrap: anywhere; }
 .biography p + p { margin-top: 1rem; }
-.event { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgb(var(--color-bg-panel-border)); }
-.event > p { margin-bottom: 1rem; font-size: 0.875rem; color: rgb(var(--color-text-subdued)); }

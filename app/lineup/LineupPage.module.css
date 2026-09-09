@@ -9,12 +9,9 @@
 .eventActions select { max-width: 100%; min-height: 3rem; padding: 0.75rem; border: 1px solid rgb(var(--color-text-muted)); background: rgb(var(--color-bg-panel)); color: rgb(var(--color-text-primary)); }
 .workspace { display: grid; min-width: 0; }
 .roster, .profileRegion { min-width: 0; }
-.rosterHeader { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem 1rem; padding: 0.75rem var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); color: rgb(var(--color-accent-primary)); font: 700 0.75rem / 1.5 var(--font-mono); }
+.rosterHeader { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem 1rem; padding: 1rem var(--workspace-padding); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); color: rgb(var(--color-text-subdued)); font-size: 0.8125rem; line-height: 1.6; }
 .rosterNote { padding: var(--workspace-padding); font-size: 0.875rem; color: rgb(var(--color-text-subdued)); }
 .profileRegion { border-top: 1px solid rgb(var(--color-bg-panel-border)); }
-.context { min-height: 20rem; padding: clamp(2rem, 5vw, 4rem) var(--workspace-padding); }
-.contextMark { color: rgb(var(--color-accent-primary)); font: 2rem / 1 var(--font-mono); }
-.context h2 { margin-top: 2rem; font: 700 1.5rem / 1.4 var(--font-mono); }
-.context p { max-width: 52ch; margin-top: 1rem; line-height: 1.7; color: rgb(var(--color-text-subdued)); }
 .state { display: flex; flex-direction: column; align-items: start; gap: 1rem; padding: 2rem var(--workspace-padding); }
-@media (min-width: 1024px) { .workspace { grid-template-columns: minmax(0, 36fr) minmax(0, 64fr); } .profileRegion { border-top: 0; border-left: 1px solid rgb(var(--color-bg-panel-border)); } }
+@media (max-width: 1023px) { .workspace[data-has-profile='true'] .roster { display: none; } }
+@media (min-width: 1024px) { .workspace[data-has-profile='true'] { grid-template-columns: minmax(0, 36fr) minmax(0, 64fr); } .profileRegion { border-top: 0; border-left: 1px solid rgb(var(--color-bg-panel-border)); } }
