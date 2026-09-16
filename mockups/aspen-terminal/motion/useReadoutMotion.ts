@@ -1,5 +1,6 @@
 import { useRef, type RefObject } from 'react';
 import { gsap, useGSAP, useMotionEnabled } from './MotionProvider';
+import { measureReadout, readoutText } from './readoutLines';
 
 interface ReadoutOptions {
   key: string;
@@ -7,68 +8,91 @@ interface ReadoutOptions {
   titles?: string;
   content?: string;
   controls?: string;
+  updates?: string;
+  contentKey?: string;
 }
 
-/** Print into a visual text layer while canonical content stays in place. */
-export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, active = true, titles, content, controls }: ReadoutOptions) {
+/** Print text in place, one rendered line at a time; the frame never animates. */
+export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, active = true, titles, content, controls, updates, contentKey }: ReadoutOptions) {
   const enabled = useMotionEnabled();
-  const previous = useRef<{ key: string; active: boolean } | null>(null);
+  const previous = useRef<{ key: string; active: boolean; contentKey?: string; element: HTMLElement | null } | null>(null);
 
   useGSAP(() => {
-    const changed = !previous.current || previous.current.key !== key || previous.current.active !== active;
-    previous.current = { key, active };
+    const last = previous.current;
     const element = root.current;
-    // Returning to a tab or switching CRT on must not replay the current screen.
+    const changed = !last || last.key !== key || last.active !== active || last.contentKey !== contentKey || last.element !== element;
+    previous.current = { key, active, contentKey, element };
+    // Tab/policy restoration doesn't replay content already shown.
     if (!enabled || !active || !changed || !element || element.closest('[hidden]')) return;
-    const select = (selector?: string) => selector
-      ? Array.from(element.querySelectorAll<HTMLElement>(selector)).filter(node => !node.closest('[hidden]')).slice(0, 16)
-      : [];
-    const headingNodes = select(titles);
-    const contentNodes = select(content);
-    const controlNodes = select(controls);
-    const sequence = gsap.timeline({ defaults: { ease: 'none' } });
-    sequence.addLabel('print', 0).addLabel('readout', 0.09);
-    if (headingNodes.length) sequence.fromTo(headingNodes, { opacity: 0.78 }, { opacity: 1, duration: 0.1, clearProps: 'opacity' }, 'print');
-    if (contentNodes.length) sequence.fromTo(contentNodes, { opacity: 0.8 }, { opacity: 1, duration: 0.08, ease: 'steps(2)', stagger: { amount: 0.12 }, clearProps: 'opacity' }, 'readout');
-    if (controlNodes.length) sequence.fromTo(controlNodes, { opacity: 0.85 }, { opacity: 1, duration: 0.08, clearProps: 'opacity' }, 'readout');
-    const outputs: HTMLElement[] = [];
+    const partial = last?.active && last.element === element && last.contentKey === contentKey;
+    const selector = partial && updates ? updates : [titles, content, controls].filter(Boolean).join(',');
+    const containers = selector === ':scope' ? [element] : selector ? Array.from(element.querySelectorAll<HTMLElement>(selector)) : [];
     const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-    headingNodes.forEach((heading, index) => {
-      const source = heading.querySelector<HTMLElement>('[data-readout-source]');
-      const output = heading.querySelector<HTMLElement>('[data-readout-output]');
-      if (!source || !output) return;
-      const characters = Array.from(segmenter.segment(source.textContent ?? ''), item => item.segment);
-      if (!characters.length || characters.length > 96) return;
-      outputs.push(output);
-      const progress = { count: 0 };
-      const start = Math.min(index * 0.025, 0.075);
-      const duration = Math.min(0.26, Math.max(0.09, characters.length * 0.014));
-      sequence.set(source, { opacity: 0 }, start)
-        .to(progress, {
-          count: characters.length, duration,
+    const readouts = readoutText(element, containers).map(node => {
+      const source = node.querySelector<HTMLElement>('[data-readout-source]');
+      const output = node.querySelector<HTMLElement>('[data-readout-output]');
+      const characters = source && output ? Array.from(segmenter.segment(source.textContent ?? ''), item => item.segment) : [];
+      const typed = characters.length > 0 && characters.length <= 96;
+      return { ...measureReadout(source ?? node), source, output, characters, typed };
+    }).sort((a, b) => Math.abs(a.top - b.top) < 3 ? a.left - b.left : a.top - b.top);
+    if (!readouts.length) return;
+    const durationFor = (item: typeof readouts[number]) => item.typed ? Math.min(0.22, Math.max(0.09, item.characters.length * 0.012)) : item.bottoms.length * 0.045;
+    const total = readouts.reduce((sum, item) => sum + durationFor(item), 0);
+    const speed = Math.min(1, 1.4 / total);
+    const initialWidth = element.clientWidth;
+    const initialHeight = element.clientHeight;
+    const sequence = gsap.timeline({ defaults: { ease: 'none' } });
+    let position = 0;
+    // All geometry above is read before any style writes below.
+    readouts.forEach(item => {
+      const duration = durationFor(item) * speed;
+      sequence.set(item.node, { opacity: 0 }, 0);
+      if (item.typed && item.source && item.output) {
+        const output = item.output;
+        const progress = { count: 0 };
+        sequence.to(progress, {
+          count: item.characters.length, duration,
           onUpdate: () => {
             const count = Math.floor(progress.count);
-            output.setAttribute('data-readout-output', characters.slice(0, count).join('') + (count < characters.length ? '▌' : ''));
+            output.setAttribute('data-readout-output', item.characters.slice(0, count).join('') + (count < item.characters.length ? '▌' : ''));
           },
-        }, start)
-        .set(source, { clearProps: 'opacity' }, start + duration)
-        .call(() => output.setAttribute('data-readout-output', ''), [], start + duration);
+        }, position)
+          .set(item.source, { clearProps: 'opacity' }, position + duration)
+          .call(() => output.setAttribute('data-readout-output', ''), [], position + duration);
+      } else {
+        item.bottoms.forEach((bottom, index) => {
+          sequence.set(item.node, { opacity: 1, clipPath: `inset(-0.15em -0.15em ${bottom ? `${bottom}px` : '-0.15em'} -0.15em)` }, position + index * duration / item.bottoms.length);
+        });
+        sequence.set(item.node, { clearProps: 'opacity,clipPath' }, position + duration);
+      }
+      position += duration;
     });
 
-    // Focus and input take effect immediately, including rapid route changes.
-    // Programmatic heading focus is part of navigation, not an interruption.
+    // Input, resize and font changes settle the output without moving content.
     const finish = () => { sequence.progress(1); };
+    const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
+      if (element.clientWidth !== initialWidth || element.clientHeight !== initialHeight) finish();
+    }) : null;
+    resize?.observe(element);
+    const interactionRoot = element.closest('main') ?? element;
     const onFocus = (event: FocusEvent) => {
       if (event.target instanceof Element && event.target.closest('input,textarea,select,button,a')) finish();
     };
-    element.addEventListener('pointerdown', finish, true);
-    element.addEventListener('keydown', finish, true);
-    element.addEventListener('focusin', onFocus);
+    interactionRoot.addEventListener('pointerdown', finish, true);
+    interactionRoot.addEventListener('keydown', finish, true);
+    interactionRoot.addEventListener('input', finish, true);
+    interactionRoot.addEventListener('focusin', onFocus);
+    window.addEventListener('resize', finish);
+    document.fonts?.addEventListener('loadingdone', finish);
     return () => {
-      outputs.forEach(output => output.setAttribute('data-readout-output', ''));
-      element.removeEventListener('pointerdown', finish, true);
-      element.removeEventListener('keydown', finish, true);
-      element.removeEventListener('focusin', onFocus);
+      readouts.forEach(item => item.output?.setAttribute('data-readout-output', ''));
+      resize?.disconnect();
+      interactionRoot.removeEventListener('pointerdown', finish, true);
+      interactionRoot.removeEventListener('keydown', finish, true);
+      interactionRoot.removeEventListener('input', finish, true);
+      interactionRoot.removeEventListener('focusin', onFocus);
+      window.removeEventListener('resize', finish);
+      document.fonts?.removeEventListener('loadingdone', finish);
     };
-  }, { scope: root, dependencies: [key, active, enabled, titles, content, controls], revertOnUpdate: true });
+  }, { scope: root, dependencies: [key, active, enabled, titles, content, controls, updates, contentKey], revertOnUpdate: true });
 }

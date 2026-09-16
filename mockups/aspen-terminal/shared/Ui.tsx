@@ -13,7 +13,7 @@ export function PageHeading({ code, title, children }: { code: string; title: st
 
 export function EventPicker({ events, event, t, page }: Pick<ScreenProps, 'event' | 'events' | 't'> & { page: Page }) {
   if (events.length < 2) return null;
-  return <label className="tm-event-picker">{t('이벤트 선택', 'Select event')}<select value={event?.id ?? ''} onChange={e => { window.location.hash = href(page, e.target.value).slice(1); }}>{!event && <option value="" disabled>{t('이벤트를 선택해 주세요', 'Choose an event')}</option>}{events.map(item => <option key={item.id} value={item.id}>{item.session} · {item.date}</option>)}</select></label>;
+  return <label className="tm-event-picker"><span>{t('이벤트 선택', 'Select event')}</span><select value={event?.id ?? ''} onChange={e => { window.location.hash = href(page, e.target.value).slice(1); }}>{!event && <option value="" disabled>{t('이벤트를 선택해 주세요', 'Choose an event')}</option>}{events.map(item => <option key={item.id} value={item.id}>{item.session} · {item.date}</option>)}</select></label>;
 }
 
 export function NoEvent({ t, invalid = false }: { t: Translate; invalid?: boolean }) {

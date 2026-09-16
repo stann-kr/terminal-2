@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../mockups/aspen-terminal/App';
 import { ENTRY_VISIT_KEY, chooseEntryLanguage, completeEntryVisit } from '../mockups/aspen-terminal/entry/visitState';
 import { gsap } from '../mockups/aspen-terminal/motion/MotionProvider';
+import { measureReadout } from '../mockups/aspen-terminal/motion/readoutLines';
 
 function active() {
   const element = document.querySelector<HTMLElement>('[data-active="true"]');
@@ -178,6 +179,25 @@ describe('isolated Aspen terminal mockup', () => {
 });
 
 describe('mockup motion continuity', () => {
+  it('keeps inline fragments on one output line and reveals the next wrapped line separately', () => {
+    const paragraph = document.createElement('p');
+    paragraph.innerHTML = '첫 줄 <strong>강조</strong><br>Second line';
+    vi.spyOn(paragraph, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 200, 56));
+    const range = document.createRange();
+    Object.defineProperty(range, 'getClientRects', { value: () => [
+      new DOMRect(0, 0, 160, 20), new DOMRect(165, 4, 30, 14),
+      new DOMRect(0, 28, 150, 20),
+    ] });
+    vi.spyOn(document, 'createRange').mockReturnValue(range);
+    const { bottoms } = measureReadout(paragraph);
+    expect(bottoms).toHaveLength(2);
+    const firstLineEdge = 56 - bottoms[0];
+    expect(firstLineEdge).toBeGreaterThanOrEqual(20);
+    expect(firstLineEdge).toBeLessThanOrEqual(28);
+    expect(bottoms[1]).toBe(0);
+    expect(paragraph.textContent).toBe('첫 줄 강조Second line');
+  });
+
   it('keeps drafts and pending results usable across rapid routes and CRT changes', async () => {
     vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
@@ -217,10 +237,10 @@ describe('mockup motion continuity', () => {
     const title = active().getByRole('heading', { level: 1 });
     expect(title).toHaveAccessibleName('TERMINAL');
     expect(title).toHaveTextContent(/^TERMINAL$/);
-    expect(gsap.getTweensOf(title)).not.toHaveLength(0);
+    expect(gsap.getTweensOf(title.querySelector('[data-readout-source]'))).not.toHaveLength(0);
     reduced = true;
     act(() => preference.dispatchEvent(new Event('change')));
-    expect(gsap.getTweensOf(title)).toHaveLength(0);
+    expect(gsap.getTweensOf(title.querySelector('[data-readout-source]'))).toHaveLength(0);
     expect(title).toBeVisible();
     expect(title.querySelector('[data-readout-source]')).toBeVisible();
     expect(title.querySelector('[data-readout-output]')).toHaveAttribute('data-readout-output', '');
@@ -230,7 +250,7 @@ describe('mockup motion continuity', () => {
     reduced = false;
     act(() => preference.dispatchEvent(new Event('change')));
     expect(nextTitle).toBeVisible();
-    expect(gsap.getTweensOf(nextTitle)).toHaveLength(0);
+    expect(gsap.getTweensOf(nextTitle.querySelector('[data-readout-source]'))).toHaveLength(0);
     const menu = screen.getByRole('button', { name: /메뉴/ });
     fireEvent.click(menu);
     expect(menu).toHaveAttribute('aria-expanded', 'true');
@@ -258,9 +278,34 @@ describe('mockup motion continuity', () => {
         expect(heading.querySelector('[data-readout-source]')).toBeVisible();
         expect(heading.querySelector('[data-readout-output]')).toHaveAttribute('data-readout-output', '');
       }
-    });
+    }, { timeout: 2500 });
     expect(active().getByRole('heading', { level: 1 })).toHaveAccessibleName('Official channels');
     expect(active().queryByText('About TERMINAL')).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('settles every content region on input or resize while keeping fields and drafts available', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    await navigate('/transmit');
+    render(<App />);
+    const field = active().getByLabelText('별칭');
+    expect(field).toBeVisible();
+    expect(field).toBeEnabled();
+    const empty = active().getByText('게시된 글이 없습니다.');
+    expect(empty.textContent).toBe('게시된 글이 없습니다.');
+    fireEvent.input(field, { target: { value: 'LINE_TEST' } });
+    expect(field).toHaveValue('LINE_TEST');
+    expect(empty).toBeVisible();
+    expect(empty.style.clipPath).toBe('');
+    await navigate('/about');
+    fireEvent(window, new Event('resize'));
+    for (const text of document.querySelectorAll<HTMLElement>('[data-active=true] p')) {
+      expect(text).toBeVisible();
+      expect(text.style.clipPath).toBe('');
+    }
+    await navigate('/transmit');
+    expect(active().getByLabelText('별칭')).toHaveValue('LINE_TEST');
     expect(fetch).not.toHaveBeenCalled();
   });
 });
