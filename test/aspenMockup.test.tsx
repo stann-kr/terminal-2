@@ -177,6 +177,15 @@ describe('isolated Aspen terminal mockup', () => {
 });
 
 describe('mockup boot and automatic language', () => {
+  function expectEntryOnly() {
+    expect(screen.queryByRole('banner')).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /주요 메뉴|Main navigation/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /CRT 화면 효과|CRT display effects/ })).not.toBeInTheDocument();
+    expect(document.querySelector('.tm-review')).not.toBeVisible();
+    expect(screen.getByText('STANN OS / LIVE')).not.toBeVisible();
+  }
+
   it.each([
     { languages: ['ja-JP', 'ko-KR', 'en-US'], language: 'ja-JP', expected: 'ko' },
     { languages: ['en-GB', 'ko-KR'], language: 'en-GB', expected: 'en' },
@@ -188,6 +197,7 @@ describe('mockup boot and automatic language', () => {
     await navigate('/entry?mode=boot');
     render(<App />);
     expect(document.documentElement.lang).toBe(expected);
+    expectEntryOnly();
     expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
     expect(active().queryByRole('button', { name: /한국어|English/ })).not.toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
@@ -198,16 +208,23 @@ describe('mockup boot and automatic language', () => {
     await navigate('/entry');
     const first = render(<App />);
     expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
+    expectEntryOnly();
     const shell = document.querySelector('.tm-shell');
     await user.click(active().getByRole('button', { name: '[ ENTER TERMINAL ]' }));
     await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
     expect(document.querySelector('.tm-shell')).toBe(shell);
+    expect(screen.getByRole('banner')).toBeVisible();
+    expect(screen.getByRole('navigation', { name: '주요 메뉴' })).toBeVisible();
+    expect(screen.getByRole('contentinfo')).toBeVisible();
+    expect(document.querySelector('.tm-review')).toBeVisible();
+    expect(active().getByRole('heading', { level: 1 })).toHaveFocus();
     expect(JSON.parse(window.localStorage.getItem(ENTRY_VISIT_KEY)!)).toEqual({ visited: true });
     first.unmount();
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US']);
     await navigate('/entry');
     render(<App />);
     expect(active().getByRole('region', { name: 'Idle screen' })).toBeInTheDocument();
+    expectEntryOnly();
     expect(active().getByRole('timer')).toHaveTextContent(/\d{2}:\d{2}:\d{2}/);
     await user.click(active().getByRole('button', { name: 'Return to events' }));
     await waitFor(() => expect(active().getByRole('link', { name: /View archive/ })).toBeInTheDocument());
@@ -215,9 +232,10 @@ describe('mockup boot and automatic language', () => {
 
   it('prioritizes an explicit language choice over browser preferences and preserves it on reload', async () => {
     const user = userEvent.setup();
-    await navigate('/entry?mode=boot');
     const first = render(<App />);
     await user.click(screen.getByRole('button', { name: '영어로 보기' }));
+    await navigate('/entry?mode=boot');
+    expectEntryOnly();
     expect(active().getByText('Your saved language')).toBeInTheDocument();
     first.unmount();
     render(<App />);
@@ -244,28 +262,36 @@ describe('mockup boot and automatic language', () => {
     await navigate('/entry?mode=boot');
     render(<App />);
     expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
+    expectEntryOnly();
     await waitFor(() => expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled(), { timeout: 4000 });
     expect(window.location.hash).toBe('#/entry?mode=boot');
+    expectEntryOnly();
+    fireEvent.click(active().getByRole('button', { name: '[ ENTER TERMINAL ]' }));
+    await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: '부팅 다시 보기' }));
+    await waitFor(() => expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled());
     expect(active().queryByRole('button', { name: '[ ENTER TERMINAL ]' })).not.toBeInTheDocument();
     fireEvent.click(active().getByRole('button', { name: '애니메이션 건너뛰기' }));
     expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
     expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
+    expectEntryOnly();
   });
 
-  it('finishes immediately on CRT OFF and lets a direct exit cancel the boot while preserving a draft', async () => {
+  it('respects CRT OFF chosen before boot and lets a direct exit cancel the boot while preserving a draft', async () => {
     const user = userEvent.setup();
     vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     await navigate('/signal');
     render(<App />);
     await user.type(active().getByLabelText('이메일'), 'draft@example.com');
+    fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
     await navigate('/entry?mode=boot');
-    fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
     expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    expectEntryOnly();
+    await navigate('/signal');
     fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
-    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
-    fireEvent.click(screen.getByRole('button', { name: '부팅 다시 보기' }));
+    await navigate('/entry?mode=boot');
+    expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
     await user.click(active().getByRole('link', { name: '이벤트 바로 보기 ↗' }));
     await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
     expect(window.localStorage.getItem(ENTRY_VISIT_KEY)).toBeNull();
