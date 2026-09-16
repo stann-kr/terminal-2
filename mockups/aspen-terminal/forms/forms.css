@@ -1,6 +1,6 @@
-.tm-contact-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); min-height: max(590px,calc(100dvh - 185px)); }
-.tm-contact-context { display: flex; flex-direction: column; align-items: start; gap: 32px; border-right: 1px solid var(--tm-line); }
-.tm-contact-context > h1 { font: clamp(3rem,8cqi,8rem)/.95 var(--tm-display); letter-spacing: -.025em; color: var(--tm-accent); }
+.tm-contact-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); flex: 1 0 auto; }
+.tm-contact-context { display: flex; flex-direction: column; align-items: start; gap: clamp(20px,4cqb,32px); border-right: 1px solid var(--tm-line); }
+.tm-contact-context > h1 { font: clamp(3rem,min(8cqi,16cqb),8rem)/.95 var(--tm-display); letter-spacing: -.025em; color: var(--tm-accent); }
 .tm-contact-context-bottom { margin-top: auto; width: 100%; }
 .tm-contact-context-bottom > h2 { font-size: clamp(1.3rem,2cqi,2rem); margin-bottom: 24px; }
 .tm-contact-context-bottom h3 { font: 1.5rem/1.4 var(--tm-display); }
@@ -8,8 +8,8 @@
 .tm-contact-notice { border-top: 1px solid var(--tm-line); margin-top: 30px; padding-top: 24px; max-width: 50ch; display: grid; gap: 12px; font-size: .875rem; line-height: 1.9; }
 .tm-contact-context .tm-prose { font-size: 1rem; }
 .tm-contact-input { min-width: 0; }
-.tm-contact-form,.tm-contact-result { width: 100%; max-width: 42rem; margin-inline: auto; display: flex; flex-direction: column; gap: 28px; }
-.tm-contact-fields { margin: 0; padding: 0; border: 0; display: grid; gap: 24px; min-width: 0; }
+.tm-contact-form,.tm-contact-result { width: 100%; max-width: 42rem; margin-inline: auto; display: flex; flex-direction: column; gap: clamp(16px,3cqb,28px); }
+.tm-contact-fields { margin: 0; padding: 0; border: 0; display: grid; gap: clamp(16px,3cqb,24px); min-width: 0; }
 .tm-form-field { display: grid; gap: 10px; }
 .tm-form-field > label { font-size: .875rem; }
 .tm-form-field input { font-family: var(--tm-mono); }
@@ -28,7 +28,7 @@
 .tm-contact-result dl { padding-block: 20px; border-block: 1px solid var(--tm-line); display: grid; gap: 20px; }
 .tm-contact-result dt { font-size: .75rem; color: var(--tm-muted); }
 .tm-contact-result dd { margin-top: 8px; }
-.tm-form-closed { display: flex; flex-direction: column; align-items: start; gap: 36px; }
+.tm-form-closed { display: flex; flex-direction: column; align-items: start; gap: clamp(20px,3.5cqb,36px); }
 .tm-form-closed h1 { font: clamp(2rem,4.7cqi,5rem)/1.4 var(--tm-display); white-space: pre-line; word-break: keep-all; }
 .tm-closed-event { display: grid; gap: 14px; }
 .tm-closed-event h2 { font: 1.6rem/1.4 var(--tm-display); }
