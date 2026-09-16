@@ -1,9 +1,5 @@
-import { useRef, useState, useSyncExternalStore, type RefObject } from 'react';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-
-// This bundle is independent of the Next app and owns its own GSAP registration.
-gsap.registerPlugin(useGSAP);
+import { useRef, useState, type RefObject } from 'react';
+import { gsap, useGSAP, useMotionEnabled } from '../motion/MotionProvider';
 
 export const BOOT_LINES = [
   ['DISPLAY FRAME', 'READY'],
@@ -23,31 +19,8 @@ const OUTPUT_CUES = [
 ] as const;
 
 type Phase = 'startup' | 'handoff' | 'ready';
-type Connection = EventTarget & { saveData?: boolean };
-const connection = () => (navigator as Navigator & { connection?: Connection }).connection;
-
-function readMotionPreference() {
-  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    && document.visibilityState !== 'hidden'
-    && !connection()?.saveData;
-}
-
-function subscribeMotionPreference(change: () => void) {
-  const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const network = connection();
-  media.addEventListener('change', change);
-  document.addEventListener('visibilitychange', change);
-  network?.addEventListener('change', change);
-  return () => {
-    media.removeEventListener('change', change);
-    document.removeEventListener('visibilitychange', change);
-    network?.removeEventListener('change', change);
-  };
-}
-
-export function useBootSequence(root: RefObject<HTMLElement | null>, crt: boolean) {
-  const preference = useSyncExternalStore(subscribeMotionPreference, readMotionPreference, () => false);
-  const allowMotion = crt && preference;
+export function useBootSequence(root: RefObject<HTMLElement | null>) {
+  const allowMotion = useMotionEnabled();
   const [phase, setPhase] = useState<Phase>(() => allowMotion ? 'startup' : 'ready');
   const [output, setOutput] = useState({ started: 0, completed: 0 });
   const timeline = useRef<gsap.core.Timeline | null>(null);

@@ -5,6 +5,8 @@ import { getRequestWindowState } from '../../../lib/events/lifecycle';
 import { ACCESS_WINDOW_DAYS } from '../../../lib/gate/requestPolicy';
 import { scenarioClock, type ScreenProps } from '../events/data';
 import { Action, EventState } from '../shared/Ui';
+import { useReadoutMotion } from '../motion/useReadoutMotion';
+import { PendingIndicator } from '../motion/PendingIndicator';
 import './forms.css';
 
 function Field({ id, label, error, children }: { id: string; label: string; error?: string; children: ReactNode }) {
@@ -26,12 +28,17 @@ export function ContactForm(props: ScreenProps & { kind: 'request' | 'signal'; f
   const contextEvent = receipt ?? event;
   const formRef = useRef<HTMLFormElement>(null);
   const resultRef = useRef<HTMLHeadingElement>(null);
+  const inputRef = useRef<HTMLElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const generation = useRef(0);
   const targetKey = request ? `${event?.id ?? ''}:${scenario}` : 'signal';
   const [previousTarget, setPreviousTarget] = useState(targetKey);
   const verified = !request || Boolean(event && verifiedEvent === event.id);
   const canRequest = event?.status === 'UPCOMING' && getRequestWindowState(event, ACCESS_WINDOW_DAYS, scenarioClock(scenario)).isActive;
+  useReadoutMotion(inputRef, {
+    key: `${targetKey}:${Boolean(canRequest)}:${Boolean(receipt)}:${verified}:${failed}:${codeError}:${Object.values(errors).filter(Boolean).join(',')}`,
+    active, titles: '.tm-contact-result h2', content: '.tm-contact-result > p,.tm-contact-result dl,.tm-field-error,.tm-form-hint[role=status]',
+  });
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   // Reset only target-bound state during render; the contact draft stays intact.
   if (targetKey !== previousTarget) {
@@ -77,14 +84,14 @@ export function ContactForm(props: ScreenProps & { kind: 'request' | 'signal'; f
   };
   const errorText = (field: string) => errors[field] === 'REQUIRED' ? t('이름을 입력해 주세요.', 'Enter your name.') : (copy.errors[errors[field] as keyof typeof copy.errors] ?? '');
   const fieldProps = (field: 'name' | 'email' | 'instagram') => ({ id: `${kind}-${field}`, name: field, value: fields[field], onChange: (e: React.ChangeEvent<HTMLInputElement>) => update(field, e.target.value), required: true, 'aria-invalid': Boolean(errors[field]), 'aria-describedby': errors[field] ? `${kind}-${field}-error` : undefined });
-  if (request && !canRequest && !receipt) return <section className="tm-form-closed tm-cell"><p className="tm-eyebrow">GUEST_REQ / {event?.id ?? 'NO EVENTS'}</p><h1 tabIndex={-1}>{t('현재 신청 가능한\n이벤트가 없습니다.', 'No events are open\nfor guest requests.')}</h1>{event && <div className="tm-closed-event"><EventState event={event} t={t} /><h2>{event.session}</h2><p>{event.date} / {event.time} / {event.venue}</p></div>}<div className="tm-action-group"><Action page="gate" event={event?.id}>{t('이벤트 정보', 'Event details')}</Action><Action page="signal" secondary>{t('이벤트 소식 받기', 'Get event updates')}</Action></div></section>;
+  if (request && !canRequest && !receipt) return <section className="tm-form-closed tm-cell"><p className="tm-eyebrow">GUEST_REQ / {event?.id ?? 'NO EVENTS'}</p><h1 data-motion-title tabIndex={-1}>{t('현재 신청 가능한\n이벤트가 없습니다.', 'No events are open\nfor guest requests.')}</h1>{event && <div className="tm-closed-event"><EventState event={event} t={t} /><h2>{event.session}</h2><p>{event.date} / {event.time} / {event.venue}</p></div>}<div className="tm-action-group"><Action page="gate" event={event?.id}>{t('이벤트 정보', 'Event details')}</Action><Action page="signal" secondary>{t('이벤트 소식 받기', 'Get event updates')}</Action></div></section>;
   return <div className="tm-contact-grid">
-    <section className="tm-contact-context tm-cell"><p className="tm-eyebrow">TERMINAL / {request ? 'GUEST_REQ' : 'SIGNAL'}</p><h1 tabIndex={-1}>{request ? <>GUEST<br />REQUEST</> : <>EVENT<br />UPDATES</>}</h1><div className="tm-contact-context-bottom"><h2>{request ? t('게스트 신청', 'Guest request') : t('이벤트 소식 받기', 'Get event updates')}</h2>{request && contextEvent ? <><h3>{contextEvent.session}</h3><p className="tm-contact-meta">{contextEvent.date} / {contextEvent.time}<br />{contextEvent.venue}</p>{!receipt && <div className="tm-contact-notice"><p>{t('초대인에게 받은 인증 코드를 입력해 주세요.', 'Enter the access code from your inviter.')}</p><p>{requestCopy.committedSub}</p></div>}</> : <div className="tm-prose">{copy.description.map(line => <p key={line}>{line}</p>)}</div>}</div></section>
-    <section className="tm-contact-input tm-cell">
+    <section className="tm-contact-context tm-cell"><p className="tm-eyebrow">TERMINAL / {request ? 'GUEST_REQ' : 'SIGNAL'}</p><h1 data-motion-title tabIndex={-1}>{request ? <>GUEST<br />REQUEST</> : <>EVENT<br />UPDATES</>}</h1><div data-motion-copy className="tm-contact-context-bottom"><h2>{request ? t('게스트 신청', 'Guest request') : t('이벤트 소식 받기', 'Get event updates')}</h2>{request && contextEvent ? <><h3>{contextEvent.session}</h3><p className="tm-contact-meta">{contextEvent.date} / {contextEvent.time}<br />{contextEvent.venue}</p>{!receipt && <div className="tm-contact-notice"><p>{t('초대인에게 받은 인증 코드를 입력해 주세요.', 'Enter the access code from your inviter.')}</p><p>{requestCopy.committedSub}</p></div>}</> : <div className="tm-prose">{copy.description.map(line => <p key={line}>{line}</p>)}</div>}</div></section>
+    <section ref={inputRef} className="tm-contact-input tm-cell">
       {receipt ? <div className="tm-contact-result"><p className="tm-eyebrow">{t('목업 결과', 'PREVIEW RESULT')}</p><h2 ref={resultRef} tabIndex={-1}>{request ? t('신청 접수 완료', 'Request received') : t('소식 신청 완료', 'Subscription received')}</h2><p>{t('목업에서만 완료되었습니다. 실제로 전송되거나 저장되지 않습니다.', 'Completed in this preview. Nothing was sent or saved to the service.')}</p>{request && <><p>{requestCopy.committedSub}</p><dl><div><dt>{t('신청 이벤트', 'Requested event')}</dt><dd>{receipt.session}</dd></div><div><dt>{t('이름', 'Name')}</dt><dd>{receipt.name}</dd></div></dl></>}<p>{receipt.email}</p><Action page={request ? 'gate' : 'home'} event={receipt.eventId}>{t('이벤트로 돌아가기', 'Back to event')}</Action><button type="button" className="tm-button" onClick={() => { setReceipt(null); requestAnimationFrame(() => formRef.current?.querySelector<HTMLInputElement>('input')?.focus()); }}>{t('목업 다시 입력', 'Try the form again')}</button></div> : <form ref={formRef} className="tm-contact-form" onSubmit={submit} noValidate aria-busy={pending}>
         <h2 className="tm-eyebrow">{request ? t('신청 정보', 'REQUEST DETAILS') : t('연락처 등록', 'CONTACT DETAILS')}</h2>
         {request && <div className="tm-code-block"><Field id="request-code" label={t('인증 코드', 'Access code')} error={codeError ? t('코드를 확인해 주세요.', 'Check the access code.') : undefined}><div className="tm-code-row"><input id="request-code" name="code" value={fields.code} autoComplete="off" autoCapitalize="characters" aria-invalid={codeError} aria-describedby={codeError ? 'request-code-error' : 'request-code-hint'} onChange={e => update('code', e.target.value)} disabled={pending} /><button type="button" className="tm-button" disabled={pending || !fields.code.trim()} onClick={() => { const valid = fields.code.trim().toUpperCase() === 'DEMO02'; setCodeError(!valid); setVerifiedEvent(valid ? event!.id : ''); }}>{t('확인', 'Verify')}</button></div></Field><p id="request-code-hint" className="tm-form-hint" role="status">{verified ? t('코드 확인됨 · 목업 초대인 STANN LUMO', 'Code verified · Preview inviter STANN LUMO') : t('목업 체험 코드: DEMO02', 'Preview access code: DEMO02')}</p></div>}
-        <fieldset disabled={!verified || pending} className="tm-contact-fields"><legend className="tm-sr-only">{t('연락처와 동의', 'Contact and consent')}</legend>
+        <fieldset data-motion-controls disabled={!verified || pending} className="tm-contact-fields"><legend className="tm-sr-only">{t('연락처와 동의', 'Contact and consent')}</legend>
           {request && <Field id="request-name" label={t('이름', 'Name')} error={errorText('name')}><input {...fieldProps('name')} autoComplete="name" maxLength={100} /></Field>}
           <Field id={`${kind}-email`} label={t('이메일', 'Email')} error={errorText('email')}><input {...fieldProps('email')} type="email" autoComplete="email" maxLength={254} placeholder="you@example.com" spellCheck={false} /></Field>
           <Field id={`${kind}-instagram`} label={t('인스타그램 ID', 'Instagram ID')} error={errorText('instagram')}><input {...fieldProps('instagram')} autoCapitalize="none" autoComplete="off" maxLength={31} placeholder="@username" spellCheck={false} /></Field>
@@ -94,7 +101,7 @@ export function ContactForm(props: ScreenProps & { kind: 'request' | 'signal'; f
         {request && verified && <p className="tm-form-hint">{t('신청 대상', 'Request for')}: {event?.session} / {event?.date}</p>}
         {failed && <p className="tm-field-error" role="alert">{t('전송 실패 예시입니다. 입력은 유지됩니다. 다시 시도할 수 있습니다.', 'Simulated submission failure. Your draft is retained; you can retry.')}</p>}
         <div className="tm-sr-only" role="status">{Object.values(errors).some(Boolean) ? t('입력 항목을 확인해 주세요.', 'Check the form fields.') : ''}</div>
-        <button className="tm-action tm-submit" disabled={pending || !verified} type="submit"><span>{pending ? t('처리 중…', 'Processing…') : request ? t('신청 제출', 'Submit request') : t('소식 신청', 'Subscribe')}</span>{pending && <span aria-hidden="true">▌</span>}</button>
+        <button className="tm-action tm-submit" disabled={pending || !verified} type="submit"><span>{pending ? t('처리 중…', 'Processing…') : request ? t('신청 제출', 'Submit request') : t('소식 신청', 'Subscribe')}</span>{pending && <PendingIndicator active={active} />}</button>
       </form>}
     </section>
   </div>;

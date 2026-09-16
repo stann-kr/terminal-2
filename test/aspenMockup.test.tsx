@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../mockups/aspen-terminal/App';
 import { ENTRY_VISIT_KEY, chooseEntryLanguage, completeEntryVisit } from '../mockups/aspen-terminal/entry/visitState';
+import { gsap } from '../mockups/aspen-terminal/motion/MotionProvider';
 
 function active() {
   const element = document.querySelector<HTMLElement>('[data-active="true"]');
@@ -173,6 +174,65 @@ describe('isolated Aspen terminal mockup', () => {
     await user.click(crt);
     expect(crt).toHaveAttribute('aria-pressed', 'false');
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('mockup motion continuity', () => {
+  it('keeps drafts and pending results usable across rapid routes and CRT changes', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const user = userEvent.setup();
+    await navigate('/signal');
+    render(<App />);
+    await user.type(active().getByLabelText('이메일'), 'motion@example.com');
+    expect(active().getByLabelText('이메일')).toHaveFocus();
+    await navigate('/home');
+    await navigate('/signal');
+    expect(active().getByLabelText('이메일')).toHaveValue('motion@example.com');
+    fireEvent.change(active().getByLabelText('인스타그램 ID'), { target: { value: '@motion' } });
+    fireEvent.click(active().getByRole('checkbox'));
+    fireEvent.click(active().getByRole('button', { name: '소식 신청' }));
+    const pulse = active().getByRole('button', { name: '처리 중…' }).querySelector('[data-pending-pulse]')!;
+    expect(gsap.getTweensOf(pulse)).not.toHaveLength(0);
+    await navigate('/home');
+    expect(gsap.getTweensOf(pulse)).toHaveLength(0);
+    await navigate('/signal');
+    fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
+    expect(gsap.getTweensOf(pulse)).toHaveLength(0);
+    await waitFor(() => expect(active().getByRole('heading', { name: '소식 신청 완료' })).toHaveFocus());
+    expect(active().getByText('motion@example.com')).toBeVisible();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('settles an in-flight readout when reduced motion changes and does not replay on restoration', async () => {
+    let reduced = false;
+    const preference = new EventTarget();
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({
+      media: query, get matches() { return query.includes('prefers-reduced-motion') && reduced; }, onchange: null,
+      addEventListener: preference.addEventListener.bind(preference), removeEventListener: preference.removeEventListener.bind(preference),
+      addListener() {}, removeListener() {}, dispatchEvent: preference.dispatchEvent.bind(preference),
+    }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    render(<App />);
+    const title = active().getByRole('heading', { level: 1 });
+    expect(gsap.getTweensOf(title)).not.toHaveLength(0);
+    reduced = true;
+    act(() => preference.dispatchEvent(new Event('change')));
+    expect(gsap.getTweensOf(title)).toHaveLength(0);
+    expect(title).toBeVisible();
+    await navigate('/gate');
+    const nextTitle = active().getByRole('heading', { level: 1 });
+    expect(nextTitle).toHaveFocus();
+    reduced = false;
+    act(() => preference.dispatchEvent(new Event('change')));
+    expect(nextTitle).toBeVisible();
+    expect(gsap.getTweensOf(nextTitle)).toHaveLength(0);
+    const menu = screen.getByRole('button', { name: /메뉴/ });
+    fireEvent.click(menu);
+    expect(menu).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(menu, { key: 'Escape' });
+    expect(menu).toHaveAttribute('aria-expanded', 'false');
+    expect(menu).toHaveFocus();
   });
 });
 
