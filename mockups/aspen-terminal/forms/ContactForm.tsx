@@ -38,7 +38,7 @@ export function ContactForm(props: ScreenProps & { kind: 'request' | 'signal'; f
   const canRequest = event?.status === 'UPCOMING' && getRequestWindowState(event, ACCESS_WINDOW_DAYS, scenarioClock(scenario)).isActive;
   useReadoutMotion(inputRef, {
     key: `${lang}:${targetKey}:${Boolean(canRequest)}:${Boolean(receipt)}:${verified}:${failed}:${codeError}:${Object.values(errors).filter(Boolean).join(',')}`,
-    active, contentKey: `${lang}:${targetKey}:${Boolean(canRequest)}`, content: ':scope', updates: '.tm-contact-result,.tm-field-error,.tm-form-hint',
+    active, contentKey: `${lang}:${targetKey}:${Boolean(canRequest)}`, content: ':scope', updates: '.tm-contact-result,.tm-field-error,.tm-form-hint', layout: true,
   });
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   // Reset only target-bound state during render; the contact draft stays intact.

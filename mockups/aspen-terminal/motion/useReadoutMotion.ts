@@ -1,6 +1,6 @@
 import { useRef, type RefObject } from 'react';
 import { gsap, useGSAP, useMotionEnabled } from './MotionProvider';
-import { measureReadout, readoutText } from './readoutLines';
+import { measureReadout, readoutPanels, readoutText } from './readoutLines';
 
 interface ReadoutOptions {
   key: string;
@@ -10,10 +10,11 @@ interface ReadoutOptions {
   controls?: string;
   updates?: string;
   contentKey?: string;
+  layout?: boolean;
 }
 
-/** Print text in place, one rendered line at a time; the frame never animates. */
-export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, active = true, titles, content, controls, updates, contentKey }: ReadoutOptions) {
+/** Assemble surfaces and print their content without changing the layout. */
+export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, active = true, titles, content, controls, updates, contentKey, layout = false }: ReadoutOptions) {
   const enabled = useMotionEnabled();
   const previous = useRef<{ key: string; active: boolean; contentKey?: string; element: HTMLElement | null } | null>(null);
 
@@ -34,19 +35,37 @@ export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, act
       const characters = source && output ? Array.from(segmenter.segment(source.textContent ?? ''), item => item.segment) : [];
       const typed = characters.length > 0 && characters.length <= 96;
       return { ...measureReadout(source ?? node), source, output, characters, typed };
-    }).sort((a, b) => Math.abs(a.top - b.top) < 3 ? a.left - b.left : a.top - b.top);
-    if (!readouts.length) return;
+    });
+    const panels = layout ? readoutPanels(element, containers) : [];
+    const items = [
+      ...panels.map(panel => ({ ...panel, kind: 'panel' as const })),
+      ...readouts.map(readout => ({ ...readout, kind: 'text' as const })),
+    ].sort((a, b) => {
+      // A parent surface must precede everything inside it.
+      if (a.node.contains(b.node)) return -1;
+      if (b.node.contains(a.node)) return 1;
+      return Math.abs(a.top - b.top) < 3 ? a.left - b.left : a.top - b.top;
+    });
+    if (!items.length) return;
     const durationFor = (item: typeof readouts[number]) => item.typed ? Math.min(0.22, Math.max(0.09, item.characters.length * 0.012)) : item.bottoms.length * 0.045;
-    const total = readouts.reduce((sum, item) => sum + durationFor(item), 0);
-    const speed = Math.min(1, 1.4 / total);
+    const lead = panels.length ? 0.12 : 0;
+    const total = lead + panels.length * 0.065 + readouts.reduce((sum, item) => sum + durationFor(item), 0);
+    const speed = Math.min(1, (layout ? 1.8 : 1.4) / total);
     const initialWidth = element.clientWidth;
     const initialHeight = element.clientHeight;
+    // All geometry is read before this write, ahead of the first paint.
+    gsap.set(items.map(item => item.node), { opacity: 0 });
     const sequence = gsap.timeline({ defaults: { ease: 'none' } });
-    let position = 0;
-    // All geometry above is read before any style writes below.
-    readouts.forEach(item => {
+    let position = lead * speed;
+    // Surfaces and their content use the same output sequence.
+    items.forEach(item => {
+      if (item.kind === 'panel') {
+        // Nested regions run their own readout; open the hosting surface first.
+        sequence.set(item.node, { clearProps: 'opacity' }, item.hostsRegion ? lead * speed : position);
+        position += 0.065 * speed;
+        return;
+      }
       const duration = durationFor(item) * speed;
-      sequence.set(item.node, { opacity: 0 }, 0);
       if (item.typed && item.source && item.output) {
         const output = item.output;
         const progress = { count: 0 };
@@ -94,5 +113,5 @@ export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, act
       window.removeEventListener('resize', finish);
       document.fonts?.removeEventListener('loadingdone', finish);
     };
-  }, { scope: root, dependencies: [key, active, enabled, titles, content, controls, updates, contentKey], revertOnUpdate: true });
+  }, { scope: root, dependencies: [key, active, enabled, titles, content, controls, updates, contentKey, layout], revertOnUpdate: true });
 }

@@ -26,7 +26,7 @@ export function Shell({ page, viewKey, motionKey, lang, t, setLang, crt, toggleC
   const enabled = useMotionEnabled();
   const entry = page === 'entry';
   const wasEntry = useRef(entry);
-  useReadoutMotion(mainRef, { key: motionKey, active: !entry, content: '[data-active=true]' });
+  useReadoutMotion(mainRef, { key: motionKey, active: !entry, content: '[data-active=true]', layout: true });
   useReadoutMotion(headerRef, { key: entry ? 'entry' : 'desktop', active: !entry, controls: '.tm-topline,.tm-navigation' });
   useReadoutMotion(navigationRef, { key: `${menu}:${page}`, active: menu && !entry, content: 'a:nth-child(n+4) > span:not(.tm-nav-code)' });
   useGSAP(() => {

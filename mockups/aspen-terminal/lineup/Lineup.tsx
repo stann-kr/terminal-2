@@ -9,7 +9,7 @@ export function Lineup(props: ScreenProps & { artistId: string | null }) {
   const { event, events, artistId, t, lang } = props;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const profileRef = useRef<HTMLElement>(null);
-  useReadoutMotion(profileRef, { key: `${event?.id}:${artistId}:${lang}`, content: ':scope' });
+  useReadoutMotion(profileRef, { key: `${event?.id}:${artistId}:${lang}`, content: ':scope', layout: true });
   if (!event) return <NoEvent t={t} invalid={events.length > 0} />;
   const publicArtists = event.artists.filter(isPublicArtist);
   const requested = event.artists.find(artist => artist.id === artistId);

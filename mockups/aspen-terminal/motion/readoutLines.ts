@@ -1,5 +1,17 @@
 const textSelector = '.tm-terminal-text,h1,h2,h3,p,dt,dd,time,label,span';
 const excluded = '[hidden],.tm-sr-only,[data-readout-source],[data-readout-output],[data-pending-pulse]';
+const panelSelector = '.tm-cell,.tm-page-heading,.tm-roster,.tm-history-year,.tm-history-entry,.tm-channels > a,.tm-form-field,.tm-consent,.tm-code-block,.tm-contact-result,.tm-artist-data,.tm-contact-notice,.tm-transmit-log li,.tm-log-header,.tm-log-pagination,.tm-action,.tm-button,input,textarea,select';
+
+/** Each surface appears at once; opacity preserves its final footprint. */
+export function readoutPanels(root: HTMLElement, containers: HTMLElement[]) {
+  const region = root.closest('[data-readout-region]');
+  return [...new Set(containers.flatMap(container => [container, ...container.querySelectorAll<HTMLElement>(panelSelector)]))]
+    .filter(node => node.matches(panelSelector) && !node.closest('[hidden]') && node.closest('[data-readout-region]') === region)
+    .map(node => {
+      const bounds = node.getBoundingClientRect();
+      return { node, top: bounds.top, left: bounds.left, hostsRegion: Boolean(node.querySelector('[data-readout-region]')) };
+    });
+}
 
 /** Find text owners without masking frames, native fields or nested regions. */
 export function readoutText(root: HTMLElement, containers: HTMLElement[]) {
