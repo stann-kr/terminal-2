@@ -47,25 +47,24 @@ export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, act
       return Math.abs(a.top - b.top) < 3 ? a.left - b.left : a.top - b.top;
     });
     if (!items.length) return;
-    const durationFor = (item: typeof readouts[number]) => item.typed ? Math.min(0.22, Math.max(0.09, item.characters.length * 0.012)) : item.bottoms.length * 0.045;
+    // Keep the cadence fixed across pages; more content takes longer to print.
+    const durationFor = (item: typeof readouts[number]) => item.typed ? item.characters.length * 0.012 : item.bottoms.length * 0.045;
     const lead = panels.length ? 0.12 : 0;
-    const total = lead + panels.length * 0.065 + readouts.reduce((sum, item) => sum + durationFor(item), 0);
-    const speed = Math.min(1, (layout ? 1.8 : 1.4) / total);
     const initialWidth = element.clientWidth;
     const initialHeight = element.clientHeight;
     // All geometry is read before this write, ahead of the first paint.
     gsap.set(items.map(item => item.node), { opacity: 0 });
     const sequence = gsap.timeline({ defaults: { ease: 'none' } });
-    let position = lead * speed;
+    let position = lead;
     // Surfaces and their content use the same output sequence.
     items.forEach(item => {
       if (item.kind === 'panel') {
         // Nested regions run their own readout; open the hosting surface first.
-        sequence.set(item.node, { clearProps: 'opacity' }, item.hostsRegion ? lead * speed : position);
-        position += 0.065 * speed;
+        sequence.set(item.node, { clearProps: 'opacity' }, item.hostsRegion ? lead : position);
+        position += 0.065;
         return;
       }
-      const duration = durationFor(item) * speed;
+      const duration = durationFor(item);
       if (item.typed && item.source && item.output) {
         const output = item.output;
         const progress = { count: 0 };
