@@ -45,7 +45,7 @@ export function Shell({ page, viewKey, lang, t, setLang, crt, toggleCrt, childre
       </nav>
     </header>
     <main ref={mainRef} id="tm-main" tabIndex={-1} className="tm-main">{children}</main>
-    <footer hidden={page === 'entry'} className="tm-footer"><span>STANN OS / LIVE</span><span className="tm-path">{pagePaths[page]}</span><a href={href('link')}>{t('공식 채널', 'Official channels')} ↗</a></footer>
+    <footer hidden={page === 'entry'} className="tm-footer"><span>STANN OS / LIVE</span><span className="tm-path">{pagePaths[page]}</span><a href={href('link')}>{t('공식 채널', 'Official channels')}</a></footer>
     {crt && <div className="tm-glass" aria-hidden="true"><div className="tm-raster" /><div className="tm-reflection" /><div className="tm-vignette" /></div>}
   </div>;
 }

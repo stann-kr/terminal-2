@@ -3,7 +3,7 @@ import { href, type Page, type ScreenProps, type Translate } from '../events/dat
 import './ui.css';
 
 export function Action({ page, event, artist, children, secondary = false }: { page: Page; event?: string; artist?: string; children: ReactNode; secondary?: boolean }) {
-  return <a className={`tm-action${secondary ? ' tm-action-secondary' : ''}`} href={href(page, event, artist)}><span>{children}</span><span aria-hidden="true">↗</span></a>;
+  return <a className={`tm-action${secondary ? ' tm-action-secondary' : ''}`} href={href(page, event, artist)}><span>{children}</span></a>;
 }
 
 export function PageHeading({ code, title, children }: { code: string; title: string; children?: ReactNode }) {

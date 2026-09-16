@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { href, type EntryMode, type Lang, type Translate } from '../events/data';
+import type { EntryMode, Lang, Translate } from '../events/data';
 import { STARTUP_LINES, HANDOFF_LINES, useBootSequence } from './useBootSequence';
 import { completeEntryVisit, readEntryVisit } from './visitState';
 import './entry.css';
@@ -33,8 +33,8 @@ function Boot({ t, lang, languageOrigin, onComplete, crt }: EntryProps) {
   return <section ref={root} className="tm-entry" data-phase={phase} data-motion={sequence.allowMotion} aria-label={t('부팅 시퀀스', 'Boot sequence')}>
     <Identity t={t} />
     <div className="tm-boot-console tm-cell">
-      <div className="tm-boot-toolbar"><p className="tm-eyebrow">[{step}] / {phase === 'startup' ? 'INITIALIZE' : 'ENTER TERMINAL'}</p><a className="tm-text-link" href={href('home')}>{t('이벤트 바로 보기', 'View events now')} ↗</a></div>
-      <div className="tm-boot-output" aria-label={t('부팅 출력', 'Boot output')}>
+      <div className="tm-boot-toolbar"><p className="tm-eyebrow">[{step}] / {phase === 'startup' ? 'INITIALIZE' : 'ENTER TERMINAL'}</p></div>
+      <div className="tm-boot-output" hidden={!running} aria-label={t('부팅 출력', 'Boot output')}>
         <p className="tm-boot-prompt">TERMINAL INTERFACE <span>/ VISUAL SEQUENCE</span></p>
         <ol className="tm-boot-lines">{STARTUP_LINES.slice(0, startupCount).map(([label, result]) => <li key={label}><span>{label}</span><i aria-hidden="true" /><span>{label === 'LOCALE CONFIGURATION' ? lang.toUpperCase() : result}</span></li>)}</ol>
         {(phase === 'handoff' || phase === 'ready') && <>
@@ -45,10 +45,10 @@ function Boot({ t, lang, languageOrigin, onComplete, crt }: EntryProps) {
       <div className="tm-boot-progress" aria-hidden="true" hidden={!running}><span data-entry-progress /></div>
       <div className="tm-boot-interaction">
         <p className="tm-boot-language-set">LANGUAGE / {lang.toUpperCase()}<span>{languageOrigin === 'manual' ? t('직접 선택한 언어', 'Your saved language') : languageOrigin === 'browser' ? t('브라우저 언어 자동 감지', 'Detected from browser preferences') : t('기본 언어', 'Default language')}</span></p>
-        {phase === 'ready' && <div className="tm-boot-ready"><button ref={enterRef} type="button" className="tm-action" onClick={onComplete}><span>[ ENTER TERMINAL ]</span><span aria-hidden="true">↗</span></button></div>}
+        {phase === 'ready' && <div className="tm-boot-ready"><button ref={enterRef} type="button" className="tm-action tm-boot-enter" onClick={onComplete}><span>{t('터미널 입장', 'ENTER TERMINAL')}</span></button></div>}
       </div>
       <div className="tm-boot-bottom" hidden={!running}><span className="tm-eyebrow">{t('터미널 체험', 'TERMINAL EXPERIENCE')}</span><button type="button" className="tm-button" disabled={!running} onClick={sequence.skip}>{t('애니메이션 건너뛰기', 'Skip animation')}</button></div>
-      <p className="tm-sr-only" role="status">{phase === 'ready' ? t('부팅 연출 완료. ENTER TERMINAL 버튼으로 진입하세요.', 'Sequence complete. Select ENTER TERMINAL to continue.') : t('부팅 연출 진행 중', 'Visual boot sequence in progress')}</p>
+      <p className="tm-sr-only" role="status">{phase === 'ready' ? t('부팅 연출 완료. 터미널 입장 버튼으로 진입하세요.', 'Sequence complete. Select ENTER TERMINAL to continue.') : t('부팅 연출 진행 중', 'Visual boot sequence in progress')}</p>
     </div>
     <div data-entry-power className="tm-entry-power" aria-hidden="true" />
   </section>;
@@ -72,7 +72,7 @@ function Idle({ t, onComplete }: EntryProps) {
   const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
   return <section className="tm-entry tm-entry-idle" aria-label={t('대기 화면', 'Idle screen')}>
     <Identity t={t} idle />
-    <div className="tm-idle-content tm-cell"><p className="tm-eyebrow">SEOUL_TIME / KST</p><div className="tm-idle-time" role="timer" aria-live="off"><time dateTime={now.toISOString()}>{clock}</time><p>{date}</p></div><div className="tm-idle-return"><p className="tm-eyebrow">TERMINAL / IDLE</p><h2>{t('다시 오셨군요.', 'Welcome back.')}</h2><button type="button" className="tm-action" onClick={onComplete}><span>{t('이벤트로 돌아가기', 'Return to events')}</span><span aria-hidden="true">↗</span></button></div></div>
+    <div className="tm-idle-content tm-cell"><p className="tm-eyebrow">SEOUL_TIME / KST</p><div className="tm-idle-time" role="timer" aria-live="off"><time dateTime={now.toISOString()}>{clock}</time><p>{date}</p></div><div className="tm-idle-return"><p className="tm-eyebrow">TERMINAL / IDLE</p><h2>{t('다시 오셨군요.', 'Welcome back.')}</h2><button type="button" className="tm-action" onClick={onComplete}><span>{t('이벤트로 돌아가기', 'Return to events')}</span></button></div></div>
   </section>;
 }
 

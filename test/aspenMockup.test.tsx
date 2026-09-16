@@ -184,6 +184,7 @@ describe('mockup boot and automatic language', () => {
     expect(screen.queryByRole('button', { name: /CRT 화면 효과|CRT display effects/ })).not.toBeInTheDocument();
     expect(document.querySelector('.tm-review')).not.toBeVisible();
     expect(screen.getByText('STANN OS / LIVE')).not.toBeVisible();
+    expect(active().queryByRole('link')).not.toBeInTheDocument();
   }
 
   it.each([
@@ -198,7 +199,7 @@ describe('mockup boot and automatic language', () => {
     render(<App />);
     expect(document.documentElement.lang).toBe(expected);
     expectEntryOnly();
-    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled();
     expect(active().queryByRole('button', { name: /한국어|English/ })).not.toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -210,7 +211,7 @@ describe('mockup boot and automatic language', () => {
     expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
     expectEntryOnly();
     const shell = document.querySelector('.tm-shell');
-    await user.click(active().getByRole('button', { name: '[ ENTER TERMINAL ]' }));
+    await user.click(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ }));
     await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
     expect(document.querySelector('.tm-shell')).toBe(shell);
     expect(screen.getByRole('banner')).toBeVisible();
@@ -263,21 +264,23 @@ describe('mockup boot and automatic language', () => {
     render(<App />);
     expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
     expectEntryOnly();
-    await waitFor(() => expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled(), { timeout: 4000 });
+    await waitFor(() => expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled(), { timeout: 4000 });
     expect(window.location.hash).toBe('#/entry?mode=boot');
+    expect(active().getAllByRole('button')).toHaveLength(1);
+    expect(active().getByRole('button', { name: '터미널 입장' })).toHaveFocus();
     expectEntryOnly();
-    fireEvent.click(active().getByRole('button', { name: '[ ENTER TERMINAL ]' }));
+    fireEvent.click(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ }));
     await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: '부팅 다시 보기' }));
     await waitFor(() => expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled());
-    expect(active().queryByRole('button', { name: '[ ENTER TERMINAL ]' })).not.toBeInTheDocument();
+    expect(active().queryByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).not.toBeInTheDocument();
     fireEvent.click(active().getByRole('button', { name: '애니메이션 건너뛰기' }));
-    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled();
     expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
     expectEntryOnly();
   });
 
-  it('respects CRT OFF chosen before boot and lets a direct exit cancel the boot while preserving a draft', async () => {
+  it('respects CRT OFF, requires explicit entry after skipping, and preserves the draft', async () => {
     const user = userEvent.setup();
     vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
@@ -286,15 +289,19 @@ describe('mockup boot and automatic language', () => {
     await user.type(active().getByLabelText('이메일'), 'draft@example.com');
     fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
     await navigate('/entry?mode=boot');
-    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled();
     expectEntryOnly();
     await navigate('/signal');
     fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
     await navigate('/entry?mode=boot');
     expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
-    await user.click(active().getByRole('link', { name: '이벤트 바로 보기 ↗' }));
+    await user.click(active().getByRole('button', { name: '애니메이션 건너뛰기' }));
+    expect(window.location.hash).toBe('#/entry?mode=boot');
+    expect(active().getAllByRole('button')).toHaveLength(1);
+    expect(active().getByRole('button', { name: '터미널 입장' })).toHaveFocus();
+    await user.keyboard('{Enter}');
     await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
-    expect(window.localStorage.getItem(ENTRY_VISIT_KEY)).toBeNull();
+    expect(JSON.parse(window.localStorage.getItem(ENTRY_VISIT_KEY)!)).toEqual({ visited: true });
     await navigate('/signal');
     expect(active().getByLabelText('이메일')).toHaveValue('draft@example.com');
     expect(fetch).not.toHaveBeenCalled();
