@@ -7,7 +7,7 @@ export function PendingIndicator({ active }: { active: boolean }) {
   const enabled = useMotionEnabled();
   useGSAP(() => {
     if (!enabled || !active) return;
-    gsap.fromTo('[data-pending-pulse]', { xPercent: -110 }, { xPercent: 290, duration: 0.85, ease: 'none', repeat: -1 });
+    gsap.fromTo('[data-pending-pulse]', { opacity: 1 }, { opacity: 0, duration: 0.42, ease: 'steps(1)', repeat: -1, yoyo: true });
   }, { scope: root, dependencies: [enabled, active], revertOnUpdate: true });
-  return <span ref={root} className="tm-pending-track" aria-hidden="true"><span data-pending-pulse /></span>;
+  return <span ref={root} className="tm-pending-cursor" aria-hidden="true"><span data-pending-pulse>▌</span></span>;
 }

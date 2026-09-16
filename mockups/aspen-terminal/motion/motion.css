@@ -1,6 +1,6 @@
-.tm-action { position: relative; }
-.tm-action > span:first-child,[data-control-label] { display: inline-block; transform-origin: left center; }
-.tm-pending-track { position: absolute; bottom: 0; inset-inline: 0; height: 2px; overflow: hidden; pointer-events: none; }
-.tm-pending-track > span { display: block; height: 100%; width: 35%; background: currentColor; opacity: .7; }
-.tm-motion-rule { position: relative; }
-.tm-motion-rule::after { content: ''; position: absolute; bottom: -1px; inset-inline: 0; height: 1px; background: var(--tm-accent); opacity: var(--tm-rule-opacity,0); transform: scaleX(var(--tm-rule-scale,0)); transform-origin: left; pointer-events: none; }
+.tm-terminal-text { position: relative; display: block; white-space: pre-line; }
+.tm-terminal-text > [data-readout-source] { display: block; }
+.tm-terminal-text > [data-readout-output] { position: absolute; inset: 0; overflow: hidden; pointer-events: none; user-select: none; }
+.tm-terminal-text > [data-readout-output]::before { content: attr(data-readout-output); }
+.tm-pending-cursor { flex: none; font-family: var(--tm-mono); }
+.tm-shell :is(input,textarea) { caret-color: var(--tm-accent); }

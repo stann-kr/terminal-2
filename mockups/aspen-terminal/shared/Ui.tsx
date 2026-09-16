@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { href, type Page, type ScreenProps, type Translate } from '../events/data';
+import { TerminalText } from '../motion/TerminalText';
 import './ui.css';
 
 export function Action({ page, event, artist, children, secondary = false }: { page: Page; event?: string; artist?: string; children: ReactNode; secondary?: boolean }) {
@@ -7,7 +8,7 @@ export function Action({ page, event, artist, children, secondary = false }: { p
 }
 
 export function PageHeading({ code, title, children }: { code: string; title: string; children?: ReactNode }) {
-  return <div className="tm-page-heading tm-motion-rule"><div><p data-motion-copy className="tm-eyebrow">{code}</p><h1 data-motion-title tabIndex={-1}>{title}</h1></div>{children}</div>;
+  return <div className="tm-page-heading"><div><p data-motion-copy className="tm-eyebrow">{code}</p><h1 data-motion-title tabIndex={-1}><TerminalText>{title}</TerminalText></h1></div>{children}</div>;
 }
 
 export function EventPicker({ events, event, t, page }: Pick<ScreenProps, 'event' | 'events' | 't'> & { page: Page }) {
@@ -16,7 +17,7 @@ export function EventPicker({ events, event, t, page }: Pick<ScreenProps, 'event
 }
 
 export function NoEvent({ t, invalid = false }: { t: Translate; invalid?: boolean }) {
-  return <section className="tm-empty"><p className="tm-eyebrow">GATE / {invalid ? 'NOT FOUND' : 'NO EVENTS'}</p><h1 data-motion-title tabIndex={-1}>{invalid ? t('이벤트를 찾을 수 없습니다.', 'Event not found.') : t('공개된 이벤트가 없습니다.', 'No published events.')}</h1><div className="tm-action-group"><Action page="signal">{t('이벤트 소식 받기', 'Get event updates')}</Action><Action page="link" secondary>{t('공식 채널', 'Official channels')}</Action></div></section>;
+  return <section className="tm-empty"><p className="tm-eyebrow">GATE / {invalid ? 'NOT FOUND' : 'NO EVENTS'}</p><h1 data-motion-title tabIndex={-1}><TerminalText>{invalid ? t('이벤트를 찾을 수 없습니다.', 'Event not found.') : t('공개된 이벤트가 없습니다.', 'No published events.')}</TerminalText></h1><div className="tm-action-group"><Action page="signal">{t('이벤트 소식 받기', 'Get event updates')}</Action><Action page="link" secondary>{t('공식 채널', 'Official channels')}</Action></div></section>;
 }
 
 export function EventState({ event, t }: Pick<ScreenProps, 'event' | 't'>) {

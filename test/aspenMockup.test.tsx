@@ -215,11 +215,15 @@ describe('mockup motion continuity', () => {
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     render(<App />);
     const title = active().getByRole('heading', { level: 1 });
+    expect(title).toHaveAccessibleName('TERMINAL');
+    expect(title).toHaveTextContent(/^TERMINAL$/);
     expect(gsap.getTweensOf(title)).not.toHaveLength(0);
     reduced = true;
     act(() => preference.dispatchEvent(new Event('change')));
     expect(gsap.getTweensOf(title)).toHaveLength(0);
     expect(title).toBeVisible();
+    expect(title.querySelector('[data-readout-source]')).toBeVisible();
+    expect(title.querySelector('[data-readout-output]')).toHaveAttribute('data-readout-output', '');
     await navigate('/gate');
     const nextTitle = active().getByRole('heading', { level: 1 });
     expect(nextTitle).toHaveFocus();
@@ -233,6 +237,31 @@ describe('mockup motion continuity', () => {
     fireEvent.keyDown(menu, { key: 'Escape' });
     expect(menu).toHaveAttribute('aria-expanded', 'false');
     expect(menu).toHaveFocus();
+  });
+
+  it('preserves the current title and accessible name when output is interrupted by language and route changes', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    await navigate('/about');
+    render(<App />);
+    expect(active().getByRole('heading', { level: 1 })).toHaveAccessibleName('TERMINAL 소개');
+    fireEvent.click(screen.getByRole('button', { name: '영어로 보기' }));
+    const title = active().getByRole('heading', { name: 'About TERMINAL', level: 1 });
+    fireEvent.keyDown(title, { key: 'Tab' });
+    expect(title).toHaveTextContent(/^About TERMINAL$/);
+    expect(title.querySelector('[data-readout-source]')).toBeVisible();
+    expect(title.querySelector('[data-readout-output]')).toHaveAttribute('data-readout-output', '');
+    await navigate('/lineup');
+    await navigate('/link');
+    await waitFor(() => {
+      for (const heading of active().getAllByRole('heading')) {
+        expect(heading.querySelector('[data-readout-source]')).toBeVisible();
+        expect(heading.querySelector('[data-readout-output]')).toHaveAttribute('data-readout-output', '');
+      }
+    });
+    expect(active().getByRole('heading', { level: 1 })).toHaveAccessibleName('Official channels');
+    expect(active().queryByText('About TERMINAL')).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
 
