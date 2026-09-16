@@ -263,11 +263,15 @@ describe('mockup boot and automatic language', () => {
     await navigate('/entry?mode=boot');
     render(<App />);
     expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
+    const readout = active().getByLabelText('부팅 출력');
     expectEntryOnly();
     await waitFor(() => expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled(), { timeout: 4000 });
     expect(window.location.hash).toBe('#/entry?mode=boot');
     expect(active().getAllByRole('button')).toHaveLength(1);
     expect(active().getByRole('button', { name: '터미널 입장' })).toHaveFocus();
+    expect(active().getByLabelText('부팅 출력')).toBe(readout);
+    expect(readout).toBeVisible();
+    expect(within(readout).getByText('PUBLIC GUESTBOOK')).toBeVisible();
     expectEntryOnly();
     fireEvent.click(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ }));
     await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
@@ -277,6 +281,26 @@ describe('mockup boot and automatic language', () => {
     fireEvent.click(active().getByRole('button', { name: '애니메이션 건너뛰기' }));
     expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled();
     expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
+    expectEntryOnly();
+  });
+
+  it('finishes a backgrounded boot without entering or restarting it when the document returns', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    await navigate('/entry?mode=boot');
+    render(<App />);
+    expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
+    visibility.mockReturnValue('hidden');
+    fireEvent(document, new Event('visibilitychange'));
+    const enter = active().getByRole('button', { name: '터미널 입장' });
+    expect(enter).toBeEnabled();
+    expect(enter).not.toHaveFocus();
+    visibility.mockReturnValue('visible');
+    fireEvent(document, new Event('visibilitychange'));
+    expect(active().getByRole('button', { name: '터미널 입장' })).toBe(enter);
+    expect(active().queryByRole('button', { name: '애니메이션 건너뛰기' })).not.toBeInTheDocument();
+    expect(window.location.hash).toBe('#/entry?mode=boot');
+    expect(window.localStorage.getItem(ENTRY_VISIT_KEY)).toBeNull();
     expectEntryOnly();
   });
 
