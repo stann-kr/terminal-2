@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { href, pagePaths, type Lang, type Page, type Translate } from '../events/data';
 import { gsap, useGSAP, useMotionEnabled } from '../motion/MotionProvider';
 import { useReadoutMotion } from '../motion/useReadoutMotion';
-import { useControlMotion } from '../motion/useControlMotion';
 import '../motion/motion.css';
 import './shell.css';
 
@@ -27,10 +26,9 @@ export function Shell({ page, viewKey, motionKey, lang, t, setLang, crt, toggleC
   const enabled = useMotionEnabled();
   const entry = page === 'entry';
   const wasEntry = useRef(entry);
-  useControlMotion(shellRef, `${viewKey}:${motionKey}`);
-  useReadoutMotion(mainRef, { key: motionKey, active: !entry, titles: '[data-active=true] [data-motion-title]', content: '[data-active=true] [data-motion-copy]', controls: '[data-active=true] [data-motion-controls]', rules: '[data-active=true] .tm-page-heading,[data-active=true] .tm-home-title' });
+  useReadoutMotion(mainRef, { key: motionKey, active: !entry, titles: '[data-active=true] [data-motion-title]', content: '[data-active=true] [data-motion-copy]', controls: '[data-active=true] [data-motion-controls]' });
   useReadoutMotion(headerRef, { key: entry ? 'entry' : 'desktop', active: !entry, controls: '.tm-topline,.tm-navigation' });
-  useReadoutMotion(navigationRef, { key: `${menu}:${page}`, active: menu && !entry, content: 'a:nth-child(n+4) > span:not(.tm-nav-code):not([data-control-label])' });
+  useReadoutMotion(navigationRef, { key: `${menu}:${page}`, active: menu && !entry, content: 'a:nth-child(n+4) > span:not(.tm-nav-code)' });
   useGSAP(() => {
     const entering = wasEntry.current && !entry;
     wasEntry.current = entry;
@@ -61,7 +59,7 @@ export function Shell({ page, viewKey, motionKey, lang, t, setLang, crt, toggleC
       <div className="tm-topline"><a id="tm-brand" className="tm-brand" href={href('home')}>TERMINAL<span>{' // SEOUL'}</span></a><div className="tm-utilities"><a className="tm-channel-link" href={href('link')}>{t('공식 채널', 'Channels')}</a><button type="button" aria-label={t('CRT 화면 효과', 'CRT display effects')} aria-pressed={crt} onClick={toggleCrt}>CRT <span aria-hidden="true">{crt ? '■' : '□'}</span></button><button type="button" aria-label={t('영어로 보기', 'Switch to Korean')} onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}>{lang === 'ko' ? 'EN' : 'KO'}</button><button ref={menuRef} className="tm-menu-toggle" hidden={page === 'entry'} type="button" aria-expanded={menu} aria-controls="tm-navigation" onClick={() => setMenu(!menu)}>{t('메뉴', 'Menu')} [{menu ? '−' : '+'}]</button></div></div>
       <nav hidden={page === 'entry'} ref={navigationRef} id="tm-navigation" className="tm-navigation" data-open={menu} aria-label={t('주요 메뉴', 'Main navigation')}>
         {directory.map(item => <a key={item.page} href={href(item.page)} aria-current={page === item.page ? 'page' : undefined} onClick={() => { setMenu(false); if (page === item.page) menuRef.current?.focus(); }}><span className="tm-nav-code">{item.code}</span><span>{item[lang]}</span></a>)}
-        <a className="tm-mobile-channels" href={href('link')} onClick={() => setMenu(false)}><span data-control-label>{t('공식 채널', 'Channels')}</span></a>
+        <a className="tm-mobile-channels" href={href('link')} onClick={() => setMenu(false)}><span>{t('공식 채널', 'Channels')}</span></a>
       </nav>
     </header>
     <main ref={mainRef} id="tm-main" tabIndex={-1} className="tm-main">{children}</main>

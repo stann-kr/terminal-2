@@ -1,6 +1,7 @@
 import { manifestoKo, manifestoEn, linkKo, linkEn } from '../../../lib/i18n';
 import { href, isPublicArtist, type ScreenProps } from '../events/data';
 import { Action, PageHeading } from '../shared/Ui';
+import { TerminalText } from '../motion/TerminalText';
 import './info.css';
 
 export function Status({ events, t }: ScreenProps) {
@@ -22,5 +23,5 @@ export function Channels({ lang, t }: ScreenProps) {
     { href: 'https://www.instagram.com/stannlumo/', title: 'STANN LUMO INSTAGRAM', description: copy.descriptions.stannInsta },
     { href: 'https://www.instagram.com/terminal_hub/', title: 'TERMINAL INSTAGRAM', description: copy.descriptions.terminalInsta },
   ];
-  return <><PageHeading code="LINK / EXTERNAL CHANNELS" title={t('공식 채널', 'Official channels')} /><nav className="tm-channels" aria-label={t('공식 채널', 'Official channels')}>{links.map((link, index) => <a href={link.href} key={link.href} target="_blank" rel="noopener noreferrer"><span className="tm-eyebrow">[{String(index + 1).padStart(2, '0')}]</span><h2 data-motion-title><span data-control-label>{link.title}</span></h2><p data-motion-copy>{link.description}<span className="tm-sr-only"> · {t('새 탭에서 열기', 'Opens in a new tab')}</span></p></a>)}</nav></>;
+  return <><PageHeading code="LINK / EXTERNAL CHANNELS" title={t('공식 채널', 'Official channels')} /><nav className="tm-channels" aria-label={t('공식 채널', 'Official channels')}>{links.map((link, index) => <a href={link.href} key={link.href} target="_blank" rel="noopener noreferrer"><span className="tm-eyebrow">[{String(index + 1).padStart(2, '0')}]</span><h2 data-motion-title><TerminalText>{link.title}</TerminalText></h2><p data-motion-copy>{link.description}<span className="tm-sr-only"> · {t('새 탭에서 열기', 'Opens in a new tab')}</span></p></a>)}</nav></>;
 }
