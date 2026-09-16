@@ -179,6 +179,26 @@ describe('isolated Aspen terminal mockup', () => {
 });
 
 describe('mockup motion continuity', () => {
+  it('holds layout surfaces until their output step and restores them immediately on interaction', () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    try {
+      render(<App />);
+      gsap.globalTimeline.pause();
+      const frame = document.querySelector('.tm-home-title');
+      const action = active().getByRole('link', { name: /아카이브 보기/ });
+      expect(frame).not.toBeVisible();
+      expect(action).not.toBeVisible();
+      expect(active().getByRole('heading', { level: 1 })).toHaveAccessibleName('TERMINAL');
+      fireEvent.keyDown(document.querySelector('main')!, { key: 'Tab' });
+      expect(frame).toBeVisible();
+      expect(action).toBeVisible();
+      expect(active().getByRole('heading', { level: 1 })).toBeVisible();
+    } finally {
+      gsap.globalTimeline.resume();
+    }
+  });
+
   it('keeps inline fragments on one output line and reveals the next wrapped line separately', () => {
     const paragraph = document.createElement('p');
     paragraph.innerHTML = '첫 줄 <strong>강조</strong><br>Second line';
@@ -290,12 +310,13 @@ describe('mockup motion continuity', () => {
     await navigate('/transmit');
     render(<App />);
     const field = active().getByLabelText('별칭');
-    expect(field).toBeVisible();
+    expect(field).toBeInTheDocument();
     expect(field).toBeEnabled();
     const empty = active().getByText('게시된 글이 없습니다.');
     expect(empty.textContent).toBe('게시된 글이 없습니다.');
     fireEvent.input(field, { target: { value: 'LINE_TEST' } });
     expect(field).toHaveValue('LINE_TEST');
+    expect(field).toBeVisible();
     expect(empty).toBeVisible();
     expect(empty.style.clipPath).toBe('');
     await navigate('/about');

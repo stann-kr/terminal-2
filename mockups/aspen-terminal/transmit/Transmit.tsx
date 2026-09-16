@@ -22,8 +22,8 @@ export function Transmit({ t, lang, failSubmission, samples, active }: Pick<Scre
   const all = [...entries, ...(samples ? examples : [])];
   const maxPage = Math.max(0, Math.ceil(all.length / 3) - 1);
   const currentPage = Math.min(page, maxPage);
-  useReadoutMotion(logRef, { key: `${lang}:${currentPage}:${samples}:${entries[0]?.id}`, active, content: ':scope' });
-  useReadoutMotion(formRef, { key: `${error}:${sent}`, contentKey: lang, active, content: ':scope', updates: '.tm-field-error,[role=status]' });
+  useReadoutMotion(logRef, { key: `${lang}:${currentPage}:${samples}:${entries[0]?.id}`, active, content: ':scope', layout: true });
+  useReadoutMotion(formRef, { key: `${error}:${sent}`, contentKey: lang, active, content: ':scope', updates: '.tm-field-error,[role=status]', layout: true });
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   const submit = (e: FormEvent) => {
     e.preventDefault();
