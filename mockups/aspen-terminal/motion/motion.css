@@ -4,3 +4,4 @@
 .tm-terminal-text > [data-readout-output]::before { content: attr(data-readout-output); }
 .tm-pending-cursor { flex: none; font-family: var(--tm-mono); }
 .tm-shell :is(input,textarea) { caret-color: var(--tm-accent); }
+.tm-button > span,.tm-text-link > span { display: inline-block; max-width: 100%; }
