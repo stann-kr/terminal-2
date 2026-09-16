@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../mockups/aspen-terminal/App';
+import { ENTRY_VISIT_KEY, chooseEntryLanguage, completeEntryVisit } from '../mockups/aspen-terminal/entry/visitState';
 
 function active() {
   const element = document.querySelector<HTMLElement>('[data-active="true"]');
@@ -22,9 +23,12 @@ function scenario(value: string) {
 
 beforeEach(() => {
   window.history.replaceState(null, '', '/#/home');
+  window.localStorage.removeItem(ENTRY_VISIT_KEY);
+  vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['ko-KR', 'en-US']);
+  vi.spyOn(navigator, 'language', 'get').mockReturnValue('ko-KR');
   vi.stubGlobal('fetch', vi.fn(() => { throw new Error('The mockup must not call the network'); }));
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('isolated Aspen terminal mockup', () => {
   it('opens the dated archive, preserves the event through navigation and rejects an invalid event URL', async () => {
@@ -168,6 +172,105 @@ describe('isolated Aspen terminal mockup', () => {
     const crt = screen.getByRole('button', { name: 'CRT display effects' });
     await user.click(crt);
     expect(crt).toHaveAttribute('aria-pressed', 'false');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('mockup boot and automatic language', () => {
+  it.each([
+    { languages: ['ja-JP', 'ko-KR', 'en-US'], language: 'ja-JP', expected: 'ko' },
+    { languages: ['en-GB', 'ko-KR'], language: 'en-GB', expected: 'en' },
+    { languages: ['ja-JP', 'fr-FR'], language: 'ja-JP', expected: 'en' },
+    { languages: [], language: 'ko-KR', expected: 'ko' },
+  ])('detects supported preferences in order: $languages / $language → $expected', async ({ languages, language, expected }) => {
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(languages);
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue(language);
+    await navigate('/entry?mode=boot');
+    render(<App />);
+    expect(document.documentElement.lang).toBe(expected);
+    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    expect(active().queryByRole('button', { name: /한국어|English/ })).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('completes the boot, returns to the same shell, and shows IDLE on the next entry without pinning automatic language', async () => {
+    const user = userEvent.setup();
+    await navigate('/entry');
+    const first = render(<App />);
+    expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
+    const shell = document.querySelector('.tm-shell');
+    await user.click(active().getByRole('button', { name: '[ ENTER TERMINAL ]' }));
+    await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
+    expect(document.querySelector('.tm-shell')).toBe(shell);
+    expect(JSON.parse(window.localStorage.getItem(ENTRY_VISIT_KEY)!)).toEqual({ visited: true });
+    first.unmount();
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US']);
+    await navigate('/entry');
+    render(<App />);
+    expect(active().getByRole('region', { name: 'Idle screen' })).toBeInTheDocument();
+    expect(active().getByRole('timer')).toHaveTextContent(/\d{2}:\d{2}:\d{2}/);
+    await user.click(active().getByRole('button', { name: 'Return to events' }));
+    await waitFor(() => expect(active().getByRole('link', { name: /View archive/ })).toBeInTheDocument());
+  });
+
+  it('prioritizes an explicit language choice over browser preferences and preserves it on reload', async () => {
+    const user = userEvent.setup();
+    await navigate('/entry?mode=boot');
+    const first = render(<App />);
+    await user.click(screen.getByRole('button', { name: '영어로 보기' }));
+    expect(active().getByText('Your saved language')).toBeInTheDocument();
+    first.unmount();
+    render(<App />);
+    expect(document.documentElement.lang).toBe('en');
+    expect(active().getByText('Your saved language')).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem(ENTRY_VISIT_KEY)!)).toEqual({ visited: false, lang: 'en' });
+  });
+
+  it('continues with tab memory when browser storage is blocked', async () => {
+    chooseEntryLanguage('ko');
+    completeEntryVisit();
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('Blocked', 'SecurityError'); });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Blocked', 'SecurityError'); });
+    await navigate('/entry');
+    render(<App />);
+    expect(active().getByRole('region', { name: '대기 화면' })).toBeInTheDocument();
+    fireEvent.click(active().getByRole('button', { name: '이벤트로 돌아가기' }));
+    await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
+  });
+
+  it('plays through the boot without a language gate, waits for ENTER, and can replay or skip', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    await navigate('/entry?mode=boot');
+    render(<App />);
+    expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
+    await waitFor(() => expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled(), { timeout: 4000 });
+    expect(window.location.hash).toBe('#/entry?mode=boot');
+    fireEvent.click(screen.getByRole('button', { name: '부팅 다시 보기' }));
+    expect(active().queryByRole('button', { name: '[ ENTER TERMINAL ]' })).not.toBeInTheDocument();
+    fireEvent.click(active().getByRole('button', { name: '애니메이션 건너뛰기' }));
+    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    expect(active().getByText('브라우저 언어 자동 감지')).toBeInTheDocument();
+  });
+
+  it('finishes immediately on CRT OFF and lets a direct exit cancel the boot while preserving a draft', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    await navigate('/signal');
+    render(<App />);
+    await user.type(active().getByLabelText('이메일'), 'draft@example.com');
+    await navigate('/entry?mode=boot');
+    fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
+    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
+    expect(active().getByRole('button', { name: '[ ENTER TERMINAL ]' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: '부팅 다시 보기' }));
+    await user.click(active().getByRole('link', { name: '이벤트 바로 보기 ↗' }));
+    await waitFor(() => expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument());
+    expect(window.localStorage.getItem(ENTRY_VISIT_KEY)).toBeNull();
+    await navigate('/signal');
+    expect(active().getByLabelText('이메일')).toHaveValue('draft@example.com');
     expect(fetch).not.toHaveBeenCalled();
   });
 });

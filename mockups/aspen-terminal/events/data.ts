@@ -3,8 +3,9 @@ import { getEffectiveEventStatus } from '../../../lib/events/lifecycle';
 import type { Artist, TerminalEvent } from '../../../lib/events/types';
 
 export type Lang = 'ko' | 'en';
+export type EntryMode = 'auto' | 'boot' | 'idle';
 export type Scenario = 'snapshot' | 'upcoming' | 'live' | 'empty' | 'error' | 'long';
-export type Page = 'home' | 'gate' | 'lineup' | 'request' | 'status' | 'transmit' | 'signal' | 'about' | 'link';
+export type Page = 'home' | 'gate' | 'lineup' | 'request' | 'status' | 'transmit' | 'signal' | 'about' | 'link' | 'entry';
 export type Translate = (ko: string, en: string) => string;
 export const SNAPSHOT_AT = new Date('2026-09-15T23:11:00+09:00');
 export const eventsSnapshot = snapshot as TerminalEvent[];
@@ -29,7 +30,7 @@ export function biography(artist: Artist, lang: Lang): string[] {
   return (Array.isArray(text) ? text : text?.split('\n') ?? []).filter(line => line.trim());
 }
 
-export const pagePaths: Record<Page, string> = { home: '/home', gate: '/gate', lineup: '/lineup', request: '/gate/request', status: '/status', transmit: '/transmit', signal: '/signal', about: '/about', link: '/link' };
+export const pagePaths: Record<Page, string> = { home: '/home', gate: '/gate', lineup: '/lineup', request: '/gate/request', status: '/status', transmit: '/transmit', signal: '/signal', about: '/about', link: '/link', entry: '/entry' };
 export function href(page: Page, event?: string, artist?: string) {
   const query = new URLSearchParams();
   if (event) query.set('event', event);
@@ -41,7 +42,9 @@ export function readLocation() {
   const [path, search = ''] = window.location.hash.slice(1).split('?');
   const page = (Object.keys(pagePaths) as Page[]).find(key => pagePaths[key] === path) ?? 'home';
   const params = new URLSearchParams(search);
-  return { page, eventId: params.get('event'), artistId: params.get('artist') };
+  const mode = params.get('mode');
+  const entryMode: EntryMode = mode === 'boot' || mode === 'idle' ? mode : 'auto';
+  return { page, eventId: params.get('event'), artistId: params.get('artist'), entryMode };
 }
 
 export interface ScreenProps {

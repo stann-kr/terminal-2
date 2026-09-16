@@ -12,20 +12,19 @@ const directory: { page: Page; code: string; ko: string; en: string }[] = [
   { page: 'about', code: 'ABOUT', ko: '소개', en: 'About' },
 ];
 
-export function Shell({ page, lang, t, setLang, children }: { page: Page; lang: Lang; t: Translate; setLang: (lang: Lang) => void; children: ReactNode }) {
-  const [crt, setCrt] = useState(true);
+export function Shell({ page, viewKey, lang, t, setLang, crt, toggleCrt, children }: { page: Page; viewKey: string; lang: Lang; t: Translate; setLang: (lang: Lang) => void; crt: boolean; toggleCrt: () => void; children: ReactNode }) {
   const [menu, setMenu] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLElement>(null);
-  const lastPage = useRef(page);
+  const lastPage = useRef(viewKey);
   const mainRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (lastPage.current !== page) {
+    if (lastPage.current !== viewKey) {
       mainRef.current?.scrollTo?.({ top: 0 });
       mainRef.current?.querySelector<HTMLElement>('[data-active="true"] h1')?.focus();
-      lastPage.current = page;
+      lastPage.current = viewKey;
     }
-  }, [page]);
+  }, [viewKey]);
   useEffect(() => {
     const media = window.matchMedia('(min-width: 900px)');
     const close = () => {
@@ -39,11 +38,12 @@ export function Shell({ page, lang, t, setLang, children }: { page: Page; lang: 
   return <div className="tm-shell" data-crt={crt}>
     <a className="tm-skip" href="#tm-main" onClick={e => { e.preventDefault(); mainRef.current?.focus(); }}>{t('본문으로 건너뛰기', 'Skip to content')}</a>
     <header className="tm-header" onKeyDown={e => { if (e.key === 'Escape' && menu) { setMenu(false); menuRef.current?.focus(); } }}>
-      <div className="tm-topline"><a id="tm-brand" className="tm-brand" href={href('home')}>TERMINAL<span>{' // SEOUL'}</span></a><div className="tm-utilities"><a className="tm-channel-link" href={href('link')}>{t('공식 채널', 'Channels')}</a><button type="button" aria-label={t('CRT 화면 효과', 'CRT display effects')} aria-pressed={crt} onClick={() => setCrt(!crt)}>CRT <span aria-hidden="true">{crt ? '■' : '□'}</span></button><button type="button" aria-label={t('영어로 보기', 'Switch to Korean')} onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}>{lang === 'ko' ? 'EN' : 'KO'}</button><button ref={menuRef} className="tm-menu-toggle" type="button" aria-expanded={menu} aria-controls="tm-navigation" onClick={() => setMenu(!menu)}>{t('메뉴', 'Menu')} [{menu ? '−' : '+'}]</button></div></div>
-      <nav ref={navigationRef} id="tm-navigation" className="tm-navigation" data-open={menu} aria-label={t('주요 메뉴', 'Main navigation')}>
+      <div className="tm-topline"><a id="tm-brand" className="tm-brand" href={href('home')}>TERMINAL<span>{' // SEOUL'}</span></a><div className="tm-utilities"><a className="tm-channel-link" href={href('link')}>{t('공식 채널', 'Channels')}</a><button type="button" aria-label={t('CRT 화면 효과', 'CRT display effects')} aria-pressed={crt} onClick={toggleCrt}>CRT <span aria-hidden="true">{crt ? '■' : '□'}</span></button><button type="button" aria-label={t('영어로 보기', 'Switch to Korean')} onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}>{lang === 'ko' ? 'EN' : 'KO'}</button><button ref={menuRef} className="tm-menu-toggle" hidden={page === 'entry'} type="button" aria-expanded={menu} aria-controls="tm-navigation" onClick={() => setMenu(!menu)}>{t('메뉴', 'Menu')} [{menu ? '−' : '+'}]</button></div></div>
+      <nav hidden={page === 'entry'} ref={navigationRef} id="tm-navigation" className="tm-navigation" data-open={menu} aria-label={t('주요 메뉴', 'Main navigation')}>
         {directory.map(item => <a key={item.page} href={href(item.page)} aria-current={page === item.page ? 'page' : undefined} onClick={() => { setMenu(false); if (page === item.page) menuRef.current?.focus(); }}><span className="tm-nav-code">{item.code}</span><span>{item[lang]}</span></a>)}
         <a className="tm-mobile-channels" href={href('link')} onClick={() => setMenu(false)}>{t('공식 채널', 'Channels')}</a>
       </nav>
+      {page === 'entry' && <div className="tm-entry-rail"><span>TERMINAL EXPERIENCE</span><span>BOOT / IDLE</span></div>}
     </header>
     <main ref={mainRef} id="tm-main" tabIndex={-1} className="tm-main">{children}</main>
     <footer className="tm-footer"><span>STANN OS / LIVE</span><span className="tm-path">{pagePaths[page]}</span><a href={href('link')}>{t('공식 채널', 'Official channels')} ↗</a></footer>
