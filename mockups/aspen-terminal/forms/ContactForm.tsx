@@ -94,7 +94,7 @@ export function ContactForm(props: ScreenProps & { kind: 'request' | 'signal'; f
         {request && verified && <p className="tm-form-hint">{t('신청 대상', 'Request for')}: {event?.session} / {event?.date}</p>}
         {failed && <p className="tm-field-error" role="alert">{t('전송 실패 예시입니다. 입력은 유지됩니다. 다시 시도할 수 있습니다.', 'Simulated submission failure. Your draft is retained; you can retry.')}</p>}
         <div className="tm-sr-only" role="status">{Object.values(errors).some(Boolean) ? t('입력 항목을 확인해 주세요.', 'Check the form fields.') : ''}</div>
-        <button className="tm-action tm-submit" disabled={pending || !verified} type="submit"><span>{pending ? t('처리 중…', 'Processing…') : request ? t('신청 제출', 'Submit request') : t('소식 신청', 'Subscribe')}</span><span aria-hidden="true">{pending ? '▌' : '↗'}</span></button>
+        <button className="tm-action tm-submit" disabled={pending || !verified} type="submit"><span>{pending ? t('처리 중…', 'Processing…') : request ? t('신청 제출', 'Submit request') : t('소식 신청', 'Subscribe')}</span>{pending && <span aria-hidden="true">▌</span>}</button>
       </form>}
     </section>
   </div>;

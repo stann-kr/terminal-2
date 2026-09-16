@@ -5,7 +5,6 @@
 .tm-entry-signature > p:first-child { color: var(--tm-text); }
 .tm-boot-console { display: flex; flex-direction: column; gap: clamp(12px,2cqb,28px); min-width: 0; }
 .tm-boot-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px 20px; }
-.tm-boot-toolbar .tm-text-link { font-size: .75rem; }
 .tm-boot-output { font: clamp(.7rem,min(1cqi,2cqb),.875rem)/1.8 var(--tm-mono); }
 .tm-boot-prompt { color: var(--tm-accent); margin-bottom: clamp(12px,2cqb,24px); }
 .tm-boot-prompt > span { display: block; font-size: .7rem; color: var(--tm-muted); }
@@ -22,7 +21,8 @@
 .tm-boot-progress { height: 3px; overflow: hidden; background: var(--tm-line); }
 .tm-boot-progress > span { display: block; height: 100%; background: var(--tm-accent); transform: scaleX(0); transform-origin: left; }
 .tm-boot-interaction { display: flex; flex-direction: column; justify-content: end; }
-.tm-boot-ready .tm-action { width: 100%; font-family: var(--tm-mono); }
+.tm-entry[data-phase=ready] .tm-boot-interaction { flex: 1; justify-content: center; gap: clamp(20px,4cqb,40px); }
+.tm-boot-enter { width: 100%; min-height: clamp(104px,18cqb,180px); justify-content: center; padding: clamp(20px,3cqb,32px); font: clamp(2rem,min(4.5cqi,6.5cqb),4.5rem)/1.2 var(--tm-display); text-align: center; }
 .tm-boot-bottom { margin-top: auto; padding-top: clamp(12px,2cqb,22px); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; border-top: 1px solid var(--tm-line); }
 .tm-boot-bottom .tm-button { font-size: .75rem; }
 .tm-entry-power { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center,#ff5d0020,transparent 70%); opacity: 0; }
