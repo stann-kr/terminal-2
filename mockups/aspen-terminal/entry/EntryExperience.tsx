@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { EntryMode, Lang, Translate } from '../events/data';
 import { BOOT_LINES, useBootSequence } from './useBootSequence';
 import { completeEntryVisit, readEntryVisit } from './visitState';
+import { useReadoutMotion } from '../motion/useReadoutMotion';
 import './entry.css';
 
-interface EntryProps { lang: Lang; t: Translate; crt: boolean; languageOrigin: 'manual' | 'browser' | 'fallback'; onComplete: () => void }
+interface EntryProps { lang: Lang; t: Translate; languageOrigin: 'manual' | 'browser' | 'fallback'; onComplete: () => void }
 
 function Identity({ t, idle = false }: { t: Translate; idle?: boolean }) {
   return <div className="tm-entry-identity tm-cell">
@@ -14,10 +15,10 @@ function Identity({ t, idle = false }: { t: Translate; idle?: boolean }) {
   </div>;
 }
 
-function Boot({ t, lang, languageOrigin, onComplete, crt }: EntryProps) {
+function Boot({ t, lang, languageOrigin, onComplete }: EntryProps) {
   const root = useRef<HTMLElement>(null);
   const enterRef = useRef<HTMLButtonElement>(null);
-  const sequence = useBootSequence(root, crt);
+  const sequence = useBootSequence(root);
   const { phase, startedCount, completedCount } = sequence;
   const ready = phase === 'ready';
 
@@ -53,6 +54,8 @@ function Boot({ t, lang, languageOrigin, onComplete, crt }: EntryProps) {
 }
 
 function Idle({ t, onComplete }: EntryProps) {
+  const root = useRef<HTMLElement>(null);
+  useReadoutMotion(root, { key: 'idle', titles: '.tm-entry-identity h1', content: '.tm-idle-time,.tm-idle-return h2', controls: '.tm-idle-return .tm-action' });
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;
@@ -68,7 +71,7 @@ function Idle({ t, onComplete }: EntryProps) {
   }, []);
   const clock = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
   const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-  return <section className="tm-entry tm-entry-idle" aria-label={t('대기 화면', 'Idle screen')}>
+  return <section ref={root} className="tm-entry tm-entry-idle" aria-label={t('대기 화면', 'Idle screen')}>
     <Identity t={t} idle />
     <div className="tm-idle-content tm-cell"><p className="tm-eyebrow">SEOUL_TIME / KST</p><div className="tm-idle-time" role="timer" aria-live="off"><time dateTime={now.toISOString()}>{clock}</time><p>{date}</p></div><div className="tm-idle-return"><p className="tm-eyebrow">TERMINAL / IDLE</p><h2>{t('다시 오셨군요.', 'Welcome back.')}</h2><button type="button" className="tm-action" onClick={onComplete}><span>{t('이벤트로 돌아가기', 'Return to events')}</span></button></div></div>
   </section>;
