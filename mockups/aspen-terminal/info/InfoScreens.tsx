@@ -11,7 +11,7 @@ export function Status({ events, t }: ScreenProps) {
 
 export function About({ lang, t }: ScreenProps) {
   const manifesto = lang === 'ko' ? manifestoKo : manifestoEn;
-  return <><PageHeading code="ABOUT / TERMINAL" title={t('TERMINAL 소개', 'About TERMINAL')} /><div className="tm-about"><section className="tm-about-identity tm-cell"><p className="tm-eyebrow">SEOUL / TECHNO PLATFORM</p><p className="tm-about-wordmark" aria-hidden="true">TER<br />MINAL</p><h2>{manifesto[0]}</h2></section><section className="tm-about-copy tm-cell"><div className="tm-prose">{manifesto.slice(1).map((line, i) => <p key={i}>{line}</p>)}</div><div className="tm-action-group"><Action page="gate">{t('이벤트 보기', 'Explore events')}</Action><Action page="link" secondary>{t('공식 채널', 'Official channels')}</Action></div></section></div></>;
+  return <><PageHeading code="ABOUT / TERMINAL" title={t('TERMINAL 소개', 'About TERMINAL')} /><div className="tm-about"><section className="tm-about-identity tm-cell"><p className="tm-eyebrow">SEOUL / TECHNO PLATFORM</p><p className="tm-about-wordmark" aria-hidden="true">TER<br />MINAL</p><h2>{manifesto[0]}</h2></section><section className="tm-about-copy tm-cell"><div className="tm-prose">{manifesto.slice(1).map((line, i) => <p key={i}>{line}</p>)}</div><div className="tm-action-group"><Action page="gate">{t('이벤트 보기', 'Explore events')}</Action><Action page="link" secondary>{t('공식 채널', 'Official channels')}</Action><a className="tm-text-link" href={href('entry')}>{t('터미널 체험', 'Terminal experience')} ↗</a></div></section></div></>;
 }
 
 export function Channels({ lang, t }: ScreenProps) {
