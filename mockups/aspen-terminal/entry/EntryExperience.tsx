@@ -45,9 +45,9 @@ function Boot({ t, lang, languageOrigin, onComplete, crt }: EntryProps) {
       <div className="tm-boot-progress" aria-hidden="true" hidden={!running}><span data-entry-progress /></div>
       <div className="tm-boot-interaction">
         <p className="tm-boot-language-set">LANGUAGE / {lang.toUpperCase()}<span>{languageOrigin === 'manual' ? t('직접 선택한 언어', 'Your saved language') : languageOrigin === 'browser' ? t('브라우저 언어 자동 감지', 'Detected from browser preferences') : t('기본 언어', 'Default language')}</span></p>
-        {phase === 'ready' && <div className="tm-boot-ready"><p>{t('화면이 준비되었습니다.', 'The interface is ready.')}</p><button ref={enterRef} type="button" className="tm-action" onClick={onComplete}><span>[ ENTER TERMINAL ]</span><span aria-hidden="true">↗</span></button></div>}
+        {phase === 'ready' && <div className="tm-boot-ready"><button ref={enterRef} type="button" className="tm-action" onClick={onComplete}><span>[ ENTER TERMINAL ]</span><span aria-hidden="true">↗</span></button></div>}
       </div>
-      <div className="tm-boot-bottom"><span className="tm-eyebrow">{t('터미널 체험', 'TERMINAL EXPERIENCE')}</span><button type="button" className="tm-button" disabled={!running} onClick={sequence.skip}>{t('애니메이션 건너뛰기', 'Skip animation')}</button></div>
+      <div className="tm-boot-bottom" hidden={!running}><span className="tm-eyebrow">{t('터미널 체험', 'TERMINAL EXPERIENCE')}</span><button type="button" className="tm-button" disabled={!running} onClick={sequence.skip}>{t('애니메이션 건너뛰기', 'Skip animation')}</button></div>
       <p className="tm-sr-only" role="status">{phase === 'ready' ? t('부팅 연출 완료. ENTER TERMINAL 버튼으로 진입하세요.', 'Sequence complete. Select ENTER TERMINAL to continue.') : t('부팅 연출 진행 중', 'Visual boot sequence in progress')}</p>
     </div>
     <div data-entry-power className="tm-entry-power" aria-hidden="true" />
