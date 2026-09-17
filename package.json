@@ -65,7 +65,11 @@
     "test": "vitest run",
     "test:d1": "node scripts/verify-local-d1.mjs",
     "typecheck": "tsc --noEmit",
-    "postinstall": "patch-package --error-on-fail && node scripts/verify-use-scramble-patch.mjs"
+    "postinstall": "patch-package --error-on-fail && node scripts/verify-use-scramble-patch.mjs",
+    "archive:prepare": "node archives/classic/run.mjs prepare",
+    "archive:dev": "node archives/classic/run.mjs dev",
+    "archive:build": "node archives/classic/run.mjs build",
+    "archive:start": "node archives/classic/run.mjs start"
   },
   "version": "0.1.0",
   "overrides": {
