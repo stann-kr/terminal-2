@@ -33,6 +33,28 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('isolated Aspen terminal mockup', () => {
+  it('restores the event clock with distinct remaining and elapsed states and advances its preview seconds', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-09-17T00:00:00+09:00'));
+      render(<App />);
+      expect(active().getByRole('timer', { name: '이벤트 시작 후 경과 시간' })).toHaveTextContent('T+ ELAPSED');
+      scenario('upcoming');
+      const countdown = active().getByRole('timer', { name: '이벤트 시작까지 남은 시간' });
+      expect(countdown).toHaveTextContent('T− COUNTDOWN');
+      expect(countdown).toHaveTextContent('체험 시계');
+      expect([...countdown.querySelectorAll('dd')].map(node => node.textContent)).toEqual(['07', '00', '00', '00']);
+      act(() => { vi.advanceTimersByTime(1000); });
+      expect([...countdown.querySelectorAll('dd')].map(node => node.textContent)).toEqual(['06', '23', '59', '59']);
+      expect(countdown).toHaveAttribute('aria-live', 'off');
+      scenario('empty');
+      expect(active().queryByRole('timer')).not.toBeInTheDocument();
+    } finally {
+      cleanup();
+      vi.useRealTimers();
+    }
+  });
+
   it('opens the dated archive, preserves the event through navigation and rejects an invalid event URL', async () => {
     render(<App />);
     expect(active().getByText('지난 이벤트')).toBeInTheDocument();
@@ -40,6 +62,12 @@ describe('isolated Aspen terminal mockup', () => {
     await navigate('/gate?event=TRM-01');
     expect(active().getByRole('heading', { level: 1 })).toHaveTextContent('TERMINAL [01]');
     expect(active().getByRole('link', { name: /라인업 보기/ })).toHaveAttribute('href', '#/lineup?event=TRM-01');
+    const navigation = within(screen.getByRole('navigation', { name: '주요 메뉴' }));
+    expect(navigation.getByRole('link', { name: /LINEUP/ })).toHaveAttribute('href', '#/lineup?event=TRM-01');
+    expect(navigation.getByRole('link', { name: /GUEST_REQ/ })).toHaveAttribute('href', '#/gate/request?event=TRM-01');
+    await userEvent.click(navigation.getByRole('link', { name: /LINEUP/ }));
+    await waitFor(() => expect(active().getByLabelText('이벤트 선택')).toHaveValue('TRM-01'));
+    expect(active().getByRole('link', { name: /MARCUS L/ })).toBeInTheDocument();
     expect(active().queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
     await navigate('/gate?event=missing');
     expect(active().getByRole('heading', { level: 1 })).toHaveTextContent('이벤트를 찾을 수 없습니다');
@@ -149,6 +177,7 @@ describe('isolated Aspen terminal mockup', () => {
     expect(active().getByRole('heading', { level: 1 })).toHaveTextContent('정보를 불러오지 못했습니다');
     fireEvent.click(active().getByRole('button', { name: '다시 시도' }));
     expect(active().getByRole('link', { name: /아카이브 보기/ })).toBeInTheDocument();
+    expect(active().getByRole('heading', { level: 1 })).toHaveFocus();
     scenario('empty');
     expect(active().getByRole('heading', { level: 1 })).toHaveTextContent('공개된 이벤트가 없습니다');
     expect(fetch).not.toHaveBeenCalled();
@@ -179,7 +208,7 @@ describe('isolated Aspen terminal mockup', () => {
 });
 
 describe('mockup motion continuity', () => {
-  it('holds layout surfaces until their output step and restores them immediately on interaction', () => {
+  it.each(['keyboard', 'wheel'] as const)('holds layout surfaces until their output step and restores them on %s interaction', interaction => {
     vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ media: query, matches: false, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true }));
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     try {
@@ -190,7 +219,8 @@ describe('mockup motion continuity', () => {
       expect(frame).not.toBeVisible();
       expect(action).not.toBeVisible();
       expect(active().getByRole('heading', { level: 1 })).toHaveAccessibleName('TERMINAL');
-      fireEvent.keyDown(document.querySelector('main')!, { key: 'Tab' });
+      if (interaction === 'keyboard') fireEvent.keyDown(document.querySelector('main')!, { key: 'Tab' });
+      else fireEvent.wheel(document.querySelector('main')!, { deltaY: 120 });
       expect(frame).toBeVisible();
       expect(action).toBeVisible();
       expect(active().getByRole('heading', { level: 1 })).toBeVisible();

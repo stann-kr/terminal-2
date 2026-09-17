@@ -34,3 +34,12 @@
 .tm-closed-event h2 { font: 1.6rem/1.4 var(--tm-display); }
 .tm-closed-event > p { font: .8rem/1.8 var(--tm-mono); }
 @media (max-width: 760px) { .tm-contact-grid { grid-template-columns: 1fr; min-height: 0; } .tm-contact-context { border-right: 0; border-bottom: 1px solid var(--tm-line); gap: 22px; } .tm-contact-context > h1 { font-size: clamp(2.7rem,12cqi,5rem); } .tm-contact-context-bottom > h2 { margin-bottom: 16px; } .tm-contact-context .tm-prose p + p { margin-top: 8px; } .tm-contact-context-bottom { margin-top: 0; } .tm-contact-notice { margin-top: 20px; padding-top: 16px; } }
+
+@media (max-width: 760px) {
+  .tm-contact-grid[data-kind=signal] .tm-contact-context { gap: 16px; }
+  .tm-contact-grid[data-kind=signal] .tm-contact-context > h1 { font-size: clamp(2.25rem,10cqi,4rem); }
+  .tm-contact-grid[data-kind=signal] .tm-contact-context-bottom > h2 { font-size: 1.2rem; margin-bottom: 12px; }
+  .tm-contact-grid[data-kind=signal] .tm-contact-context .tm-prose { font-size: .875rem; }
+  .tm-contact-form { gap: 16px; }
+  .tm-contact-fields { gap: 16px; }
+}

@@ -1,6 +1,7 @@
 import { useRef, type RefObject } from 'react';
 import { gsap, useGSAP, useMotionEnabled } from './MotionProvider';
 import { measureReadout, readoutPanels, readoutText } from './readoutLines';
+import { writeWordmark } from '../shared/Wordmark';
 
 interface ReadoutOptions {
   key: string;
@@ -72,11 +73,14 @@ export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, act
           count: item.characters.length, duration,
           onUpdate: () => {
             const count = Math.floor(progress.count);
-            output.setAttribute('data-readout-output', item.characters.slice(0, count).join('') + (count < item.characters.length ? '▌' : ''));
+            const text = item.characters.slice(0, count).join('');
+            const cursor = count < item.characters.length;
+            output.setAttribute('data-readout-output', text + (cursor ? '▌' : ''));
+            writeWordmark(output, text, item.characters.join(''), cursor);
           },
         }, position)
           .set(item.source, { clearProps: 'opacity' }, position + duration)
-          .call(() => output.setAttribute('data-readout-output', ''), [], position + duration);
+          .call(() => { output.setAttribute('data-readout-output', ''); output.replaceChildren(); }, [], position + duration);
       } else {
         item.bottoms.forEach((bottom, index) => {
           sequence.set(item.node, { opacity: 1, clipPath: `inset(-0.15em -0.15em ${bottom ? `${bottom}px` : '-0.15em'} -0.15em)` }, position + index * duration / item.bottoms.length);
@@ -97,15 +101,17 @@ export function useReadoutMotion(root: RefObject<HTMLElement | null>, { key, act
       if (event.target instanceof Element && event.target.closest('input,textarea,select,button,a')) finish();
     };
     interactionRoot.addEventListener('pointerdown', finish, true);
+    interactionRoot.addEventListener('wheel', finish, { passive: true });
     interactionRoot.addEventListener('keydown', finish, true);
     interactionRoot.addEventListener('input', finish, true);
     interactionRoot.addEventListener('focusin', onFocus);
     window.addEventListener('resize', finish);
     document.fonts?.addEventListener('loadingdone', finish);
     return () => {
-      readouts.forEach(item => item.output?.setAttribute('data-readout-output', ''));
+      readouts.forEach(item => { item.output?.setAttribute('data-readout-output', ''); item.output?.replaceChildren(); });
       resize?.disconnect();
       interactionRoot.removeEventListener('pointerdown', finish, true);
+      interactionRoot.removeEventListener('wheel', finish);
       interactionRoot.removeEventListener('keydown', finish, true);
       interactionRoot.removeEventListener('input', finish, true);
       interactionRoot.removeEventListener('focusin', onFocus);

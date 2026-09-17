@@ -1,4 +1,4 @@
-.tm-lineup { display: grid; grid-template-columns: 1fr 3fr; }
+.tm-lineup { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,3fr); flex: 1 0 auto; }
 .tm-roster { border-right: 1px solid var(--tm-line); min-width: 0; }
 .tm-roster-date { font: .75rem/1.8 var(--tm-mono); color: var(--tm-muted); margin: 12px 0 36px; }
 .tm-roster ul { list-style: none; padding: 0; }
@@ -13,8 +13,10 @@
 .tm-artist-profile h2 { font: clamp(3rem,min(10cqi,12cqb),10rem)/.95 var(--tm-display); color: var(--tm-accent); max-width: 100%; overflow-wrap: anywhere; margin-block: clamp(12px,2cqb,40px); }
 .tm-artist-data { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border-block: 1px solid var(--tm-line); padding-block: clamp(12px,2cqb,20px); gap: 20px; }
 .tm-artist-data dt { color: var(--tm-muted); font-size: .75rem; margin-bottom: 8px; }
-.tm-artist-data dd { font: 1rem/1.5 var(--tm-mono); }
-.tm-artist-bio { margin-top: clamp(16px,2cqb,32px); max-width: none; }
+.tm-artist-data dd { overflow-wrap: anywhere; font: 1rem/1.5 var(--tm-mono); }
+.tm-artist-bio { margin-top: clamp(16px,2cqb,32px); max-width: 78ch; }
 .tm-roster-return { font-size: .75rem; }
 @media (max-width: 1000px) and (min-width: 761px) { .tm-lineup { grid-template-columns: 1fr 2fr; } .tm-roster li a { padding-inline: 18px; gap: 8px; } }
-@media (max-width: 760px) { .tm-lineup { grid-template-columns: 1fr; } .tm-roster { border-right: 0; border-bottom: 1px solid var(--tm-line); } .tm-roster-date { margin-bottom: 20px; } .tm-roster li a { min-height: 58px; } .tm-roster-unpublished { margin-block: 18px; } .tm-artist-profile h2 { margin-block: 30px; font-size: clamp(3rem,19cqi,7rem); } .tm-artist-data { gap: 14px; } }
+@media (max-width: 760px) { .tm-lineup { grid-template-columns: 1fr; } .tm-roster { border-right: 0; border-bottom: 1px solid var(--tm-line); } .tm-roster-date { margin-block: 8px 16px; } .tm-roster li a { min-height: 58px; } .tm-roster-unpublished { margin-block: 18px; } .tm-artist-profile h2 { margin-block: 30px; font-size: clamp(3rem,19cqi,7rem); } .tm-artist-data { grid-template-columns: 1fr 1fr 1.6fr; gap: 12px; } .tm-artist-data dd { font-size: .875rem; } }
+
+.tm-lineup[data-has-profile=false] .tm-artist-profile h2 { font-size: clamp(1.75rem,4cqi,3rem); line-height: 1.4; }
