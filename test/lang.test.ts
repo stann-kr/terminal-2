@@ -17,6 +17,17 @@ describe('optional browser storage resilience', () => {
     vi.unstubAllGlobals();
   });
 
+  it('detects the first supported browser language without overriding a saved choice', async () => {
+    vi.resetModules();
+    let saved: string | null = null;
+    vi.stubGlobal('window', { localStorage: { getItem: () => saved } });
+    vi.stubGlobal('navigator', { languages: ['fr-FR', 'en-GB', 'ko-KR'] });
+    const { getLang } = await import('../lib/lang');
+    expect(getLang({ detectBrowser: true })).toBe('en');
+    saved = 'ko';
+    expect(getLang({ detectBrowser: true })).toBe('ko');
+  });
+
   it.each(['access', 'read', 'write'])('keeps client preferences in memory when storage %s fails', async (failure) => {
     vi.resetModules();
     const storage = {

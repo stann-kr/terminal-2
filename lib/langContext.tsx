@@ -12,17 +12,17 @@ interface LangCtx {
 
 const LangContext = createContext<LangCtx>({ lang: 'ko', setLang: () => {} });
 
-export function LangProvider({ children }: { children: ReactNode }) {
+export function LangProvider({ children, detectBrowser = false }: { children: ReactNode; detectBrowser?: boolean }) {
   const [lang, setLangState] = useState<Lang>('ko');
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const storedLang = getLang();
+      const storedLang = getLang({ detectBrowser });
       setLangState(storedLang);
       document.documentElement.lang = storedLang;
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [detectBrowser]);
 
   const setLang = (l: Lang) => {
     setLangState(l);
