@@ -9,14 +9,13 @@
 .tm-transmit-compose label > span { color: var(--tm-muted); font: .75rem/1.5 var(--tm-mono); }
 .tm-transmit-compose .tm-action { margin-top: clamp(8px,1.5cqb,16px); }
 .tm-log-header { display: flex; justify-content: space-between; gap: 20px; align-items: center; }
-.tm-transmit-log ol { list-style: none; padding: 0; margin-block: 30px; }
-.tm-transmit-log li { padding-block: 24px; border-top: 1px solid var(--tm-line); }
+.tm-transmit-log ol { list-style: none; padding: 0; margin-block: 30px; display: flex; flex-direction: column; gap: clamp(24px,4cqb,36px); }
 .tm-transmit-log li > div { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
 .tm-transmit-log h3 { font: 1rem/1.5 var(--tm-mono); color: var(--tm-accent); overflow-wrap: anywhere; }
 .tm-transmit-log li span { font-size: .65rem; color: var(--tm-muted); }
-.tm-transmit-log li p { margin-top: 20px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
+.tm-transmit-log li p { margin-top: 12px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
 .tm-log-empty { margin-block: 45px; }
 .tm-log-empty > span { font: clamp(4rem,11cqi,10rem)/1 var(--tm-display); color: var(--tm-muted); }
 .tm-log-empty p { margin-top: 20px; color: var(--tm-muted); font-size: .875rem; }
-.tm-log-pagination { display: flex; justify-content: space-between; gap: 12px; align-items: center; font: .75rem/1.5 var(--tm-mono); border-top: 1px solid var(--tm-line); padding-top: 20px; }
+.tm-log-pagination { display: flex; justify-content: space-between; gap: 12px; align-items: center; font: .75rem/1.5 var(--tm-mono); margin-top: 24px; }
 @media (max-width: 760px) { .tm-transmit-grid { grid-template-columns: 1fr; } .tm-transmit-compose { border-right: 0; border-bottom: 1px solid var(--tm-line); } .tm-log-empty > span { font-size: 5rem; } }
