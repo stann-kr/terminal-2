@@ -2,6 +2,8 @@
 
 검정·오렌지, TERMINAL 워드마크 전용 Pixie와 본문/제목 Orbit 서체, 화면 전체 CRT 유리와 고정 header/footer를 유지하는 독립 목업입니다. 4열 기준선으로 Home, Gate, Lineup, Guest Request, Status, Transmit, Signal, About, Link를 구성합니다.
 
+격자선은 화면의 큰 영역을 나누는 데만 사용합니다. 영역 안의 목록·프로필 정보·안내·접수 결과는 추가 구분선이나 고정 칸 없이 제목·간격·자연스러운 줄바꿈으로 구분합니다. 입력칸·버튼·포커스 표시는 조작 가능한 요소를 식별하도록 유지합니다.
+
 ## 실행
 
 저장소에서 설치한 기존 React/esbuild와 lockfile을 사용합니다. 새 의존성은 없습니다.
