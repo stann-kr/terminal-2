@@ -6,21 +6,21 @@
 * 프로젝트 명: terminal-2 / STANN OS LIVE
 * 표면 역할: LIVE (`TM-02`) — 공개 URL `https://terminal.stann.kr`
 * 주요 기술 스택: Next.js 16 App Router, React 19, Tailwind CSS, Docker (Apple Silicon), Cloudflare OpenNext Worker, Cloudflare D1, Drizzle ORM, TanStack Query
-* 디자인 시스템: STANN OS 공통 토큰 + 검정·오렌지 terminal 워크스페이스. 각진 패널, 7개 디렉터리와 모바일 재배치를 사용한다.
+* 디자인 시스템: STANN OS 공통 토큰 + 검정·오렌지 terminal 워크스페이스. Aspen 격자, 7개 디렉터리, 외곽 경계 없는 CRT와 모바일 재배치를 사용한다.
 
 ## 2. 주요 아키텍처 원칙
 * **Apple Silicon 최적화 Docker 환경:** Docker는 로컬/dev 또는 prod-like smoke 용도로 사용한다. 공개 배포의 정본 artifact는 `@opennextjs/cloudflare` Worker bundle이다.
 * **DB 연동:** Cloudflare D1 바인딩(`DB`) 및 Drizzle ORM을 활용한 데이터 관리.
-* **텍스트 렌더링:** 최종 문자열을 서버 HTML에 먼저 렌더링하고, 브라우저 레이아웃을 정본으로 유지한 채 대표 제목과 비필수 boot/sleep 화면에만 cipher를 점진적으로 적용함.
-* **UI/컴포넌트 설계:** 의미 텍스트와 상태는 서버 HTML부터 읽을 수 있어야 하며, cipher/WebGL은 콘텐츠를 대체하지 않는 점진적 향상으로만 사용한다.
+* **텍스트 렌더링:** 최종 문자열을 서버 HTML에 먼저 렌더링하고, 브라우저 레이아웃을 정본으로 유지한 채 제목·본문·구획에 단말기 출력 모션을 적용한다. 입력과 모션 정책 변경 시 즉시 전체 내용을 복원한다.
+* **UI/컴포넌트 설계:** 의미 텍스트와 상태는 서버 HTML부터 읽을 수 있어야 하며, CRT·출력 모션은 콘텐츠와 조작을 가로막지 않는 장식으로 사용한다.
 * **접근성:** route마다 하나의 `main`, skip link, 고유 title/h1을 제공하고 폼 label·오류·focus·reduced-motion 계약을 유지한다.
 
 ## 3. 기능 요구 사항
-* HOME: `/`·`/home`에서 LIVE→가까운 예정→최근 지난 이벤트 순서로 정보·원본 포스터·주요 행동을 제공한다. Boot/Sleep은 `/?experience=terminal` 선택형 체험이다.
+* HOME: `/`·`/home`에서 LIVE→가까운 예정→최근 지난 이벤트 순서로 정보·원본 포스터·주요 행동을 제공한다. Boot/IDLE은 `/entry` 선택형 체험이며 기존 `/?experience=terminal` URL을 유지한다.
 * GATE: LIVE/upcoming/archive 정보와 동일 행사 Lineup 연결을 제공하며 서버의 실제 신청 대상·기간에 해당할 때만 신청 CTA를 표시한다.
 * REQUEST: 화면 eventId와 서버 신청 대상을 일치 검증하고 코드·기간·정원 정책을 적용한다. 입력/검증 상태 패널은 같은 hook 결과를 사용한다. 대상 변경 시 입력을 보존한 채 행사 재확인·코드 재검증을 요구한다. 서버 성공 후 같은 페이지에 접수 결과를 표시하며 접수는 입장 확정을 뜻하지 않는다.
 * LINEUP: 유효 event URL을 우선하여 명단과 프로필을 표시한다. `artist` query는 선택 행사 소속을 확인하며 행사 변경 시 함께 해제한다. 키보드 선택·모바일 프로필 진입·명단으로 focus 복귀를 지원한다.
-* STATUS: 이벤트 레지스트리 기반 세션 요약과 정적 노드 시각화 표시. 실제 telemetry 또는 realtime 상태로 표현하지 않는다.
+* STATUS: 연도별 실제 이벤트 기록 표시. 실제 telemetry 또는 realtime 상태로 표현하지 않는다.
 * TRANSMIT: 공개 별칭·메시지 게시를 사전에 안내하고 idempotency key를 유지한다. 전송 중 수정한 새 초안은 이전 요청 성공으로 지우지 않는다.
 * SIGNAL: 이메일·Instagram·동의 입력과 이벤트 소식 연락처 저장 결과를 제공한다. 제출 실패 시 입력을 유지하며 저장 결과를 메일 발송 완료로 표현하지 않는다.
 * LINK: STANN OS HUB / ARCHIVE / LIVE 및 외부 채널 연결.

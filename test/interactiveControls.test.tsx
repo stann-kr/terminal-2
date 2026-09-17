@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { renderToString } from 'react-dom/server';
+import { hydrateRoot } from 'react-dom/client';
+import { MotionProvider as AspenMotionProvider } from '../features/terminal/motion/MotionProvider';
+import { useReadoutMotion as useAspenReadout } from '../features/terminal/motion/useReadoutMotion';
 import { act, cleanup, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
@@ -16,14 +20,17 @@ import { getEffectiveEventStatus, getRequestWindowState } from '../lib/events/li
 import type { Artist, TerminalEvent } from '../lib/events/types';
 import { eventKeys } from '../lib/events/client';
 import LineupPage from '../app/lineup/page';
-import { LangProvider } from '../lib/langContext';
+import { TerminalFrame } from '../features/terminal/shell/TerminalFrame';
+
+vi.mock('next/navigation', () => ({ usePathname: () => window.location.pathname }));
+import { LangProvider, useLang } from '../lib/langContext';
 import GatePage from '../app/gate/page';
 import StatusPage from '../app/status/page';
 import SleepScreen from '../app/_entry/SleepScreen';
 import BootSequence from '../app/_entry/BootSequence';
 import DecodeText from '../components/DecodeText';
 import AnimatedHeight from '../components/ui/AnimatedHeight';
-import HomeMasthead from '../app/home/HomeMasthead';
+import { EventCountdown } from '../features/terminal/events/EventCountdown';
 import TerminalNavigation from '../components/shell/TerminalNavigation';
 import PageLayout from '../components/shell/PageLayout';
 import { useTerminalScreen } from '../components/shell/useTerminalScreen';
@@ -182,6 +189,66 @@ describe('CRT display preferences', () => {
     expect(nextToggle).toHaveAttribute('aria-pressed', 'true');
   });
 
+});
+
+describe('production Aspen frame', () => {
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it('runs the first readout after hydration and settles it when the user starts interacting', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} }));
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    function Content() {
+      const root = useRef<HTMLElement>(null);
+      useAspenReadout(root, { key: 'first-entry', content: ':scope' });
+      return <main ref={root}><p>Hydrated terminal text</p></main>;
+    }
+    const element = <AspenMotionProvider crt><Content /></AspenMotionProvider>;
+    const host = document.createElement('div');
+    host.innerHTML = renderToString(element);
+    document.body.appendChild(host);
+    expect(within(host).getByText('Hydrated terminal text')).toBeVisible();
+    let root!: ReturnType<typeof hydrateRoot>;
+    try {
+      await act(async () => { root = hydrateRoot(host, element); });
+      expect(within(host).getByText('Hydrated terminal text')).not.toBeVisible();
+      fireEvent.keyDown(within(host).getByRole('main'), { key: 'Tab' });
+      expect(within(host).getByText('Hydrated terminal text')).toBeVisible();
+    } finally {
+      act(() => root?.unmount());
+      host.remove();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('keeps real route links, a single main and the draft through menu, CRT and language controls', async () => {
+    window.history.replaceState(null, '', '/signal');
+    localStorage.setItem('terminal_lang', 'ko');
+    localStorage.removeItem('terminal_crt_enabled');
+    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
+    queryClient.setQueryData(eventKeys.list(), []);
+    const user = userEvent.setup();
+    const { container } = render(<QueryClientProvider client={queryClient}><LangProvider><TerminalFrame><SignalPage /></TerminalFrame></LangProvider></QueryClientProvider>);
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+    expect(screen.getByRole('link', { name: '본문으로 건너뛰기' })).toHaveAttribute('href', '#main-content');
+    const nav = within(screen.getByRole('navigation', { name: '주요 메뉴' }));
+    expect(nav.getByRole('link', { name: /소식 신청/ })).toHaveAttribute('aria-current', 'page');
+    expect(nav.getByRole('link', { name: /게스트 신청/ })).toHaveAttribute('href', '/gate/request');
+    await user.type(screen.getByRole('textbox', { name: '이메일' }), 'draft@example.com');
+    const menu = screen.getByRole('button', { name: /메뉴/ });
+    await user.click(menu);
+    nav.getByRole('link', { name: /방명록/ }).focus();
+    await user.keyboard('{Escape}');
+    expect(menu).toHaveFocus();
+    expect(menu).toHaveAttribute('aria-expanded', 'false');
+    const crt = screen.getByRole('button', { name: 'CRT 화면 효과' });
+    await user.click(crt);
+    expect(crt).toHaveAttribute('aria-pressed', 'false');
+    expect(localStorage.getItem('terminal_crt_enabled')).toBe('false');
+    await user.click(screen.getByRole('button', { name: '영어로 보기' }));
+    expect(screen.getByRole('textbox', { name: 'Email' })).toHaveValue('draft@example.com');
+    expect(container).not.toHaveTextContent('DEMO02');
+    expect(container).not.toHaveTextContent('MOCKUP');
+  });
 });
 
 describe('brand text motion', () => {
@@ -387,9 +454,9 @@ describe('Transmit draft submission', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({}, { status: 500 }));
     const user = userEvent.setup();
     render(<QueryClientProvider client={queryClient}><TransmitPage /></QueryClientProvider>);
-    expect(screen.queryByRole('navigation', { name: '방명록' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: '방명록 페이지' })).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByRole('textbox', { name: '메시지:' }), { target: { value: 'Keep this draft' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /메시지/ }), { target: { value: 'Keep this draft' } });
     act(() => {
       queryClient.setQueryData(transmitKeys.list(1), { logs: [postedEntry], total: 21, page: 1, totalPages: 2 });
     });
@@ -402,7 +469,7 @@ describe('Transmit draft submission', () => {
     expect(screen.getByRole('button', { name: '이전 글 페이지' })).toBeEnabled();
     await user.click(screen.getByRole('button', { name: '이전 글 페이지' }));
     expect(await screen.findByText('Hello')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: '메시지:' })).toHaveValue('Keep this draft');
+    expect(screen.getByRole('textbox', { name: /메시지/ })).toHaveValue('Keep this draft');
     expect(screen.getByRole('button', { name: '이전 글 페이지' })).toBeDisabled();
     expect(screen.getByRole('button', { name: '다음 글 페이지' })).toBeEnabled();
   });
@@ -474,16 +541,15 @@ describe('event clock policy updates', () => {
   it('shows the Home event countdown in KST, ticks into elapsed time and omits invalid targets', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-09-10T11:59:59+09:00'));
-    const { container, rerender } = render(<HomeMasthead event={event} />);
-    expect(screen.getByRole('region', { name: 'Clock event 카운트다운' })).toHaveTextContent('T- COUNTDOWN');
-    expect(container.querySelector('time')).toHaveAttribute('datetime', '2026-09-10T03:00:00.000Z');
+    const { rerender } = render(<EventCountdown event={event} t={(ko) => ko} />);
+    expect(screen.getByRole('timer', { name: '이벤트 시작까지 남은 시간' })).toHaveTextContent('T− COUNTDOWN');
     expect(screen.getByText('01')).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(2_000));
-    expect(screen.getByRole('region')).toHaveTextContent('T+ ELAPSED');
+    expect(screen.getByRole('timer')).toHaveTextContent('T+ ELAPSED');
     expect(screen.getByText('01')).toBeInTheDocument();
-    rerender(<HomeMasthead event={{ ...event, date: 'invalid' }} />);
-    expect(screen.queryByRole('region')).not.toBeInTheDocument();
-    rerender(<HomeMasthead event={null} />);
+    rerender(<EventCountdown event={{ ...event, date: 'invalid' }} t={(ko) => ko} />);
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+    rerender(<EventCountdown event={null} t={(ko) => ko} />);
     expect(screen.queryByText(/COUNTDOWN|ELAPSED/)).not.toBeInTheDocument();
   });
 
@@ -542,7 +608,7 @@ describe('lineup controls', () => {
     vi.restoreAllMocks();
   });
 
-  it('selects a profile by keyboard, preserves language selection and restores roster focus', async () => {
+  it('opens the first published profile and keeps query, language and keyboard focus coherent', async () => {
     const event: TerminalEvent = {
       id: 'live', session: 'Live event', subtitle: 'Test', date: '2026-09-08', time: '23:00 KST', status: 'LIVE',
       venue: 'Venue', district: 'District', coords: '0,0', capacity: '100', sound: 'System', artists: [artist],
@@ -551,36 +617,29 @@ describe('lineup controls', () => {
     queryClient.setQueryData(eventKeys.list(), [event]);
     window.history.replaceState(null, '', '/lineup?event=live');
     const user = userEvent.setup();
-    render(<LangProvider><QueryClientProvider client={queryClient}><LineupPage /></QueryClientProvider></LangProvider>);
-    const trigger = screen.getByRole('button', { name: /ARTIST ONE/ });
-    const profile = document.getElementById(trigger.getAttribute('aria-controls')!)!;
-    expect(trigger).toHaveAttribute('aria-pressed', 'false');
-    expect(profile).not.toBeVisible();
+    function LanguageControl() {
+      const { setLang } = useLang();
+      return <button onClick={() => setLang('en')}>EN</button>;
+    }
+    render(<LangProvider><QueryClientProvider client={queryClient}><LineupPage /><LanguageControl /></QueryClientProvider></LangProvider>);
+    const trigger = screen.getByRole('link', { name: /ARTIST ONE/ });
+    expect(trigger).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('heading', { name: 'ARTIST ONE' })).toBeVisible();
     trigger.focus();
     await user.keyboard('{Enter}');
-    expect(trigger).toHaveAttribute('aria-pressed', 'true');
-    expect(profile).toBeVisible();
     expect(screen.getByRole('heading', { name: 'ARTIST ONE' })).toHaveFocus();
     expect(window.location.search).toBe('?event=live&artist=artist-1');
     await user.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByText('A longer artist biography in English.')).toBeInTheDocument();
-    expect(trigger).toHaveAttribute('aria-pressed', 'true');
     await user.click(screen.getByRole('button', { name: 'Back to list' }));
     expect(trigger).toHaveFocus();
-    expect(trigger).toHaveAttribute('aria-pressed', 'false');
-    expect(profile).not.toBeVisible();
-    expect(window.location.search).toBe('?event=live');
-    act(() => {
-      window.history.replaceState(null, '', '/lineup?event=live&artist=artist-1');
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    });
-    expect(screen.getByRole('heading', { name: 'ARTIST ONE' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'ARTIST ONE' })).toBeVisible();
     act(() => {
       window.history.replaceState(null, '', '/lineup?event=live&artist=missing');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     expect(screen.queryByRole('heading', { name: 'ARTIST ONE' })).not.toBeInTheDocument();
-    expect(screen.getByText(/This artist is not in this event/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Artist not found.' })).toBeInTheDocument();
   });
 
   it('honors the event URL and immediately replaces the lineup and Gate link on selection', async () => {
@@ -599,23 +658,23 @@ describe('lineup controls', () => {
     const user = userEvent.setup();
     render(<QueryClientProvider client={queryClient}><LineupPage /></QueryClientProvider>);
 
-    expect(screen.getByRole('heading', { name: 'Archived event' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '이벤트 보기' })).toHaveAttribute('href', '/gate?event=archive');
+    expect(screen.getByText('Archived event')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '이벤트 정보' })).toHaveAttribute('href', '/gate?event=archive');
     const push = vi.spyOn(window.history, 'pushState');
     await user.selectOptions(screen.getByRole('combobox', { name: '이벤트 선택' }), 'live');
     expect(push).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('heading', { name: 'Live event' })).toBeInTheDocument();
-    expect(screen.getByText('LIVE ARTIST')).toBeInTheDocument();
+    expect(screen.getByText('Live event')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'LIVE ARTIST' })).toBeInTheDocument();
     expect(screen.queryByText('ARCHIVE ARTIST')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '이벤트 보기' })).toHaveAttribute('href', '/gate?event=live');
+    expect(screen.getByRole('link', { name: '이벤트 정보' })).toHaveAttribute('href', '/gate?event=live');
     expect(window.location.search).toBe('?lang=ko&event=live');
 
     act(() => {
       window.history.replaceState(null, '', '/lineup?lang=ko&event=missing');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(screen.getByRole('combobox', { name: '이벤트 선택' })).toHaveValue('live');
-    expect(screen.getByText('LIVE ARTIST')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '이벤트를 찾을 수 없습니다.' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'LIVE ARTIST' })).not.toBeInTheDocument();
   });
 });
 
@@ -640,11 +699,12 @@ describe('event page states and optional entry', () => {
   it.each(['UPCOMING', 'ARCHIVED'] as const)('connects the Home event to its correct %s destination', (status) => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
     queryClient.setQueryData(eventKeys.list(), [{ ...event, status }]);
-    render(<QueryClientProvider client={queryClient}><HomePage /></QueryClientProvider>);
+    window.history.replaceState(null, '', '/home');
+    render(<QueryClientProvider client={queryClient}><TerminalFrame><HomePage /></TerminalFrame></QueryClientProvider>);
     const main = screen.getByRole('main');
     expect(within(main).getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
-    expect(within(main).getByRole('region', { name: 'Next event 카운트다운' })).toBeInTheDocument();
-    expect(main.querySelector('a[href^="/gate?"]')).toHaveAttribute('href', status === 'ARCHIVED' ? '/gate?view=archive&event=next' : '/gate?event=next');
+    expect(within(main).getByRole('timer')).toHaveAccessibleName('이벤트 시작까지 남은 시간');
+    expect(main.querySelector('a[href^="/gate?"]')).toHaveAttribute('href', '/gate?event=next');
   });
 
   it('distinguishes loading, failure and a confirmed empty event registry', async () => {
@@ -658,25 +718,24 @@ describe('event page states and optional entry', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('불러오지 못했습니다');
     expect(screen.queryByText('지난 이벤트 기준')).not.toBeInTheDocument();
     act(() => { queryClient.setQueryData(eventKeys.list(), []); });
-    expect(await screen.findAllByText('0')).toHaveLength(2);
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
     expect(screen.getByRole('status')).toHaveTextContent('기록된 이벤트가 없습니다');
   });
 
-  it('hides requests before opening and changes Gate view with one history entry', () => {
+  it('keeps archived deep links and selects events with one history update while requests are closed', () => {
     const archived = { ...event, id: 'old', session: 'Past event', status: 'ARCHIVED' as const };
     const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
     queryClient.setQueryData(eventKeys.list(), [event, archived]);
     window.history.replaceState(null, '', '/gate?view=archive&event=old&lang=ko');
     render(<QueryClientProvider client={queryClient}><GatePage /></QueryClientProvider>);
+    expect(screen.getByRole('heading', { name: 'Past event' })).toBeInTheDocument();
     const push = vi.spyOn(window.history, 'pushState');
-    fireEvent.click(screen.getByRole('button', { name: '진행 중·예정' }));
+    fireEvent.change(screen.getByRole('combobox', { name: '이벤트 선택' }), { target: { value: 'next' } });
     expect(push).toHaveBeenCalledTimes(1);
-    expect(window.location.search).toBe('?view=upcoming&lang=ko');
-    fireEvent.click(screen.getByRole('button', { name: '진행 중·예정' }));
-    expect(push).toHaveBeenCalledTimes(1);
+    expect(window.location.search).toBe('?event=next&lang=ko');
     expect(screen.getByRole('heading', { name: 'Next event' })).toBeInTheDocument();
-    expect(within(screen.getByRole('main')).queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('신청 시작:');
+    expect(screen.queryByRole('link', { name: /게스트 신청/ })).not.toBeInTheDocument();
+    expect(screen.getByText('현재 온라인 신청 기간이 아닙니다.')).toBeInTheDocument();
     act(() => {
       window.history.replaceState(null, '', '/gate?view=archive&event=old&lang=ko');
       window.dispatchEvent(new PopStateEvent('popstate'));
@@ -731,15 +790,15 @@ describe('Signal form results', () => {
       .mockResolvedValueOnce(Response.json({ ok: true }));
     const user = userEvent.setup();
     render(<LangProvider><SignalPage /></LangProvider>);
-    await user.type(screen.getByRole('textbox', { name: '이메일:' }), 'guest@example.com');
-    await user.type(screen.getByRole('textbox', { name: '인스타그램 ID:' }), 'guest');
+    await user.type(screen.getByRole('textbox', { name: '이메일' }), 'guest@example.com');
+    await user.type(screen.getByRole('textbox', { name: '인스타그램 ID' }), 'guest');
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: '소식 신청' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('이미 구독 중인 이메일입니다.');
-    expect(screen.getByRole('textbox', { name: '이메일:' })).toHaveValue('guest@example.com');
-    expect(screen.queryByRole('heading', { name: '소식 신청을 저장했습니다.' })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '이메일' })).toHaveValue('guest@example.com');
+    expect(screen.queryByRole('heading', { name: '소식 신청 완료' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '소식 신청' }));
-    expect(await screen.findByRole('heading', { name: '소식 신청을 저장했습니다.' })).toHaveFocus();
+    expect(await screen.findByRole('heading', { name: '소식 신청 완료' })).toHaveFocus();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/api/signal', '/api/signal']);
   });

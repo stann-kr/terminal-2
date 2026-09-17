@@ -60,6 +60,17 @@ afterEach(() => {
 });
 
 describe('request event binding and draft preservation', () => {
+  it('shows the closed event layout instead of a locked form for an archived event', async () => {
+    window.history.replaceState(null, '', '/gate/request?event=event-1');
+    localStorage.setItem('terminal_lang', 'ko');
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json([{ ...futureEvent, status: 'ARCHIVED' }])));
+    render(createElement(LangProvider, null, createElement(RequestAccessPage)));
+    await act(async () => {});
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('현재 신청 가능한 이벤트가 없습니다.');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '이벤트 정보' })).toHaveAttribute('href', '/gate?event=event-1');
+  });
+
   it('unlocks the real form after code verification and shows a receipt only after the server accepts it', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-08-15T12:00:00+09:00'));
@@ -78,17 +89,17 @@ describe('request event binding and draft preservation', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(createElement(LangProvider, null, createElement(RequestAccessPage)));
     await act(async () => {});
-    expect(screen.getByRole('textbox', { name: '이름:' })).toBeDisabled();
-    fireEvent.change(screen.getByRole('textbox', { name: '인증 코드:' }), { target: { value: 'CODE-1' } });
+    expect(screen.getByRole('textbox', { name: '이름' })).toBeDisabled();
+    fireEvent.change(screen.getByRole('textbox', { name: '인증 코드' }), { target: { value: 'CODE-1' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(500); });
-    expect(screen.getByRole('textbox', { name: '이름:' })).not.toBeDisabled();
+    expect(screen.getByRole('textbox', { name: '이름' })).not.toBeDisabled();
     expect(screen.queryByRole('heading', { name: '신청 접수 완료' })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByRole('textbox', { name: '이름:' }), { target: { value: 'Test guest' } });
-    fireEvent.change(screen.getByRole('textbox', { name: '이메일:' }), { target: { value: 'guest@example.com' } });
-    fireEvent.change(screen.getByRole('textbox', { name: '인스타그램 ID:' }), { target: { value: 'guest' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '이름' }), { target: { value: 'Test guest' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '이메일' }), { target: { value: 'guest@example.com' } });
+    fireEvent.change(screen.getByRole('textbox', { name: '인스타그램 ID' }), { target: { value: 'guest' } });
     fireEvent.click(screen.getByRole('checkbox', { name: /게스트 접근 관리/ }));
     fireEvent.click(screen.getByRole('button', { name: /신청 제출/ }));
-    expect(screen.getByRole('button', { name: /전송 중/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /처리 중/ })).toBeDisabled();
     expect(screen.queryByRole('heading', { name: '신청 접수 완료' })).not.toBeInTheDocument();
     const submitted = fetchMock.mock.calls.find(([url]) => url === '/api/gate/request');
     expect(JSON.parse(submitted![1]!.body as string)).toMatchObject({ eventId: 'event-1', privacyConsent: true, marketingConsent: false });

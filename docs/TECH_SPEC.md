@@ -2,146 +2,51 @@
 
 본 문서는 프로젝트의 핵심 아키텍처, 커스텀 컴포넌트 설계, 운영 및 검증 계약을 기술한다.
 
-## 1. 전역 아키텍처 및 렌더링 원칙
+## 1. 전역 아키텍처 및 렌더링
 
-- **프레임워크:** Next.js 16.2.11 (App Router 기반), React 19
-- **런타임 및 개발 환경:** 공개 배포는 OpenNext 기반 Cloudflare Worker bundle을 사용한다. 로컬 개발은 npm 스크립트를 기본으로 하며 Docker 환경도 지원한다.
-- **UI/UX 미학(Aesthetics):** 검정 바탕·오렌지 제목줄·반전 디렉터리와 각진 패널을 사용한다. 화면별 작업 영역은 문서 스크롤 안에서 늘어나며 모바일에서는 읽기 순서에 맞게 단일 열로 전환한다. 일반 Home은 ASCII 표현, WebGL ambient는 선택형 터미널 체험에서만 조건부로 로드한다.
-- **명명 규칙 및 코드 스타일:** 명확한 시맨틱 네이밍, 하드 코딩 지양. CSS 스타일링 시 Tailwind를 기본으로 하되, 복잡한 인라인 동적 속성은 `style` 객체로 관리함.
+- Next.js App Router와 React, OpenNext Cloudflare Worker를 사용한다. 제품 route와 공개 API는 `app/`이 맡는다.
+- `features/terminal/`이 Aspen 화면을 제공한다. `shell/`은 고정 헤더·디렉터리·footer와 단일 `main#main-content`, `events/`는 Home/Gate/행사 조회, `lineup/`은 공개 명단과 프로필, `info/`는 행사 기록·소개·채널, `entry/`는 선택형 부팅·IDLE을 소유한다.
+- `app/gate/request`, `app/signal`, `app/transmit`의 기존 hook이 제출·검증·초안·I/O를 계속 소유한다. 공통 폼 스타일은 `features/terminal/forms`, 방명록 스타일은 `features/terminal/transmit`에 둔다.
+- `mockups/aspen-terminal/`은 독립 참고 목업이다. 제품 번들은 목업 App, 행사 스냅샷, 검토 메뉴, 체험 코드나 가정 성공 상태를 import하지 않는다.
+- `archives/classic/source.tar.gz`는 이전 제품 전체의 고정 snapshot이다. [아카이브 실행 안내](../archives/classic/README.md)의 명령으로 별도 의존성·로컬 D1에서 실행한다.
 
-## 2. 타이포그래피 시스템
+## 2. 시각 시스템과 접근성
 
-본문·입력은 system sans 16px, 보조 문구와 조작 label은 14px, 메타는 12px를 기본으로 한다. Pixie는 브랜드, 로드된 JetBrains Mono는 제목·탐색·버튼·날짜·코드에 사용한다. `app/globals.css`의 terminal 역할 토큰과 capability별 CSS Modules가 표현을 소유하며 `app/stann-os.css` 정본은 보존한다. 장식 번호·브랜드 메타는 의미 label과 분리한다.
+- `features/terminal/base.css`가 문서 기본 스타일, 로컬 폰트와 `--tm-*` 토큰을 소유한다. 전경 `#d0d0d0`, 배경 `#030303`, 강조 `#ff5d00`을 사용한다. 각 화면의 격자·반응형·상태 스타일은 해당 capability에 둔다.
+- Pixie는 TERMINAL 브랜드 단어에만 사용한다. 제목과 본문에는 Orbit, 숫자·메타·입력에는 고정폭 서체를 사용한다. `app/stann-os.css`와 token verifier는 유지한다.
+- 화면 외곽 테두리 없이 큰 콘텐츠 구획으로 나눈다. 구획 안의 정보는 제목·간격·자연 너비로 구분한다. 기본 행동은 오렌지 면, 보조 이동은 선 또는 텍스트 링크다.
+- 실제 링크는 Next Link와 URL query를 사용한다. 이벤트 변경 시 `artist`와 기존 `view`를 함께 해제하며 다른 query는 보존한다. 명시한 event/artist가 없으면 다른 대상을 조용히 대신 선택하지 않는다.
+- route마다 main·skip link·고유 title과 의미 있는 h1을 제공한다. 입력 label과 error ID를 연결하고, 첫 오류·프로필·접수 결과로 focus를 옮긴다. 프로필의 명단 복귀와 메뉴 Escape는 원래 조작 대상으로 돌아간다.
 
-| 토큰 | 값 |
-|---|---|
-| `text-micro`, `text-caption` | 12px |
-| `text-small` | 14px |
-| `text-body`, `text-heading` | 16px |
-| `text-h2` | 20px |
-| `text-h1` | 32px |
-| `text-title`, `text-hero` | 48px |
-| `text-display` | 96px |
+## 3. CRT와 출력 모션
 
-`BodyText`는 모든 폭에서 16px plain text다. 공통 `PageHeader`는 cipher를 명시적으로 요청할 때만 연출하며 보통 제목을 즉시 표시한다.
+`features/terminal/motion/`의 GSAP 및 `useGSAP`가 장식 모션을 소유한다. 기존 목업의 타이밍과 공간을 유지하며 route·focus·입력·서버 결과는 모션 완료를 기다리지 않는다.
 
-- 페이지 제목 위에는 module label을, 디렉터리에는 번호·화면명·이동 표식을 표시한다. 모바일에서는 설명과 시간을 별도 행으로 배치한다.
-- 주요 버튼과 언어 선택은 반전 표시하며, 공통 버튼·라벨은 14px와 최소 44px 높이를 유지한다. 현재 탐색 위치는 `aria-current`로 표시한다.
-- 행사 요약은 포스터와 정보의 상단을 맞추고 날짜·장소를 라벨/값 열로 정렬한다. 포스터는 안정된 영역 안에 `object-fit: contain`으로 전체 이미지를 보여준다. 이미지가 없거나 로드에 실패하면 실제 행사 정보의 타이포 면으로 대체한다.
+- `TerminalText`는 원문을 의미·레이아웃의 기준으로 두고 aria-hidden 출력 레이어만 갱신한다.
+- `useReadoutMotion`은 브라우저의 실제 줄 경계를 읽는다. 구획 65ms, 본문 한 줄 45ms, 제목 문자 12ms의 동일한 간격을 적용한다. 내용이 많으면 완료까지 더 오래 걸린다.
+- 최종 배치 공간을 유지한 채 구획·입력칸을 표시하고 그 안의 텍스트를 출력한다. 호버 이동, 흐르는 경계선과 화면 슬라이드는 없다.
+- 클릭·키보드·휠·입력·focus·resize·폰트 변경은 남은 출력을 완료한다. 폼의 변경 모션은 오류·상태·결과에 한정해 작성 중인 필드를 다시 숨기지 않는다.
+- CRT의 고정 raster·grain·유리 음영·텍스트 발광은 헤더부터 footer까지 같은 표면에 놓인다. 9.7초 주기의 약한 배경 발광은 입력 focus 때 멈춘다.
+- CRT OFF, reduced-motion, 고대비/강제 색상, 숨겨진 탭, 데이터 절약에서는 장식 모션을 해제한다. 정책 복원만으로 진입 연출을 반복하지 않는다. 화면 이탈 시 timeline·observer·listener를 정리한다.
+- Home 카운트다운은 실제 행사의 KST 시작 시각을 사용하고 초 단위로 갱신한다. 숨겨진 탭에서는 정지하고 복귀 시 현재 시각으로 계산한다. 잘못된 시각은 표시하지 않는다.
 
-### FormField 컴포넌트 API (`components/ui/FormField.tsx`)
+## 4. 화면별 동작
 
-```tsx
-// 폼 필드 래퍼
-<FormField label="NAME:" htmlFor="name">
-  <input id="name" name="name" className={`${inputClassBase} ${inputAccentClass.secondary}`} />
-</FormField>
+- Home은 LIVE → 가장 가까운 예정 → 최근 지난 행사 순서로 선택한다. 행사명·회차 또는 포스터·카운트다운·소개·일시/장소·행동을 같은 격자에 배치한다. 포스터 오류는 회차 타이포그래피로 복원한다.
+- Gate는 행사 선택과 정보·소개·공개 라인업을 제공한다. 실제 서버 신청 대상과 기간에 해당하는 행사에만 신청 링크를 표시한다. 기존 `view=archive` URL도 해석한다.
+- Lineup은 첫 공개 아티스트를 기본 소개로 삼으며 `artist` query가 있으면 소속·공개 상태를 확인한다. 모바일에서는 명단과 소개가 같은 읽기 흐름에 놓인다.
+- Request/Signal은 설명과 입력의 두 영역, 모바일 한 열을 사용한다. 신청은 eventId·코드·동의 검증을 유지하며 서버 접수 성공에만 완료 화면을 표시한다. 대상 변경은 초안을 보존하고 새 행사 확인·코드 재검증을 요구한다. 소식 신청 완료는 메일 발송 완료를 의미하지 않는다.
+- Transmit는 작성과 게시 기록을 나눈다. 서버의 실제 pagination을 사용하고 후속 조회 실패에도 이전 페이지로 돌아갈 수 있다. 입력 중 수정한 새 초안과 재시도의 idempotency key를 보존한다. 공개 시각은 KST로 표시한다.
+- Status는 연도별 실제 행사 기록을 표시한다. 조회 실패와 빈 데이터는 구분한다. About/Link는 기존 소개와 공식 URL을 사용한다.
+- `/entry`는 부팅·IDLE을 제공하며 `/?experience=terminal`은 이 경로로 연결한다. 최초 부팅·방문 후 IDLE, 자동 언어 감지·명시적 언어 선택, 건너뛰기와 한 번의 입장 처리를 지원한다. WebGL은 새 제품 화면에서 사용하지 않는다.
+- 404는 공통 main 안에서 복구 링크를 제공한다. 전역 오류는 root provider/CSS에 의존하지 않는 독립 HTML과 복구 버튼을 사용하고 오류 상세는 노출하지 않는다.
 
-// accent 종류: secondary | tertiary | alert | warn | primary
-```
+## 5. 로컬 개발과 검증
 
-- `FieldError`는 필드의 `aria-describedby` 대상과 alert semantics를 제공한다.
-- `useFieldErrors`는 validation error의 첫 필드로 focus를 이동하며 Signal·Gate Request·Transmit가 같은 계약을 사용한다.
-- 제목이 있는 `TerminalPanel`은 기본적으로 labelled `section`과 `h2`를 렌더링하고, 중첩 panel은 `headingLevel={3}`을 사용한다.
-
----
-
-## 3. GSAP 터미널 모션과 `DecodeText`
-
-GSAP 3.15.0과 `@gsap/react` 2.1.2를 사용한다. 콘텐츠와 조작은 즉시 제공하며 공통 헤더·메뉴·페이지 제목은 이동 시 진입 모션을 재생하지 않는다. Cipher는 선택형 터미널 체험에 사용한다.
-
-### 3.1 통합 컴포넌트 `<DecodeText>` 및 `<TerminalText>` 분석
-
-- **위치:** `components/DecodeText.tsx`, `components/ui/TerminalText.tsx`
-- **핵심 역할:** 최종 문자열을 서버 HTML에 먼저 렌더링하고 안정적인 `aria-label`을 유지한 채 같은 DOM node의 시각 문자열에만 cipher를 적용한다.
-- **시맨틱 추상화 (`TerminalText.tsx`):**
-  - `TitleText`와 명시적으로 `cipher`를 켠 heading 외의 본문·라벨·메타·데이터는 plain semantic text로 렌더링한다.
-  - `DecodeText` 직접 사용은 사용자 motion 정책을 따르는 비필수 boot/sleep 화면으로 제한한다.
-  - 제공 컴포넌트: `TitleText` (히어로), `HeadingText` (섹션 제목), `SubtitleText` (부제), `BodyText` (본문), `LabelText` (시스템 라벨), `MetaText` (메타데이터), `DataText` (실시간 데이터).
-- **주요 동적 속성 및 토큰화 (`lib/animationTokens.ts`):**
-  - 각 시맨틱 컴포넌트는 `animationTokens.ts`에 정의된 프리셋을 참조하여 동작함.
-  - `useMotionPolicy`는 reduced-motion, save-data, document visibility를 live 구독한다. 정책이 motion을 허용하지 않으면 장식 애니메이션을 해제하고 콘텐츠를 최종 상태로 복원한다.
-  - 브랜드 디코드는 motion 정책 확인 후 제목별로 한 번 시작하고 완료 콜백도 한 번만 실행한다. 중간에 탭을 숨기면 최종 문자열로 끝내며 복귀할 때 다시 재생하지 않는다.
-  - `ScrambleTextPlugin`은 DOM 대신 `textContent`만 가진 proxy를 애니메이션한다. 출력은 실제 요소의 `textContent`로 복사해 HTML처럼 보이는 문자열도 문자 그대로 유지한다. 완료 시 원문과 공백을 복원한다.
-  - `use-scramble` 의존성과 보안 patch 검증은 기존 설치 계약으로 보존하지만, `DecodeText`의 재생은 GSAP이 소유한다.
-- **레이아웃 보존 기술 (Layout Shift 방지):**
-  - 최종 문자열을 실제 DOM child로 먼저 렌더링해 브라우저 레이아웃과 접근성 트리가 같은 내용을 사용한다.
-  - 펼침 영역은 `AnimatedHeight`가 내부 콘텐츠의 실제 높이를 관찰하며, cipher는 최종 접근성 이름을 바꾸지 않는 시각적 향상으로만 실행한다.
-
-### 3.2 페이지 구조 (PageLayout & Transition)
-
-- **페이지 공통 래퍼:** `components/shell/PageLayout.tsx` 및 `components/shell/PageTransition.tsx`
-- **동작 원리:** `PageLayout`은 `100dvh` 프레임에 헤더·메뉴·footer를 고정하고 남은 높이를 `main`의 내부 스크롤에 할당한다. pathname 이동 시 내부 스크롤은 상단으로 돌아가며 query 선택만 바뀔 때는 위치를 유지한다. `flush` 화면은 전체 너비를 사용하고 capability가 grid와 여백을 결정한다. 기본 event/reading/form 폭은 1600/1024/672px다. 데스크톱 상단 rail·메뉴는 약 32/41px이며 모바일·터치 컨트롤은 최소 44px 높이를 유지한다.
-- **화면 전환:** `useTerminalScreen`은 본문 전체를 즉시 표시하고 opacity 0.88→1을 110ms 동안 안정시킨다. 상단·메뉴와 본문 위치는 고정되며 내용에 clipping이나 이동을 적용하지 않는다. keyboard·focus·pointer 조작은 즉시 최종 밝기로 만든다. 같은 화면의 탭 복귀나 CRT/모션 설정 변경으로 재생을 반복하지 않는다. SSR·CRT OFF·reduced-motion·save-data·hidden에서는 이 전환을 실행하지 않는다.
-- **CRT 질감:** `DisplayEffects`는 헤더·메뉴·본문·footer를 포함한 전체 `PageLayout` 위에 한 장의 곡면 유리·외곽 프레임·비네팅과 정적 형광체/래스터 질감을 적용한다. 본문은 별도 프레임 없이 내부 스크롤만 소유하고, 전체 셸은 효과 ON/OFF에서 동일한 4px 외곽 여백을 유지한다. 유리 반사는 가장자리 음영 위에 겹치며 글자 번짐도 전체 셸에 상속된다. 유리·노이즈는 정지해 있고 반복 주사광은 없다. 장식은 navigation보다 높은 레이어에 있으나 `aria-hidden`·`pointer-events: none`이며 focus/입력 중에는 표면 질감만 약해져 유리와 테두리는 유지된다. 모바일은 강도를 낮춘다. 상단 CRT 토글은 `aria-pressed`를 제공하며 `useDisplayEffects`가 브라우저 저장소에 선택을 유지한다. 저장소 차단 시 같은 탭의 화면 이동 동안 선택을 유지한다. SSR은 효과를 숨긴 상태로 시작한다. 고대비/강제 색상에서는 오버레이와 글자 번짐을 숨긴다.
-- `AnimatedHeight`는 초기 열린 내용을 서버 HTML에서 숨기지 않고, 닫힌 내용은 `aria-hidden`·`inert`로 제외한다. 기본 펼침 180ms·닫기 126ms이며, 새 요청은 현재 높이에서 반전한다. 내부 글자를 이동시키지 않으며 ResizeObserver로 변경된 내용 높이를 추적하고 reduced-motion에서는 즉시 최종 상태를 표시한다.
-- **landmark:** header·navigation·footer와 분리된 `main#main-content`가 전역 skip link의 목적지가 된다. 독립적인 체험·복구 화면은 자체 main을 가진다.
-- **탐색:** GATE·LINEUP·GUEST_REQ·STATUS·TRANSMIT·SIGNAL·ABOUT의 7개 디렉터리를 제공한다. `/gate/request`는 GUEST_REQ만 현재 메뉴로 표시한다. 모바일 보조 메뉴는 헤더 아래에서 펼쳐지고 높이가 부족하면 메뉴 내부가 스크롤된다. Escape로 닫으면 메뉴 버튼으로 focus가 돌아간다.
-
-### 3.3 모션 소유권과 입력 반응
-
-| 영역 | 연출 | 소유 위치 |
-|---|---|---|
-| 디렉터리 전환 | 전체 내용 즉시 표시, 110ms 형광체 밝기 안정 | `components/shell/useTerminalScreen.ts` |
-| 디스플레이 질감 | 두꺼운 곡면 유리·프레임 음영·형광체 번짐, 정적 래스터와 미세 질감 | `components/shell/DisplayEffects.tsx`, `useDisplayEffects.ts` |
-| Home 시간 표시 | 현재 행사의 KST 시작 시각 기준 T- 카운트다운 / T+ 경과 시간, 초 단위 갱신 | `app/home/HomeMasthead.tsx`, `components/events/CountdownBlock.tsx` |
-| 행사 요약 | 정보 즉시 표시와 110ms 밝기 안정, 내부 스크롤 진행선 | `components/events/useEventSummaryMotion.ts` |
-| 버튼·메뉴 | 텍스트 고정, pointer 선택면 160ms 4단 스캔, keyboard focus 즉시 표시 | `components/ui/useControlMotion.ts` |
-| 디렉터리·라인업 | 목록 즉시 표시, 선택과 반전으로 현재 대상 강조 | 해당 row component |
-| 아티스트 프로필 | 프로필 즉시 표시와 110ms 밝기 안정, 선택·복귀 시 focus 이동 | `app/lineup/ArtistProfile.tsx` |
-| 신청 접수 결과 | 서버 성공 뒤 결과 heading focus와 200ms 경계선 | `app/gate/request/RequestReceipt.tsx` |
-| 공통 제목·panel | 제목 즉시 표시, panel 경계선 180ms 6단 스캔 | `PageHeader`, `TerminalPanel` |
-| 현재 위치·전송 중 | footer 커서와 실제 pending 상태의 block 커서만 점멸 | `PageLayout`, `SubmitButton` |
-
-- [공식 React 연동](https://gsap.com/resources/React/)의 `useGSAP` scope와 cleanup을 사용한다. 비동기 ResizeObserver에서 만드는 tween도 context에 포함한다.
-- [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/)는 가장 가까운 `data-scroll-region`을 scroller로 사용한다. 본문의 native 스크롤과 모션 위치를 일치시킨다. 포스터와 글자에는 pointer 추적·3D 기울기를 적용하지 않는다.
-- 버튼 hover timeline은 재생·역재생으로 재사용하며 키보드 focus는 선택된 최종 상태를 즉시 표시한다. 조작 영역·글자·화살표의 위치는 고정한다. 실제 전송 중일 때만 `aria-busy`와 block 커서를 표시하고 artificial delay를 추가하지 않는다. reduced-motion·save-data·hidden 정책은 scan과 커서 점멸도 해제한다.
-- `revealTerminalReadout`은 페이지·행사·프로필의 짧은 밝기 안정과 cleanup을 공유한다. 전체 내용은 처음부터 읽을 수 있으며 focus·pointer·keyboard 입력 시 즉시 최종 밝기로 복원한다.
-- 콘텐츠 높이·이미지 로딩 뒤의 scroll 위치 재계산은 `ScrollTrigger.refresh(true)`로 묶는다. 화면 이탈 시 scene의 trigger, timeline, observer와 event listener를 정리한다.
-- 동일 요소의 transform·opacity를 GSAP과 CSS/Framer Motion이 동시에 제어하지 않는다. 기존 Boot/Sleep 상태 전환과 Transmit 상태 표현의 Framer Motion은 별도 owner로 유지한다.
-
-### 3.4 화면별 작업 영역과 상태
-
-- 공통 메뉴는 화면 폭에 관계없이 선택 언어의 이름을 표시한다. 주요 행동은 채운 버튼, 보조 이동은 텍스트 링크로 구분한다. 펼침 기능이 없는 제목·메뉴에는 펼침 표시를 붙이지 않는다.
-- Home/Gate는 현재 행사와 원본 포스터를 연결하며 날짜·장소·설명·추가 안내는 한 정보 영역에서 읽는다. Home 상단의 시간 표시줄은 동일 행사의 시작 시각을 사용하며 데이터가 없거나 시각이 잘못된 경우에는 표시하지 않는다. Gate의 신청 행동은 기존 행사 선택·신청 기간 정책을 따른다. 이미 선택한 보기 버튼은 history를 추가하지 않는다.
-- Request는 한 열의 폼과 입력 옆의 실제 코드 상태로 안내한다. 별도 신청 단계 패널은 사용하지 않는다. 입력 중에는 코드를 오류로 표시하지 않으며 성공 결과는 같은 URL의 제출된 행사 snapshot에 귀속한다. 코드 확인·신청 접수·입장 확정은 서로 다른 상태다.
-- Lineup은 선택 전 명단만 표시하고 아티스트 선택 후 프로필을 연다. `/lineup?event=…&artist=…`의 아티스트는 선택 행사에 속해야 한다. 행사 변경은 artist 해제와 함께 한 번의 history 갱신으로 처리한다. 모바일에서는 명단 대신 프로필을 표시하며 선택 시 프로필 제목으로, 명단 복귀 후 원래 행으로 focus를 이동한다. 외부 artist 링크·음원 데이터는 현재 공개 DTO에 없다.
-- Transmit는 작성/공개 기록, Signal은 한 열의 설명/연락처 입력으로 구성한다. 방명록 페이지 이동은 여러 페이지가 있을 때 표시하고 후속 페이지 조회 실패 시에도 이전 페이지로 돌아갈 수 있다. 조회·제출 실패와 실제 성공을 구분하고 기존 초안·동의·idempotency 규칙을 유지한다.
-- Status는 실제 지난 행사·아티스트 수와 날짜 기준의 행사 기록을 사용한다. About과 공식 채널은 실제 소개·링크를 제공한다. 선택형 터미널 체험은 About에서 진입한다. 임의 서버 상태·대기열·QR·입장권을 생성하지 않는다.
-- 선택형 Boot는 버튼으로 연출을 건너뛰고 언어를 직접 선택한다. 일반 Tab·pointer 입력이 단계 전환을 실행하지 않는다. Sleep은 KST 시계를 표시하고 탭을 숨기면 타이머를 정지한다. 완료·복귀는 한 번만 실행한다.
-- 404는 자체 의미 텍스트와 이동 링크를, global-error는 provider·root CSS에 의존하지 않는 inline 스타일과 reset/Home 복구를 제공한다. 원본 오류 메시지는 출력하지 않는다.
-
-## 4. 개발 가이드라인
-
-1. **신규 페이지 혹은 컴포넌트 개발 시 규칙:**
-   - 정적 텍스트는 `<TerminalText>` 계열을 사용하되 plain rendering을 기본값으로 한다. `DecodeText` 직접 사용과 body/form/error/status cipher는 금지한다.
-   - 새 장식 모션은 `lib/motion/gsap.ts`를 통해 등록된 GSAP과 `useGSAP`을 사용한다. 각 component의 ref로 scope를 제한하고 기존 motion 정책을 따른다.
-2. **TypeScript 무결성 확보 규칙:**
-   - hook, 브라우저 API, Framer Motion을 사용하는 컴포넌트만 client boundary로 선언한다.
-   - `@react-three/fiber`는 `/?experience=terminal`의 선택형 ambient에 사용한다. motion 허용, 체험 viewport 진입, WebGL 지원이 모두 참일 때 dynamic chunk를 로드하며 오류 시 의미 텍스트와 조작을 그대로 유지한다.
-3. **환경 관리 가이드 (Docker):**
-   - 호스트 개발은 저장소 루트의 npm 스크립트를 사용한다. Docker 전용 환경에서 패키지를 추가할 때는 실행 중인 컨테이너의 `docker compose exec web npm install <패키지>`를 사용해 anonymous `node_modules` volume과의 불일치를 피한다.
-
-## 5. 통합 디자인 시스템 및 테마 관리
-
-프로젝트의 시각적 일관성과 유지보수성 확보를 위해 하드코딩된 색상 및 수치를 배제하고 전역 디자인 토큰 시스템으로 전환됨.
-
-### 5.1 Tailwind 테마 확장 (Design Tokens)
-
-- **위치:** `tailwind.config.js`, `app/globals.css`
-- **핵심 테마 변수:**
-  - `terminal-primary`: 기본 텍스트 `#D0D0D0`
-  - `terminal-accent-primary`: 브랜드 강조 `#FF5D00`; 오렌지 면의 텍스트는 어두운 배경색 역할 사용
-  - `terminal-accent-*`: 강조색 토큰 (`primary`, `secondary`, `tertiary`, `alert`, `warn`)
-  - `terminal-bg-*`: 배경색 토큰 (`panel`, `panel-border`)
-  - `terminal-muted`, `terminal-subdued`: 보조 및 비활성 텍스트 테마
-- **커스텀 유틸리티:**
-  - `.text-shadow-glow-*`: 각 테마 강조색에 대응하는 텍스트 글로우 효과 유틸리티 제공.
-
-### 5.2 컴포넌트 표준화 원칙
-
-- 기능 페이지는 `<PageLayout>`을 사용하고 각 capability가 화면 구성과 필요한 모션을 소유한다. 모든 자식에 일괄 stagger를 적용하지 않는다. 체험과 복구 경계는 독립적인 layout을 사용한다.
-- 공통 UI 요소(`ReturnLink`, `PageHeader`, `TerminalPanel`, `TerminalButton`)를 적극 활용하여 인라인 스타일 및 중복 마크업을 최소화함.
+- 기본 개발 서버는 `npm run dev`, port 3005다. 아카이브는 `npm run archive:dev -- --port 3006`으로 동시에 실행할 수 있다.
+- 공개 API와 기존 capability test를 유지한다. UI 회귀는 실제 route, field, consent, focus, query, receipt, retry와 idempotency를 검증한다. CSS 비교·unit test·HTTP 응답은 실제 browser 시각 승인과 구분한다.
+- `npm run build:worker:production`은 token 검사와 Next 빌드를 포함한 production OpenNext bundle을 만든다. `npm run cf:preview:production`은 로컬 Worker runtime이다. 명시적 원격 배포·DB 변경과는 구분한다.
+- snapshot 아카이브는 package lock·API·migration·patch·asset을 함께 보존하며, 원본 archive SHA-256을 실행 전에 확인한다. runner는 아카이브 자체 local development DB만 준비하고 운영 데이터는 복사하지 않는다.
 
 ## 6. 데이터 모델 및 DB 아키텍처 (Flexible JSON Schema)
 

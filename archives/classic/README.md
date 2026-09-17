@@ -8,7 +8,7 @@ From the repository root:
 npm run archive:dev
 ```
 
-The runner verifies and extracts the snapshot into `.design-archive/classic`, installs its locked dependencies on first use, and starts the old design at `http://127.0.0.1:3005`. To run both designs together:
+The runner verifies and extracts the snapshot into `.design-archive/classic`, installs its locked dependencies on first use, prepares its own local development D1, and starts the old design at `http://127.0.0.1:3005`. Its bundled public event snapshot supplies two historical events and their artists. To run both designs together:
 
 ```bash
 npm run dev
@@ -18,11 +18,6 @@ npm run archive:dev -- --port 3006
 
 `npm run archive:prepare` only extracts the source. `npm run archive:build` and `npm run archive:start -- --port 3006` build and serve the archived Next application.
 
-Environment files and local D1 state are separate and are not copied from the current application. To use the archived API locally, prepare the archive's own development database:
+Environment files and local D1 state are separate and are not copied from the current application. The dev command applies the preserved migrations only to the archive's local `development` database, inserts missing public event records without replacing existing records, and sets `NEXT_DEV_WRANGLER_ENV=development`. Guest requests, subscriptions and guestbook data from the current application are not copied.
 
-```bash
-cd .design-archive/classic
-npx wrangler d1 migrations apply DB --env development --local
-```
-
-The runner does not deploy the snapshot or apply migrations. Node.js 22 or newer is required. The preserved source also includes the standalone Aspen reference under `mockups/`; the default archive command runs the old Next design.
+The runner does not deploy the snapshot or change remote databases. Node.js 22 or newer is required. The preserved source also includes the standalone Aspen reference under `mockups/`; the default archive command runs the old Next design. `archive:start` serves the built Next UI; full API emulation uses `archive:dev` or the archive's own Cloudflare preview command.

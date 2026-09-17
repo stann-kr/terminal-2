@@ -11,15 +11,25 @@ terminal-2 is the STANN OS LIVE surface for `https://terminal.stann.kr`.
 
 ## Event experience
 
-`/` and `/home` open the event overview. The optional boot/sleep experience is linked from About and available at `/?experience=terminal`. Event selection prefers live events, then the nearest upcoming event, then the latest past event. Dates are displayed in Korea Standard Time. Gate and Lineup preserve the selected event in `?event=`.
+`/` and `/home` open the event overview. Event selection prefers live events, then the nearest upcoming event, then the latest past event. Dates and countdowns use Korea Standard Time. Gate and Lineup preserve `?event=`; an artist profile is linked with `/lineup?event=…&artist=…`. An unknown event or artist has an explicit recovery state.
 
-The interface uses a full-screen black-and-orange workspace with seven directory entries, fixed navigation, and internal content scrolling. Pages and selected event or artist readouts appear in place with a brief phosphor settle. Content remains readable throughout; keyboard, focus, or pointer input immediately completes the effect. The Home time display follows the featured event's start time. Artist profiles can be linked with `/lineup?event=…&artist=…`; changing the event clears its artist selection. Guest requests show a receipt only after the server accepts the submission. A receipt does not confirm admission.
+The Aspen interface uses an edge-to-edge black-and-orange grid, a fixed directory and footer, and one scrolling content area. Home combines the event title, session or poster, countdown, introduction, venue and actions. Lineup starts with the first published artist. Request and Signal pair their context and form; Guestbook pairs writing and messages. Narrow screens follow the same content order in one column.
 
-Navigation uses the selected language at every screen size. Event details keep the date, venue, description, and request action together. Lineup opens a profile after an artist is selected; on small screens, the profile replaces the roster and returning restores focus to the selected artist. Guest request and event update forms use a single column. Guestbook pagination appears when another page is available and keeps a return path if a later page fails to load.
+Pixie is reserved for the TERMINAL wordmark; Orbit and monospace faces carry titles, body copy and data. CRT texture and glow cover the entire shell without an outer border. The saved CRT setting, reduced motion, contrast, visibility and data-saving preferences control decorative effects. Content and layout print at the reference cadence; keyboard, pointer, scrolling or input completes the effect immediately. Semantic text and input state remain available.
 
-One CRT surface covers the full page, including navigation and footer, with thick curved glass, an outer rim, a soft vignette, and phosphor bloom around the text. Reflections and fine surface grain stay still. The header's CRT button switches the treatment off or on and remembers the choice. Surface texture softens around focused controls; reduced motion skips the page settle, and high contrast removes the overlay.
+The optional boot/idle experience is available at `/entry` and from About. The previous `/?experience=terminal` URL redirects there. Browser language is detected when no language has been chosen; the user's explicit choice is remembered.
 
-WebGL is loaded only for the optional terminal experience, subject to motion preferences, visibility, and device support.
+Events and guestbook entries come from the public API. Guest requests retain server-side event/code/consent checks, and a receipt appears only after an accepted submission. A receipt does not confirm admission. Failed requests preserve drafts; a changed target requires explicit review. Guestbook retries retain idempotency and pagination recovery. The standalone design reference remains under `mockups/aspen-terminal`; its scenario controls and simulated submissions are not part of the product.
+
+## Previous design archive
+
+The complete previous application is preserved under [archives/classic](archives/classic/README.md), including its package lock and original assets. Run it independently, alongside the current application:
+
+```bash
+npm run archive:dev -- --port 3006
+```
+
+This verifies the frozen snapshot, installs its own dependencies, and prepares its own local development database using bundled public event records. Environment files, subscriptions, guest requests and messages from the current app are not copied. The archive does not depend on the current UI source or deploy anything.
 
 ## Stack
 

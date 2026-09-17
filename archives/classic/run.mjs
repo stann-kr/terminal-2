@@ -42,6 +42,24 @@ if (command !== 'prepare') {
     const portIndex = args.indexOf('--port');
     const port = portIndex >= 0 ? args[portIndex + 1] : '3005';
     if (!port || !/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) throw new Error('Invalid port.');
+    if (command === 'dev') {
+      // Only the archive's own development DB is prepared. Public event records
+      // let the archived design run without copying any private application data.
+      await run('npm', ['exec', '--', 'wrangler', 'd1', 'migrations', 'apply', 'DB', '--env', 'development', '--local']);
+      const events = JSON.parse(await readFile(path.join(destination, 'mockups/aspen-terminal/events/snapshot.json'), 'utf8'));
+      const quote = value => `'${String(value).replaceAll("'", "''")}'`;
+      const statements = [];
+      for (const { id, artists, ...event } of events) {
+        statements.push(`INSERT OR IGNORE INTO events (id, data) VALUES (${quote(id)}, ${quote(JSON.stringify(event))});`);
+        for (const { id: artistId, ...artist } of artists) {
+          statements.push(`INSERT OR IGNORE INTO artists (id, event_id, data) VALUES (${quote(artistId)}, ${quote(id)}, ${quote(JSON.stringify(artist))});`);
+        }
+      }
+      const seed = path.join(destination, '.archive-public-events.sql');
+      await writeFile(seed, statements.join('\n'));
+      await run('npm', ['exec', '--', 'wrangler', 'd1', 'execute', 'DB', '--env', 'development', '--local', '--file', seed]);
+      process.env.NEXT_DEV_WRANGLER_ENV = 'development';
+    }
     process.env.NODE_ENV = command === 'dev' ? 'development' : 'production';
     await run(process.execPath, [path.join(destination, 'node_modules/next/dist/bin/next'), command, '-H', '127.0.0.1', '-p', port]);
   }

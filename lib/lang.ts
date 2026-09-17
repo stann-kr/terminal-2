@@ -7,11 +7,17 @@ export function parseLang(value: unknown): Lang {
   return value === 'en' ? 'en' : 'ko';
 }
 
-export function getLang(): Lang {
+export function getLang({ detectBrowser = false }: { detectBrowser?: boolean } = {}): Lang {
   if (typeof window === 'undefined') return 'ko';
   if (!isStorageUnavailable) {
     try {
-      memoryLang = parseLang(window.localStorage.getItem(LANG_KEY));
+      const stored = window.localStorage.getItem(LANG_KEY);
+      if (stored === 'ko' || stored === 'en' || !detectBrowser) memoryLang = parseLang(stored);
+      else {
+        const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
+        memoryLang = languages.map(locale => locale.toLowerCase().split(/[-_]/)[0])
+          .find((language): language is Lang => language === 'ko' || language === 'en') ?? 'en';
+      }
     } catch {
       isStorageUnavailable = true;
     }
