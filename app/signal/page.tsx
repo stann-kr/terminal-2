@@ -1,137 +1,36 @@
-'use client';
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import PageLayout, { itemVariants } from '@/components/shell/PageLayout';
-import PageHeader from '@/components/ui/PageHeader';
-import ReturnLink from '@/components/ui/ReturnLink';
-import TerminalPanel from '@/components/TerminalPanel';
-import SubmitButton from '@/components/SubmitButton';
-import { LabelText, SubtitleText, MetaText } from '@/components/ui/TerminalText';
-import ConsentCheckbox from '@/components/ui/ConsentCheckbox';
-import ConsentBlock from '@/components/ui/ConsentBlock';
-import FieldError from '@/components/ui/FieldError';
-import { FormField, inputClassBase, inputAccentClass } from '@/components/ui/FormField';
+import { useEffect, useRef } from 'react';
+import { useLang } from '@/lib/langContext';
 import { useSignalSubscription } from './useSignalSubscription';
+import { Action } from '@/features/terminal/shared/Ui';
+import { FormField } from '@/features/terminal/forms/FormField';
+import { TerminalText } from '@/features/terminal/motion/TerminalText';
+import { PendingIndicator } from '@/features/terminal/motion/PendingIndicator';
+import { useReadoutMotion } from '@/features/terminal/motion/useReadoutMotion';
 
 export default function SignalPage() {
-  const {
-    t,
-    form,
-    handleEmailChange,
-    handleInstagramChange,
-    handleConsentChange,
-    handleSubmit,
-    isSubmitting,
-    submitted,
-    fieldErrors,
-    formError,
-  } = useSignalSubscription();
-
-  return (
-    <PageLayout centerContent={false}>
-      <ReturnLink variants={itemVariants} />
-      <PageHeader path="/terminal/signal" title="SIGNAL_SUBSCRIPTION" accent="tertiary" variants={itemVariants} />
-
-      {submitted ? (
-        <motion.div variants={itemVariants} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <TerminalPanel title="REQUEST_COMMITTED" accent="tertiary" headingLevel={2}>
-            <div className="text-center py-6 space-y-2" role="status" aria-live="polite" aria-atomic="true">
-              <div className="font-bold tracking-widest font-mono text-terminal-accent-tertiary">
-                <LabelText text={t.signal.committed} />
-              </div>
-              <div className="font-mono text-terminal-muted">
-                <MetaText text={t.signal.committedSub} />
-              </div>
-            </div>
-          </TerminalPanel>
-        </motion.div>
-      ) : (
-        <div className="space-y-4">
-          <motion.div variants={itemVariants}>
-            <TerminalPanel title="SIGNAL_BRIEF" accent="tertiary" headingLevel={2}>
-              <div className="space-y-1.5">
-                {t.signal.description.map((line, index) => (
-                  <div key={index} className="font-mono text-terminal-subdued tracking-wide">
-                    <SubtitleText text={line} delay={index * 40} />
-                  </div>
-                ))}
-              </div>
-            </TerminalPanel>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <TerminalPanel title="SIGNAL_SUBSCRIPTION" accent="tertiary" headingLevel={2}>
-              <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                <FormField label={t.signal.labelEmail} htmlFor="signal-email">
-                  <input
-                    id="signal-email"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleEmailChange}
-                    placeholder={t.signal.placeholderEmail}
-                    autoComplete="email"
-                    required
-                    aria-required="true"
-                    aria-invalid={Boolean(fieldErrors.email)}
-                    aria-describedby={fieldErrors.email ? 'signal-email-error' : undefined}
-                    className={`${inputClassBase} ${inputAccentClass.tertiary}`}
-                  />
-                </FormField>
-                {fieldErrors.email && <FieldError id="signal-email-error" message={fieldErrors.email} />}
-
-                <FormField label={t.signal.labelInstagram} htmlFor="signal-instagram">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none select-none font-mono text-small md:text-body text-terminal-accent-tertiary" aria-hidden="true">@</span>
-                    <input
-                      id="signal-instagram"
-                      name="instagram"
-                      type="text"
-                      value={form.instagram.replace(/^@/, '')}
-                      onChange={handleInstagramChange}
-                      placeholder="USERNAME"
-                      autoComplete="username"
-                      required
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.instagram)}
-                      aria-describedby={fieldErrors.instagram ? 'signal-instagram-error' : undefined}
-                      className={`${inputClassBase} ${inputAccentClass.tertiary} pl-6`}
-                    />
-                  </div>
-                </FormField>
-                {fieldErrors.instagram && <FieldError id="signal-instagram-error" message={fieldErrors.instagram} />}
-
-                <ConsentBlock>
-                  <ConsentCheckbox
-                    id="signal-consent"
-                    name="consent"
-                    checked={form.consent}
-                    onChange={handleConsentChange}
-                    label={t.signal.consentLabel}
-                    accent="primary"
-                    required
-                    aria-invalid={Boolean(fieldErrors.consent)}
-                    aria-describedby={fieldErrors.consent ? 'signal-consent-error' : undefined}
-                  />
-                  {fieldErrors.consent && <FieldError id="signal-consent-error" message={fieldErrors.consent} />}
-                </ConsentBlock>
-
-                <AnimatePresence mode="wait">
-                  {formError && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-terminal-accent-alert" role="alert" aria-live="assertive">
-                      <LabelText text={`⚠ ERROR: ${formError}`} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="flex justify-end pt-2">
-                  <SubmitButton isSubmitting={isSubmitting} variant="primary" defaultText={t.signal.submitBtn} loadingText={t.signal.submitting} />
-                </div>
-              </form>
-            </TerminalPanel>
-          </motion.div>
-        </div>
-      )}
-    </PageLayout>
-  );
+  const { lang } = useLang();
+  const signal = useSignalSubscription();
+  const { t, form, fieldErrors, isSubmitting, submitted, formError } = signal;
+  const tr = (ko: string, en: string) => lang === 'ko' ? ko : en;
+  const inputRef = useRef<HTMLElement>(null);
+  const resultRef = useRef<HTMLHeadingElement>(null);
+  useReadoutMotion(inputRef, { key: `${lang}:${submitted}:${formError}:${Object.values(fieldErrors).join(',')}`, contentKey: lang, content: ':scope', updates: '.tm-contact-result,.tm-field-error,.tm-form-hint', layout: true });
+  useEffect(() => { if (submitted) resultRef.current?.focus(); }, [submitted]);
+  return <div className="tm-contact-grid" data-kind="signal">
+    <section className="tm-contact-context tm-cell"><p className="tm-eyebrow">TERMINAL / SIGNAL</p><h1 data-motion-title tabIndex={-1}><TerminalText>{'EVENT\nUPDATES'}</TerminalText></h1><div data-motion-copy className="tm-contact-context-bottom"><h2>{tr('이벤트 소식 받기', 'Get event updates')}</h2><div className="tm-prose">{t.signal.description.map(line => <p key={line}>{line}</p>)}</div></div></section>
+    <section data-readout-region ref={inputRef} className="tm-contact-input tm-cell">
+      {submitted ? <div className="tm-contact-result"><p className="tm-eyebrow">{tr('접수 결과', 'SUBSCRIPTION RECEIVED')}</p><h2 ref={resultRef} tabIndex={-1}><TerminalText>{tr('소식 신청 완료', 'Subscription received')}</TerminalText></h2><p>{t.signal.committedSub}</p><p>{form.email}</p><Action page="home">{tr('이벤트로 돌아가기', 'Back to event')}</Action></div> : <form className="tm-contact-form" onSubmit={signal.handleSubmit} noValidate aria-busy={isSubmitting}>
+        <h2 className="tm-eyebrow">{tr('연락처 등록', 'CONTACT DETAILS')}</h2>
+        <fieldset className="tm-contact-fields" disabled={isSubmitting} data-motion-controls><legend className="tm-sr-only">{tr('연락처와 동의', 'Contact and consent')}</legend>
+          <FormField id="signal-email" label={tr('이메일', 'Email')} error={fieldErrors.email}><input id="signal-email" name="email" type="email" value={form.email} onChange={signal.handleEmailChange} autoComplete="email" required maxLength={254} placeholder="you@example.com" spellCheck={false} aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'signal-email-error' : undefined} /></FormField>
+          <FormField id="signal-instagram" label={tr('인스타그램 ID', 'Instagram ID')} error={fieldErrors.instagram}><input id="signal-instagram" name="instagram" value={form.instagram} onChange={signal.handleInstagramChange} autoComplete="off" autoCapitalize="none" required maxLength={31} placeholder="@username" spellCheck={false} aria-invalid={Boolean(fieldErrors.instagram)} aria-describedby={fieldErrors.instagram ? 'signal-instagram-error' : undefined} /></FormField>
+          <div className="tm-consent"><label htmlFor="signal-consent"><input id="signal-consent" name="consent" type="checkbox" required checked={form.consent} onChange={e => signal.handleConsentChange(e.target.checked)} aria-invalid={Boolean(fieldErrors.consent)} aria-describedby={fieldErrors.consent ? 'signal-consent-error' : undefined} /><span>{t.signal.consentLabel}</span></label>{fieldErrors.consent && <p className="tm-field-error" role="alert" id="signal-consent-error">{fieldErrors.consent}</p>}</div>
+        </fieldset>
+        {formError && <p className="tm-field-error" role="alert">{formError}</p>}
+        <button className="tm-action tm-submit" disabled={isSubmitting} aria-busy={isSubmitting} type="submit"><span>{isSubmitting ? tr('처리 중…', 'Processing…') : tr('소식 신청', 'Subscribe')}</span>{isSubmitting && <PendingIndicator active />}</button>
+      </form>}
+    </section>
+  </div>;
 }

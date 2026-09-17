@@ -1,0 +1,6 @@
+.panel { position: relative; min-width: 0; border-block: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-base)); }
+.heading { padding: 1.25rem var(--workspace-padding) 0; font: 700 1rem / 1.5 var(--font-mono); color: rgb(var(--color-text-primary)); }
+.panel[data-accent='alert'] > .heading { color: rgb(var(--color-accent-alert)); }
+.panel[data-accent='warn'] > .heading { color: rgb(var(--color-accent-warn)); }
+.body { padding: var(--workspace-padding); }
+.rule { position: absolute; top: -1px; left: 0; width: 2rem; height: 1px; background: rgb(var(--color-accent-primary)); transform-origin: left; pointer-events: none; }

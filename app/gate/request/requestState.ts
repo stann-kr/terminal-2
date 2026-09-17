@@ -5,6 +5,7 @@ export type RequestEventState =
   | { kind: 'loading' }
   | { kind: 'load-error' }
   | { kind: 'empty' }
+  | { kind: 'target-changed'; event: TerminalEvent | null; nextEvent: TerminalEvent | null }
   | { kind: 'inactive'; event: TerminalEvent; window: RequestWindowState }
   | { kind: 'ready'; event: TerminalEvent };
 
@@ -13,14 +14,23 @@ export type CodeVerificationState =
   | { kind: 'verifying' }
   | { kind: 'invalid' }
   | { kind: 'unavailable' }
+  | { kind: 'target-changed' }
   | { kind: 'verified'; artistName: string };
 
 export function resolveRequestEventState(
   events: TerminalEvent[],
   accessWindowDays: number,
   now: Date = new Date(),
+  requestedEventId?: string,
 ): Exclude<RequestEventState, { kind: 'loading' } | { kind: 'load-error' }> {
   const event = getFutureUpcomingEvent(events, now);
+  if (requestedEventId && event?.id !== requestedEventId) {
+    return {
+      kind: 'target-changed',
+      event: events.find(candidate => candidate.id === requestedEventId) ?? null,
+      nextEvent: event,
+    };
+  }
   if (!event) return { kind: 'empty' };
 
   const window = getRequestWindowState(event, accessWindowDays, now);
@@ -30,9 +40,13 @@ export function resolveRequestEventState(
 }
 
 export function resolveCodeVerificationState(
-  response: { ok: boolean; status: number; name?: string | null },
+  response: { ok: boolean; status: number; name?: string | null; error?: string },
 ): Exclude<CodeVerificationState, { kind: 'idle' } | { kind: 'verifying' }> {
   if (!response.ok) {
+    if (response.error === 'EVENT_MISMATCH' || response.error === 'EVENT_ID_REQUIRED'
+      || response.error === 'NO_UPCOMING_EVENT') {
+      return { kind: 'target-changed' };
+    }
     return response.status === 400 ? { kind: 'invalid' } : { kind: 'unavailable' };
   }
 

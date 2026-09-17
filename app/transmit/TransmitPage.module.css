@@ -1,0 +1,20 @@
+.workspace { display: grid; align-items: start; }
+.editor, .logPanel { min-width: 0; border-top: 0; }
+.notice { max-width: 62ch; margin-bottom: 1.5rem; color: rgb(var(--color-text-subdued)); line-height: 1.7; }
+.form { display: flex; flex-direction: column; gap: 1rem; }
+.messageHeader { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; font: 0.875rem / 1.5 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.messageHeader > span { font-variant-numeric: tabular-nums; font-size: 0.75rem; }
+.textarea { display: block; min-height: 9rem; resize: vertical; line-height: 1.8; }
+.submit { padding-top: 1rem; border-top: 1px solid rgb(var(--color-bg-panel-border)); }
+.error { color: rgb(var(--color-accent-alert)); }
+.sent { color: rgb(var(--color-accent-primary)); }
+.state { min-height: 12rem; display: flex; flex-direction: column; align-items: start; gap: 1rem; color: rgb(var(--color-text-subdued)); padding-block: 1rem; }
+.logs li { padding-block: 1.5rem; border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
+.logs li:first-child { padding-top: 0; }
+.logHeader { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 0.75rem; font: 0.875rem / 1.5 var(--font-mono); }
+.logHeader > span { color: rgb(var(--color-accent-primary)); overflow-wrap: anywhere; }
+.logHeader time { color: rgb(var(--color-text-subdued)); font-size: 0.75rem; }
+.logs li > p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1.5rem; font: 0.75rem / 1.5 var(--font-mono); }
+.pagination button { padding-inline: 0.75rem; }
+@media (min-width: 1024px) { .workspace { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } .logPanel { border-left: 1px solid rgb(var(--color-bg-panel-border)); } }

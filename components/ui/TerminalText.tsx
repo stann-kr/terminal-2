@@ -72,7 +72,7 @@ export function SubtitleText({ className = '', ...props }: TextProps) {
 }
 
 export function BodyText({ className = '', ...props }: TextProps) {
-  return <PlainText className={cn('text-small md:text-body leading-relaxed', className)} {...props} />;
+  return <PlainText className={cn('text-body leading-relaxed font-sans tracking-normal', className)} {...props} />;
 }
 
 export function LabelText({ className = '', ...props }: TextProps) {

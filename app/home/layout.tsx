@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import HomeAmbient from './HomeAmbient';
 
 export const metadata: Metadata = {
   title: 'Home',
@@ -7,10 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <HomeAmbient />
-      {children}
-    </>
-  );
+  return children;
 }

@@ -34,7 +34,7 @@ function supportsWebGL(): boolean {
   }
 }
 
-export default function HomeAmbient() {
+export default function HomeAmbient({ anchorId = 'home-ambient-anchor' }: { anchorId?: string }) {
   const motionPolicy = useMotionPolicy();
   const [heroVisible, setHeroVisible] = useState(false);
   const [webglAvailable, setWebglAvailable] = useState(false);
@@ -43,7 +43,7 @@ export default function HomeAmbient() {
     let observer: IntersectionObserver | undefined;
     const frame = requestAnimationFrame(() => {
       setWebglAvailable(supportsWebGL());
-      const anchor = document.getElementById('home-ambient-anchor');
+      const anchor = document.getElementById(anchorId);
       if (!anchor || !('IntersectionObserver' in window)) {
         setHeroVisible(Boolean(anchor));
         return;
@@ -59,7 +59,7 @@ export default function HomeAmbient() {
       cancelAnimationFrame(frame);
       observer?.disconnect();
     };
-  }, []);
+  }, [anchorId]);
 
   if (!shouldRenderHomeAmbient({
     allowMotion: motionPolicy.allowMotion,

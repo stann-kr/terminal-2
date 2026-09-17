@@ -9,9 +9,9 @@ import { SIGNAL_NET, SELF_NODE_ID } from './signalNetConfig';
 export default function SignalNet() {
   const t = useT();
   return (
-    <nav aria-label={t.common.signalNetAria} className="font-mono text-micro tracking-label">
+    <nav aria-label={t.common.signalNetAria} className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-caption tracking-normal">
       <span className="text-terminal-muted">{`SYS.ID: ${SELF_NODE_ID} // SIGNAL_NET`}</span>
-      <span className="ml-3 inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span className="inline-flex flex-wrap items-center gap-x-4 gap-y-1">
         {SIGNAL_NET.map((node) =>
           node.id === SELF_NODE_ID ? (
             <span key={node.id} aria-current="page" className="text-terminal-accent-primary">
@@ -23,7 +23,7 @@ export default function SignalNet() {
               key={node.id}
               href={node.href}
               rel="noopener noreferrer"
-              className="text-terminal-subdued transition-colors duration-[var(--os-dur-fast)] hover:text-terminal-accent-primary"
+              className="inline-flex items-center min-h-11 text-terminal-subdued transition-colors duration-[var(--os-dur-fast)] hover:text-terminal-accent-primary"
             >
               [{node.label}] {node.id}
             </a>

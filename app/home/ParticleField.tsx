@@ -175,7 +175,7 @@ function LogoLayer({
         <bufferAttribute attach="attributes-position" args={[baseState.positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#D6E5ED"
+        color="#D0D0D0"
         size={0.05}
         map={circleMap}
         transparent
@@ -223,14 +223,15 @@ function AmbientParticles() {
   const baseState = useMemo(() => createAmbientState(count), [count]);
   const velocityRef = useRef(baseState.velocities);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!pointsRef.current) return;
+    const frameScale = Math.min(delta, 0.05) * 60;
     const pos = (pointsRef.current.geometry.attributes.position.array as Float32Array);
     const velocities = velocityRef.current;
 
     for (let i = 0; i < count; i++) {
-      pos[i * 3] += velocities[i * 3];
-      pos[i * 3 + 1] += velocities[i * 3 + 1];
+      pos[i * 3] += velocities[i * 3] * frameScale;
+      pos[i * 3 + 1] += velocities[i * 3 + 1] * frameScale;
       if (pos[i * 3 + 1] > 4.5) {
         pos[i * 3 + 1] = -4.5;
         pos[i * 3] = centeredUnit(300000 + i * 29) * 13.0;
@@ -247,7 +248,7 @@ function AmbientParticles() {
         <bufferAttribute attach="attributes-position" args={[baseState.positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#c8a030"
+        color="#FF5D00"
         size={0.035}
         map={circleMap}
         transparent

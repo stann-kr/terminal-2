@@ -17,6 +17,10 @@ import {
   type RequestEventState,
 } from './requestState';
 import { ACCESS_WINDOW_DAYS } from '@/lib/gate/requestPolicy';
+import { getFutureUpcomingEvent } from '@/lib/events/lifecycle';
+import { useEventClock } from '@/lib/events/useEventClock';
+import type { TerminalEvent } from '@/lib/events/types';
+import { useUrlQueryState } from '@/lib/useUrlQueryState';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INSTAGRAM_PATTERN = /^@?[\w.]+$/;
@@ -45,12 +49,23 @@ const INITIAL_FORM: AccessRequestFormState = {
 export function useAccessRequest() {
   const { lang } = useLang();
   const t = useT();
-  const [eventState, setEventState] = useState<RequestEventState>({ kind: 'loading' });
+  const [events, setEvents] = useState<TerminalEvent[]>([]);
+  const [eventLoadState, setEventLoadState] = useState<'loading' | 'loaded' | 'load-error'>('loading');
+  const [requestedEventId, setRequestedEventId] = useUrlQueryState('event');
+  const [initialEventId, setInitialEventId] = useState('');
+  const [isTargetReviewRequired, setIsTargetReviewRequired] = useState(false);
+  const [verifiedEventId, setVerifiedEventId] = useState('');
+  const [submittedEvent, setSubmittedEvent] = useState<TerminalEvent | null>(null);
+  const now = useEventClock(events, ACCESS_WINDOW_DAYS);
+  const selectedEventId = requestedEventId || initialEventId;
+  const eventState: RequestEventState = eventLoadState === 'loaded'
+    ? resolveRequestEventState(events, ACCESS_WINDOW_DAYS, now, selectedEventId)
+    : { kind: eventLoadState };
   const [eventRequestVersion, setEventRequestVersion] = useState(0);
+  const [loadedEventVersion, setLoadedEventVersion] = useState(-1);
   const [form, setForm] = useState<AccessRequestFormState>(INITIAL_FORM);
   const [codeState, setCodeState] = useState<CodeVerificationState>({ kind: 'idle' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const { fieldErrors, setFieldErrors, clearFieldError, showFieldErrors } = useFieldErrors<RequestField>('request');
   const [formError, setFormError] = useState('');
 
@@ -59,10 +74,13 @@ export function useAccessRequest() {
   const verificationAbortRef = useRef<AbortController | null>(null);
   const verificationSequenceRef = useRef(0);
 
-  const isCodeVerified = codeState.kind === 'verified';
-  const event = eventState.kind === 'ready' || eventState.kind === 'inactive'
-    ? eventState.event
-    : null;
+  const event = submittedEvent ?? ('event' in eventState ? eventState.event : null);
+  const submitted = submittedEvent !== null;
+  const needsTargetReview = isTargetReviewRequired || eventState.kind === 'target-changed';
+  const isRefreshingEvent = loadedEventVersion !== eventRequestVersion;
+  const nextEvent = needsTargetReview && !isRefreshingEvent ? getFutureUpcomingEvent(events, now) : null;
+  const isCodeVerified = codeState.kind === 'verified' && verifiedEventId === event?.id
+    && eventState.kind === 'ready' && !needsTargetReview;
   const invitationLines = event?.invitationLines?.[lang] ?? t.request.invitationLines;
 
   const verifyCode = useCallback((code: string) => {
@@ -70,7 +88,7 @@ export function useAccessRequest() {
     const sequence = ++verificationSequenceRef.current;
 
     verificationAbortRef.current?.abort();
-    if (!normalizedCode) {
+    if (!normalizedCode || !event || eventState.kind !== 'ready' || needsTargetReview) {
       setCodeState({ kind: 'idle' });
       return;
     }
@@ -82,52 +100,68 @@ export function useAccessRequest() {
     void fetch('/api/gate/code-info', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: normalizedCode }),
+      body: JSON.stringify({ code: normalizedCode, eventId: event.id }),
       cache: 'no-store',
       signal: controller.signal,
     })
       .then(async (response) => {
-        const data = response.ok
-          ? await response.json() as { name?: string | null }
-          : undefined;
+        const data = await response.json() as { name?: string | null; error?: string };
         return resolveCodeVerificationState({
           ok: response.ok,
           status: response.status,
-          name: data?.name,
+          name: data.name,
+          error: data.error,
         });
       })
       .then((nextState) => {
         if (sequence !== verificationSequenceRef.current) return;
         setCodeState(nextState);
-        if (nextState.kind === 'verified') clearFieldError('accessCode');
+        if (nextState.kind === 'verified') {
+          setVerifiedEventId(event.id);
+          clearFieldError('accessCode');
+        } else if (nextState.kind === 'target-changed') {
+          setIsTargetReviewRequired(true);
+          setEventRequestVersion(version => version + 1);
+        }
       })
       .catch(() => {
         if (sequence !== verificationSequenceRef.current || controller.signal.aborted) return;
         setCodeState({ kind: 'unavailable' });
       });
-  }, [clearFieldError]);
+  }, [clearFieldError, event, eventState.kind, needsTargetReview]);
 
   useEffect(() => {
     const controller = new AbortController();
-    setEventState({ kind: 'loading' });
+    setEventLoadState(previous => previous === 'loaded' ? previous : 'loading');
 
-    void fetch('/api/events?status=UPCOMING', { signal: controller.signal })
+    void fetch('/api/events', { signal: controller.signal, cache: 'no-store' })
       .then(async (response) => {
         if (!response.ok) throw new Error('Request event fetch failed');
         const data = await response.json() as unknown;
         if (!Array.isArray(data)) throw new Error('Request event response was not an array');
-        return data;
+        return data as TerminalEvent[];
       })
       .then((data) => {
         if (controller.signal.aborted) return;
-        setEventState(resolveRequestEventState(data, ACCESS_WINDOW_DAYS));
+        setEvents(data);
+        setInitialEventId(previous => previous || getFutureUpcomingEvent(data)?.id || '');
+        setEventLoadState('loaded');
+        setLoadedEventVersion(eventRequestVersion);
       })
       .catch(() => {
-        if (!controller.signal.aborted) setEventState({ kind: 'load-error' });
+        if (!controller.signal.aborted) setEventLoadState('load-error');
       });
 
     return () => controller.abort();
   }, [eventRequestVersion]);
+
+  useEffect(() => {
+    ++verificationSequenceRef.current;
+    verificationAbortRef.current?.abort();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setCodeState({ kind: 'idle' });
+    setVerifiedEventId('');
+  }, [selectedEventId, eventState.kind, needsTargetReview]);
 
   useEffect(() => () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -204,9 +238,11 @@ export function useAccessRequest() {
     setFormError(message);
   };
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (submitEvent: FormEvent) => {
+    submitEvent.preventDefault();
     if (submittingRef.current) return;
+
+    if (eventState.kind !== 'ready' || !event || needsTargetReview) return;
 
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
@@ -224,15 +260,21 @@ export function useAccessRequest() {
       const response = await fetch('/api/gate/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, eventId: event.id }),
       });
       const data = await response.json() as { ok?: boolean; error?: string };
 
       if (!response.ok) {
+        if (data.error === 'EVENT_MISMATCH' || data.error === 'EVENT_ID_REQUIRED'
+          || data.error === 'NO_UPCOMING_EVENT' || data.error === 'REQUEST_PERIOD_INACTIVE') {
+          setIsTargetReviewRequired(true);
+          setEventRequestVersion(version => version + 1);
+          return;
+        }
         applyApiError(data.error ?? '');
         return;
       }
-      setSubmitted(true);
+      setSubmittedEvent(event);
     } catch {
       setFormError(t.request.errors.CONNECTION_ERROR);
     } finally {
@@ -252,7 +294,22 @@ export function useAccessRequest() {
 
   return {
     t,
+    lang,
+    event,
     eventState,
+    needsTargetReview,
+    isRefreshingEvent,
+    nextEvent,
+    acceptNextEvent: () => {
+      if (!nextEvent) return;
+      setRequestedEventId(nextEvent.id);
+      setIsTargetReviewRequired(false);
+      setCodeState({ kind: 'idle' });
+      setVerifiedEventId('');
+      setFormError('');
+      document.getElementById('request-accessCode')?.focus();
+    },
+    gateHref: event || selectedEventId ? `/gate?event=${encodeURIComponent(event?.id ?? selectedEventId)}` : '/gate',
     retryEvent: () => setEventRequestVersion(version => version + 1),
     invitationLines,
     form,

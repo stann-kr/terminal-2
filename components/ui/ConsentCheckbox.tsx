@@ -62,7 +62,7 @@ export default function ConsentCheckbox({
   const cls = accentClasses[accent];
 
   return (
-    <label className={`flex items-start gap-3 group ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+    <label className={`flex items-start gap-3 min-h-11 py-2 group ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
       <div className="relative mt-0.5 shrink-0">
         <input
           id={id}
@@ -89,7 +89,7 @@ export default function ConsentCheckbox({
         </div>
       </div>
       <span className="font-mono text-terminal-subdued leading-relaxed group-hover:text-terminal-primary transition-colors">
-        <MetaText autoHeight text={label} />
+        <MetaText autoHeight text={label} className="text-small" />
         {badge && (
           <span className="ml-1.5 text-terminal-subdued opacity-60">({badge})</span>
         )}

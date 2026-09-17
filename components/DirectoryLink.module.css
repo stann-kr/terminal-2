@@ -1,0 +1,45 @@
+.link {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 2ch minmax(0, 1fr) 5.5ch;
+  align-items: baseline;
+  gap: 0.375rem 1rem;
+  min-height: 2.75rem;
+  padding: 1.25rem 0.75rem;
+  border-bottom: var(--os-hairline) solid rgb(var(--color-bg-panel-border));
+  font-family: var(--font-mono);
+  transition: background-color var(--os-dur-fast), color var(--os-dur-fast);
+}
+
+.rail {
+  position: absolute;
+  inset: 0.75rem auto 0.75rem 0;
+  width: 2px;
+  background: rgb(var(--color-accent-primary));
+  transform: scaleY(0);
+  transform-origin: top;
+  pointer-events: none;
+}
+
+.scan { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: rgb(var(--color-accent-primary) / 0.05); transform: scaleX(0); transform-origin: left; }
+
+.index { grid-column: 1; grid-row: 1; color: rgb(var(--color-text-subdued)); font-size: var(--text-caption); font-variant-numeric: tabular-nums; }
+.label { grid-column: 2; grid-row: 1; min-width: 0; font-size: var(--text-body); line-height: 1.5; overflow-wrap: anywhere; }
+.description { grid-column: 2 / -1; grid-row: 2; font-family: sans-serif; font-size: var(--text-small); line-height: 1.6; color: rgb(var(--color-text-subdued)); }
+.action { grid-column: 3; grid-row: 1; display: flex; justify-content: flex-end; align-items: baseline; gap: 0.5ch; color: rgb(var(--color-text-subdued)); font-size: var(--text-caption); white-space: nowrap; }
+.arrow { display: inline-block; }
+.link:focus-visible { background: rgb(var(--color-accent-primary) / 0.06); }
+.link:focus-visible .action { color: rgb(var(--color-text-primary)); }
+.link:active { background: rgb(var(--color-accent-primary) / 0.1); }
+
+@media (hover: hover) {
+  .link:hover { background: rgb(var(--color-accent-primary) / 0.06); }
+  .link:hover .action { color: rgb(var(--color-text-primary)); }
+}
+
+@media (min-width: 768px) {
+  .link { grid-template-columns: 2ch minmax(0, 0.8fr) minmax(0, 1fr) 5.5ch; column-gap: 1.5rem; padding-inline: 1rem; }
+  .description { grid-column: 3; grid-row: 1; }
+  .action { grid-column: 4; }
+}

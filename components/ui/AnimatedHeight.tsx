@@ -1,6 +1,8 @@
 'use client';
 
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, useState } from 'react';
+import { useMotionPolicy } from '@/lib/useMotionPolicy';
+import { gsap, ScrollTrigger, useGSAP } from '@/lib/motion/gsap';
 
 interface AnimatedHeightProps {
   children: React.ReactNode;
@@ -9,51 +11,69 @@ interface AnimatedHeightProps {
    * true(기본값): 내부 content 높이를 ResizeObserver로 추적하며 부드럽게 전환
    */
   show?: boolean;
-  /** CSS transition 지속 시간 (ms). 기본 350 */
+  /** 펼침 지속 시간 (ms). 닫기는 이 값의 70%로 반응한다. */
   duration?: number;
   className?: string;
+  id?: string;
 }
 
 /**
- * ResizeObserver + CSS transition 기반 height 애니메이터.
- *
- * framer-motion의 `height: 'auto'` snapshot 대신 실제 내부 높이를 계속 관찰한다.
- * ResizeObserver로 내부 div의 높이 변화를 감지하고 CSS transition으로
- * 외부 컨테이너 높이를 부드럽게 추적한다.
+ * GSAP owns height while ResizeObserver supplies the content's natural size.
+ * New requests overwrite the current tween without reverting to its start.
  */
 export default function AnimatedHeight({
   children,
   show = true,
-  duration = 350,
+  duration = 180,
   className,
+  id,
 }: AnimatedHeightProps) {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const [initialStyle] = useState({ height: show ? 'auto' : '0px', opacity: show ? 1 : 0 });
+  const { allowMotion } = useMotionPolicy();
+  const latest = useRef({ show, duration, allowMotion });
+  const syncRef = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
+    latest.current = { show, duration, allowMotion };
+    syncRef.current?.();
+  }, [show, duration, allowMotion]);
+
+  useGSAP((_context, contextSafe) => {
     const outer = outerRef.current;
     const inner = innerRef.current;
     if (!outer || !inner) return;
-
-    const sync = () => {
-      outer.style.height = show ? `${inner.offsetHeight}px` : '0px';
-    };
-
+    const sync = contextSafe!(() => {
+      const current = latest.current;
+      const seconds = current.allowMotion ? current.duration / 1000 * (current.show ? 1 : 0.7) : 0;
+      gsap.to(outer, {
+        height: current.show ? inner.offsetHeight : 0,
+        opacity: current.show ? 1 : 0,
+        duration: seconds,
+        ease: 'power3.out', overwrite: true,
+        onComplete: seconds ? () => ScrollTrigger.refresh(true) : undefined,
+      });
+    });
+    syncRef.current = sync;
     const observer = new ResizeObserver(sync);
     observer.observe(inner);
-    sync(); // 초기 동기화
-
-    return () => observer.disconnect();
-  }, [show]);
+    sync();
+    return () => {
+      syncRef.current = null;
+      observer.disconnect();
+    };
+  }, { scope: outerRef });
 
   return (
     <div
+      id={id}
       ref={outerRef}
+      aria-hidden={!show}
+      inert={!show}
       style={{
         overflow: 'hidden',
-        height: '0px',
-        opacity: show ? 1 : 0,
-        transition: `height ${duration}ms ease-out, opacity ${duration}ms ease-out`,
+        ...initialStyle,
       }}
     >
       <div ref={innerRef} className={className}>

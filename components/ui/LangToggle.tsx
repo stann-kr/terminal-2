@@ -15,10 +15,10 @@ export default function LangToggle({ className = '' }: LangToggleProps) {
         type="button"
         onClick={() => setLang(target)}
         aria-pressed={active}
-        className={`min-w-11 min-h-11 px-2 py-1 border font-mono text-caption sm:text-small tracking-widest transition-colors cursor-pointer ${
+        className={`min-w-11 min-h-11 px-2 py-1 font-mono text-small tracking-normal transition-colors duration-[var(--os-dur-fast)] cursor-pointer ${
           active
-            ? 'border-terminal-accent-primary/60 text-terminal-accent-primary bg-terminal-accent-primary/10'
-            : 'border-terminal-muted/20 text-terminal-muted/40 hover:text-terminal-muted/60 hover:border-terminal-muted/40'
+            ? 'text-terminal-bg-base bg-terminal-accent-primary'
+            : 'text-terminal-subdued hover:text-terminal-primary hover:bg-terminal-accent-primary/10'
         }`}
       >
         {label}
@@ -27,9 +27,8 @@ export default function LangToggle({ className = '' }: LangToggleProps) {
   };
 
   return (
-    <div role="group" aria-label="Language / 언어" className={`inline-flex items-center gap-0 ${className}`}>
+    <div role="group" aria-label="Language / 언어" className={`inline-flex items-center border border-terminal-accent-primary/30 ${className}`}>
       {btn('ko', 'KO')}
-      <span aria-hidden="true" className="text-terminal-muted/20 font-mono text-micro sm:text-small px-0.5">/</span>
       {btn('en', 'EN')}
     </div>
   );
