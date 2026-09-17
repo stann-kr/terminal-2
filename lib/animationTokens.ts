@@ -1,31 +1,27 @@
 import type { Variants } from "framer-motion";
 
 // ─── Motion Variants ─────────────────────────────────────────────────────────
-// 페이지 레이아웃 waterfall 진입 애니메이션
+// 콘텐츠는 즉시 표시하며 route별 소비자의 variants 계약을 유지한다.
 // (`components/shell/PageLayout.tsx`에서 route 사용 편의를 위해 re-export)
 
 export const containerVariants: Variants = {
   hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
-  },
+  visible: {},
 };
 
 export const itemVariants: Variants = {
-  hidden: { y: 8 },
-  visible: { y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+  hidden: {},
+  visible: {},
 };
 
 // ─── DecodeText 프리셋 ────────────────────────────────────────────────────────
 // 색상 시스템(globals.css)과 병렬하는 애니메이션 토큰.
-// speed: 텍스트가 디코딩되는 속도 (높을수록 빠름)
-// scramble: 스크램블 문자 수 (텍스트 길이에 반비례)
-// animateTextLength: 빈 값에서 텍스트 길이가 채워지는 방식 (페이지 전환 플래시 방지)
-// STANN OS 정본 --os-decode-speed(80ms/char)에 체감 근사하는 use-scramble 단위 프리셋
+// GSAP ScrambleText의 지속 시간과 문자 갱신 속도에 사용한다.
+// 본문·입력·상태 문구는 TerminalText에서 plain text로 유지한다.
 
 export const decode = {
   /** 메인 히어로 제목 — TERMINAL 타이틀 등 */
-  title: { speed: 0.7, scramble: 10, animateTextLength: true },
+  title: { speed: 0.7, scramble: 7, step: 1 },
   /** 페이지/섹션 제목 — PageHeader, 이벤트명 등 */
   heading: { speed: 0.65, scramble: 8, animateTextLength: true },
   /** 부제목/설명 — 이벤트 부제, 설명 텍스트 */

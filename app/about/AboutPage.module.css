@@ -1,0 +1,8 @@
+.layout { max-width: 52rem; margin-inline: auto; }
+.identity { padding: 2rem var(--workspace-padding); font: 0.75rem / 1.6 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.wordmark { font: clamp(2rem, 5vw, 4rem) / 1.3 'ProcrastinatingPixie', monospace; color: rgb(var(--color-text-primary)); margin-bottom: 0.75rem; }
+.copy { padding: 0 var(--workspace-padding) 2rem; }
+.copy > p { max-width: 64ch; font-size: 1rem; line-height: 1.9; white-space: pre-wrap; }
+.copy > p + p { margin-top: 1.5rem; }
+.links { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgb(var(--color-bg-panel-border)); }
+.experience { display: inline-flex; align-items: center; gap: 0.75rem; min-height: 2.75rem; margin-top: 1rem; color: rgb(var(--color-text-subdued)); font-size: 0.8125rem; text-decoration: underline; text-underline-offset: 0.3em; }

@@ -1,0 +1,32 @@
+.summary { display: grid; min-width: 0; background: rgb(var(--color-bg-base)); border-bottom: 1px solid rgb(var(--color-bg-panel-border)); }
+.information, .visual { min-width: 0; }
+.infoBody { padding: clamp(1.5rem, 3vw, 3rem) var(--workspace-padding); }
+.status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font: 0.75rem / 1.5 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.status > span { width: 0.4rem; height: 0.4rem; background: rgb(var(--color-accent-primary)); }
+.title { font: 700 clamp(1.75rem, 3.5vw, 3rem) / 1.25 var(--font-mono); letter-spacing: -0.025em; overflow-wrap: anywhere; }
+.subtitle { margin-top: 0.5rem; font-size: 0.875rem; line-height: 1.6; color: rgb(var(--color-text-subdued)); }
+.metadata { margin-top: 1.5rem; }
+.metadata > div { display: grid; grid-template-columns: 5ch minmax(0, 1fr); gap: 1rem; padding-block: 0.625rem; font-size: 0.9375rem; }
+.metadata dt { font-family: var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.metadata dd { min-width: 0; overflow-wrap: anywhere; }
+.time { display: block; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.district { color: rgb(var(--color-text-subdued)); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 1.5rem; }
+.actions > p { order: -1; width: 100%; padding-bottom: 0.75rem; line-height: 1.7; }
+.actions:empty { display: none; }
+.description { max-width: 68ch; white-space: pre-wrap; font-size: 0.9375rem; line-height: 1.85; color: rgb(var(--color-text-subdued)); }
+.description { margin-top: 2rem; }
+.visual { border-top: 1px solid rgb(var(--color-bg-panel-border)); background: rgb(var(--color-bg-base) / 0.35); }
+.posterFrame { position: relative; padding: var(--workspace-padding); }
+.posterSurface { position: relative; width: 100%; max-width: 32rem; aspect-ratio: 3 / 4; max-height: 36rem; margin-inline: auto; background: rgb(var(--color-bg-base)); border: 1px solid rgb(var(--color-bg-panel-border)); }
+.poster { width: 100%; height: 100%; object-fit: contain; display: block; }
+.posterFallback { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 1.5rem; padding: clamp(1rem, 3vw, 2rem); background: repeating-linear-gradient(135deg, transparent, transparent 7px, rgb(var(--color-text-primary) / 0.025) 7px, rgb(var(--color-text-primary) / 0.025) 8px); }
+.fallbackLabel { font: 0.75rem / 1.6 var(--font-mono); color: rgb(var(--color-text-subdued)); }
+.fallbackTitle { font: 700 1.25rem / 1.5 var(--font-mono); overflow-wrap: anywhere; letter-spacing: 0.025em; }
+.posterFallback p { font-size: 0.75rem; color: rgb(var(--color-text-subdued)); }
+.progress { position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: rgb(var(--color-accent-primary)); transform: scaleY(0.08); transform-origin: top; pointer-events: none; }
+@media (min-width: 1024px) {
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .visual { grid-column: 1; grid-row: 1; border-top: 0; border-right: 1px solid rgb(var(--color-bg-panel-border)); }
+  .information { grid-column: 2; grid-row: 1; }
+}

@@ -63,3 +63,6 @@ build_log.txt
 
 # seed data
 migrations/seed_*.sql
+
+# Isolated archived design runtime
+/.design-archive/

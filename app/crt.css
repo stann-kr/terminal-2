@@ -9,29 +9,18 @@
   --crt-primary-dim:  rgb(var(--color-text-subdued));       /* #6a5030 */
   --crt-bg:         rgb(var(--color-bg-base));            /* #0c0904 */
   --crt-text:       rgb(var(--color-text-primary));       /* #e8d890 */
-  --font-mono: var(--font-space-mono), 'Space Mono', monospace;
 }
 
 * { box-sizing: border-box; }
 
 body {
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
   background: var(--crt-bg);
   color: var(--crt-text);
-  font-family: var(--font-mono);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-}
-
-@keyframes scanline-beam {
-  0%   { transform: translateY(-20vh); }
-  100% { transform: translateY(120vh); }
-}
-
-.animate-scanline-beam {
-  top: 0;
-  animation: scanline-beam 8s linear infinite;
-  will-change: transform;
 }
 
 @keyframes cursor-blink {

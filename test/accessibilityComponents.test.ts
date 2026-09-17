@@ -49,7 +49,7 @@ describe('shared accessible controls', () => {
     expect(titleId).toBeTruthy();
     expect(html).toContain('<section');
     expect(html).toContain(`<h3 id="${titleId}"`);
-    expect(html).toContain('aria-hidden="true">▶');
+    expect(html).toContain('REQUEST STATUS');
     expect(html).toContain('</section>');
   });
 

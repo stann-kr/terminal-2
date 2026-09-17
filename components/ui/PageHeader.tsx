@@ -1,18 +1,15 @@
 'use client';
-import { motion, Variants } from 'framer-motion';
-import { HeadingText, LabelText } from '@/components/ui/TerminalText';
+import type { Variants } from 'framer-motion';
+import { HeadingText } from '@/components/ui/TerminalText';
+import styles from './PageHeader.module.css';
 
 interface PageHeaderProps {
   path: string;
   title: string;
   accent?: 'primary' | 'secondary' | 'alert' | 'warn' | 'tertiary';
   variants?: Variants;
+  cipher?: boolean;
 }
-
-const defaultVariants = {
-  hidden: {},
-  visible: {},
-};
 
 const accentClassMap: Record<NonNullable<PageHeaderProps['accent']>, string> = {
   primary:   'text-terminal-accent-primary text-shadow-glow-primary',
@@ -22,19 +19,18 @@ const accentClassMap: Record<NonNullable<PageHeaderProps['accent']>, string> = {
   tertiary:  'text-terminal-accent-tertiary text-shadow-glow-tertiary',
 };
 
-export default function PageHeader({ path, title, accent = 'primary', variants = defaultVariants }: PageHeaderProps) {
+export default function PageHeader({ path, title, accent = 'primary', cipher = false }: PageHeaderProps) {
   const accentClass = accentClassMap[accent] || accentClassMap.primary;
   return (
-    <motion.div variants={variants} className="mb-8 font-mono">
-      <div className="text-small tracking-label mb-1 text-terminal-muted">
-        <LabelText text={`[ ${path.toUpperCase()} ]`} autoHeight />
-      </div>
+    <div className={styles.header}>
+      <p data-heading="path" aria-hidden="true" className={styles.path}>{path.split('/').filter(Boolean).slice(-1)[0]?.replace(/-/g, '_').toUpperCase()}</p>
       <HeadingText
         text={title}
-        cipher
+        cipher={cipher}
         autoHeight
-        className={`font-orbit text-heading md:text-h2 font-bold tracking-[0.2em] ${accentClass}`}
+        className={`font-mono text-h1 tracking-normal ${accent === 'alert' || accent === 'warn' ? accentClass.split(' ')[0] : 'text-terminal-primary'} ${styles.title}`}
       />
-    </motion.div>
+      <span aria-hidden="true" data-heading="rule" className={styles.rule} />
+    </div>
   );
 }

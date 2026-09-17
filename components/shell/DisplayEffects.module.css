@@ -1,0 +1,71 @@
+.effects {
+  position: absolute;
+  /* The glass sits above the navigation (z-index: 5), including its menu. */
+  z-index: 10;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+  contain: paint;
+}
+
+.effects::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(var(--color-text-primary) / 0.2);
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px rgb(var(--color-bg-base) / 0.85), inset 0 0 0 3px rgb(var(--color-text-primary) / 0.08);
+}
+
+.texture, .phosphor, .raster, .glass, .vignette { position: absolute; inset: 0; }
+
+.phosphor {
+  background:
+    radial-gradient(ellipse at 50% 52%, rgb(var(--color-accent-primary) / 0.065), transparent 76%),
+    radial-gradient(ellipse at 50% 40%, rgb(var(--color-text-primary) / 0.03), transparent 65%);
+}
+
+.raster {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgb(var(--color-bg-base) / 0.1) 2px 3px),
+    repeating-linear-gradient(90deg, rgb(var(--color-text-primary) / 0.015) 0 1px, transparent 1px 3px);
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.84' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath fill='white' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+.glass {
+  background:
+    radial-gradient(ellipse 82% 52% at 50% -16%, rgb(var(--color-text-primary) / 0.17), rgb(var(--color-text-primary) / 0.045) 42%, transparent 75%),
+    radial-gradient(ellipse 28% 72% at -12% 45%, rgb(var(--color-text-primary) / 0.1), transparent 72%),
+    linear-gradient(118deg, rgb(var(--color-text-primary) / 0.035), transparent 24% 78%, rgb(var(--color-accent-primary) / 0.025));
+  box-shadow:
+    inset 0 2px 1px rgb(var(--color-text-primary) / 0.26),
+    inset 2px 0 2px rgb(var(--color-text-primary) / 0.11),
+    inset -2px 0 2px rgb(var(--color-accent-primary) / 0.12),
+    inset 0 -2px 2px rgb(var(--color-bg-base) / 0.8);
+}
+
+.vignette {
+  background: radial-gradient(ellipse at 50% 48%, transparent 42%, rgb(var(--color-bg-base) / 0.08) 72%, rgb(var(--color-bg-base) / 0.34) 100%);
+  box-shadow:
+    inset 0 0 5px 2px rgb(var(--color-bg-base) / 0.95),
+    inset 0 0 24px rgb(var(--color-bg-base) / 0.65),
+    inset 0 0 80px rgb(var(--color-bg-base) / 0.14);
+}
+
+@media (max-width: 639px) {
+  .effects { opacity: 0.7; }
+  .raster { opacity: 0.65; }
+  .vignette { box-shadow: inset 0 0 4px 1px rgb(var(--color-bg-base) / 0.9), inset 0 0 16px rgb(var(--color-bg-base) / 0.55); }
+}
+
+@media (prefers-contrast: more), (forced-colors: active) { .effects { display: none; } }
+@media print { .effects { display: none; } }

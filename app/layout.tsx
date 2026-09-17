@@ -1,20 +1,8 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import "./crt.css";
-import CRTWrapper from "@/components/shell/CRTWrapper";
-import PageTransition from "@/components/shell/PageTransition";
+import "@/features/terminal/base.css";
+import { TerminalFrame } from "@/features/terminal/shell/TerminalFrame";
 import { LangProvider } from "@/lib/langContext";
 import { QueryProvider } from "@/providers/query-provider";
-import { MotionProvider } from "@/providers/motion-provider";
-import SkipLink from "@/components/ui/SkipLink";
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-jetbrains",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -37,17 +25,10 @@ export const viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${jetbrainsMono.variable} font-orbit bg-terminal-bg-base overflow-x-hidden`}>
+      <body>
         <QueryProvider>
-          <LangProvider>
-            <MotionProvider>
-              <SkipLink />
-              <CRTWrapper>
-                <PageTransition>
-                  {children}
-                </PageTransition>
-              </CRTWrapper>
-            </MotionProvider>
+          <LangProvider detectBrowser>
+            <TerminalFrame>{children}</TerminalFrame>
           </LangProvider>
         </QueryProvider>
       </body>
