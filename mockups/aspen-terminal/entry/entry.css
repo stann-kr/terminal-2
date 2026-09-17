@@ -29,7 +29,7 @@
 @keyframes tm-boot-ready { from { opacity: .65; } to { opacity: 1; } }
 .tm-entry-power { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: var(--tm-bg); opacity: 0; }
 .tm-entry[data-motion=true]:not([data-phase=ready]) .tm-entry-power { opacity: 1; }
-.tm-entry-power > span { position: absolute; inset: 0; background: radial-gradient(ellipse at center,#ffd6ac 0%,var(--tm-accent) 45%,transparent 75%); opacity: 0; }
+.tm-entry-power > span { position: absolute; inset: 0; background: radial-gradient(ellipse at center,#fff0d6 0%,#ffc68c99 12%,#ff64133d 38%,transparent 72%); opacity: 0; }
 .tm-idle-content { display: flex; flex-direction: column; gap: clamp(24px,5cqb,40px); justify-content: space-between; }
 .tm-idle-time { font-family: var(--tm-mono); }
 .tm-idle-time time { display: block; color: var(--tm-accent); font-size: clamp(2rem,5cqi,5.5rem); font-variant-numeric: tabular-nums; letter-spacing: -.05em; }

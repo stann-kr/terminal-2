@@ -9,20 +9,21 @@ export { gsap, useGSAP };
 type Connection = EventTarget & { saveData?: boolean };
 const connection = () => (navigator as Navigator & { connection?: Connection }).connection;
 const MotionContext = createContext(false);
+const staticDisplayQueries = ['(prefers-reduced-motion: reduce)', '(prefers-contrast: more)', '(forced-colors: active)'];
 
 function readPreference() {
-  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return !staticDisplayQueries.some(query => window.matchMedia(query).matches)
     && document.visibilityState !== 'hidden' && !connection()?.saveData;
 }
 
 function subscribe(change: () => void) {
-  const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const media = staticDisplayQueries.map(query => window.matchMedia(query));
   const network = connection();
-  media.addEventListener('change', change);
+  media.forEach(preference => preference.addEventListener('change', change));
   document.addEventListener('visibilitychange', change);
   network?.addEventListener('change', change);
   return () => {
-    media.removeEventListener('change', change);
+    media.forEach(preference => preference.removeEventListener('change', change));
     document.removeEventListener('visibilitychange', change);
     network?.removeEventListener('change', change);
   };

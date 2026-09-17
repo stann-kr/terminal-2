@@ -274,22 +274,25 @@ describe('mockup motion continuity', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('settles an in-flight readout when reduced motion changes and does not replay on restoration', async () => {
-    let reduced = false;
+  it.each(['(prefers-reduced-motion: reduce)', '(prefers-contrast: more)', '(forced-colors: active)'])('settles the display when %s changes and does not replay on restoration', async preferenceQuery => {
+    let staticDisplay = false;
     const preference = new EventTarget();
     vi.spyOn(window, 'matchMedia').mockImplementation(query => ({
-      media: query, get matches() { return query.includes('prefers-reduced-motion') && reduced; }, onchange: null,
+      media: query, get matches() { return query === preferenceQuery && staticDisplay; }, onchange: null,
       addEventListener: preference.addEventListener.bind(preference), removeEventListener: preference.removeEventListener.bind(preference),
       addListener() {}, removeListener() {}, dispatchEvent: preference.dispatchEvent.bind(preference),
     }));
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     render(<App />);
+    const display = screen.getByRole('main').closest('.tm-shell');
+    expect(display).toHaveAttribute('data-motion', 'true');
     const title = active().getByRole('heading', { level: 1 });
     expect(title).toHaveAccessibleName('TERMINAL');
     expect(title).toHaveTextContent(/^TERMINAL$/);
     expect(gsap.getTweensOf(title.querySelector('[data-readout-source]'))).not.toHaveLength(0);
-    reduced = true;
+    staticDisplay = true;
     act(() => preference.dispatchEvent(new Event('change')));
+    expect(display).toHaveAttribute('data-motion', 'false');
     expect(gsap.getTweensOf(title.querySelector('[data-readout-source]'))).toHaveLength(0);
     expect(title).toBeVisible();
     expect(title.querySelector('[data-readout-source]')).toBeVisible();
@@ -297,8 +300,9 @@ describe('mockup motion continuity', () => {
     await navigate('/gate');
     const nextTitle = active().getByRole('heading', { level: 1 });
     expect(nextTitle).toHaveFocus();
-    reduced = false;
+    staticDisplay = false;
     act(() => preference.dispatchEvent(new Event('change')));
+    expect(display).toHaveAttribute('data-motion', 'true');
     expect(nextTitle).toBeVisible();
     expect(gsap.getTweensOf(nextTitle.querySelector('[data-readout-source]'))).toHaveLength(0);
     const menu = screen.getByRole('button', { name: /메뉴/ });
@@ -497,11 +501,14 @@ describe('mockup boot and automatic language', () => {
     render(<App />);
     await user.type(active().getByLabelText('이메일'), 'draft@example.com');
     fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
+    expect(document.querySelector('.tm-glass')).not.toBeInTheDocument();
+    expect(screen.getByRole('main').closest('.tm-shell')).toHaveAttribute('data-crt', 'false');
     await navigate('/entry?mode=boot');
     expect(active().getByRole('button', { name: /^(터미널 입장|ENTER TERMINAL)$/ })).toBeEnabled();
     expectEntryOnly();
     await navigate('/signal');
     fireEvent.click(screen.getByRole('button', { name: 'CRT 화면 효과' }));
+    expect(document.querySelector('.tm-glass')).toHaveAttribute('aria-hidden', 'true');
     await navigate('/entry?mode=boot');
     expect(active().getByRole('button', { name: '애니메이션 건너뛰기' })).toBeEnabled();
     await user.click(active().getByRole('button', { name: '애니메이션 건너뛰기' }));
