@@ -122,10 +122,7 @@ D1 binding name:
 DB
 ```
 
-Remote databases are separated by environment:
-
-- development: `terminal-db-dev`
-- production: `terminal-db`
+Both remote Workers intentionally use the same `terminal-db` database. Requests, Signal subscriptions, and Transmit posts submitted through development also write to live production data. Remote smoke checks are read-only unless a data write is explicitly approved. Local development and CI use local D1 storage.
 
 The repository history currently contains 10 continuous migrations, `0000` through `0009`. Migration `0009_normalize_transmit_created_at.sql` rebuilds `transmit_logs.created_at` as ISO timestamp `TEXT NOT NULL` after normalizing supported legacy values.
 
@@ -149,13 +146,12 @@ Local migration apply example with an explicit environment:
 npx wrangler d1 migrations apply DB --env development --local
 ```
 
-Development and production remote histories are separate. Inspect and apply each target independently; applying one environment is not evidence that the other is current:
+Development and production resolve to the same remote database and migration history. Inspect the shared target through either environment; apply an approved migration once:
 
 ```bash
 npx wrangler d1 migrations list DB --env development --remote
-npx wrangler d1 migrations apply DB --env development --remote
-
 npx wrangler d1 migrations list DB --env production --remote
+# After approval, apply once to the shared production database:
 npx wrangler d1 migrations apply DB --env production --remote
 ```
 
