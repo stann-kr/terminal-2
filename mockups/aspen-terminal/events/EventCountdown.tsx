@@ -23,9 +23,9 @@ export function EventCountdown({ event, scenario, t }: Pick<ScreenProps, 'event'
   const seconds = Math.floor(Math.abs(target - now) / 1000);
   const units = [
     [t('일', 'DAYS'), Math.floor(seconds / 86400)],
-    [t('시간', 'HOURS'), Math.floor(seconds % 86400 / 3600)],
-    [t('분', 'MINUTES'), Math.floor(seconds % 3600 / 60)],
-    [t('초', 'SECONDS'), seconds % 60],
+    [t('시간', 'HRS'), Math.floor(seconds % 86400 / 3600)],
+    [t('분', 'MIN'), Math.floor(seconds % 3600 / 60)],
+    [t('초', 'SEC'), seconds % 60],
   ] as const;
   const remaining = target > now;
   return <section className="tm-countdown tm-cell" data-readout-region role="timer" aria-live="off" aria-label={remaining ? t('이벤트 시작까지 남은 시간', 'Time until event start') : t('이벤트 시작 후 경과 시간', 'Time since event start')}>

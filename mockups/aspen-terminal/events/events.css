@@ -55,15 +55,15 @@
   .tm-gate-details dl { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
-.tm-countdown { grid-area: countdown; container-type: inline-size; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; }
+.tm-countdown { grid-area: countdown; container-type: inline-size; display: flex; flex-direction: column; gap: 24px; }
 .tm-countdown-mode { display: grid; gap: 8px; }
 .tm-countdown-mode > p:last-child { font-size: .75rem; line-height: 1.7; color: var(--tm-muted); }
-.tm-countdown dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); margin-top: auto; }
-.tm-countdown dl > div { min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-block: clamp(12px,5cqi,20px); }
-.tm-countdown dl > div:nth-child(even) { border-left: 1px solid var(--tm-line); padding-left: clamp(8px,5cqi,16px); }
-.tm-countdown dl > div:nth-child(n+3) { border-top: 1px solid var(--tm-line); }
+.tm-countdown dl { display: flex; flex-wrap: wrap; column-gap: clamp(8px,5cqi,20px); row-gap: clamp(20px,8cqi,32px); margin-block: auto; }
+.tm-countdown dl > div { min-width: 0; flex: 1 1 0; display: flex; flex-direction: column; gap: 8px; }
+.tm-countdown dl > div:first-child { flex-basis: 100%; flex-direction: row; align-items: baseline; gap: 10px; }
 .tm-countdown dt { color: var(--tm-muted); font: .65rem/1.5 var(--tm-mono); }
-.tm-countdown dd { order: -1; font: clamp(1.2rem,14cqi,3rem)/1.15 var(--tm-mono); font-variant-numeric: tabular-nums; color: var(--tm-accent); }
+.tm-countdown dd { order: -1; font: clamp(1rem,10cqi,2rem)/1 var(--tm-mono); font-variant-numeric: tabular-nums; color: var(--tm-text); }
+.tm-countdown dl > div:first-child dd { font-size: clamp(2rem,28cqi,6rem); letter-spacing: -.05em; color: var(--tm-accent); }
 @media (max-width: 760px) {
   .tm-countdown { border-top: 1px solid var(--tm-line); gap: 16px; }
 }
