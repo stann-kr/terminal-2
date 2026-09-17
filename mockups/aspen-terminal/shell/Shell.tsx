@@ -64,6 +64,6 @@ export function Shell({ page, eventId, viewKey, motionKey, lang, t, setLang, crt
     </header>
     <main ref={mainRef} id="tm-main" tabIndex={-1} className="tm-main">{children}</main>
     <footer hidden={page === 'entry'} className="tm-footer"><span>STANN OS / LIVE</span><span className="tm-path">{pagePaths[page]}</span><a href={href('link')}>{t('공식 채널', 'Official channels')}</a></footer>
-    {crt && <div className="tm-glass" aria-hidden="true"><div className="tm-raster" /><div className="tm-reflection" /><div className="tm-vignette" /><div data-shell-charge className="tm-shell-charge" /></div>}
+    {crt && <div className="tm-glass" aria-hidden="true"><div className="tm-phosphor" /><div className="tm-grain" /><div className="tm-raster" /><div className="tm-vignette" /><div className="tm-reflection" /><div data-shell-charge className="tm-shell-charge" /></div>}
   </div>;
 }
