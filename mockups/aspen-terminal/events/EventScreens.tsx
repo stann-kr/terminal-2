@@ -16,14 +16,27 @@ export function Home(props: ScreenProps & { poster: string }) {
   const session = event.session.match(/\[([^\]]+)\]/)?.[0] ?? event.id;
   const title = event.session.replace(/\s*\[[^\]]+\]/, '');
   const date = event.date.split('-');
-  const introduction = event.description?.[lang].split('\n\n')[0] ?? event.subtitle;
+  const introduction = event.description?.[lang].split('\n\n')[0];
   return <article className="tm-home" data-poster={showPoster}>
-    <div className="tm-home-title tm-cell"><div data-motion-copy className="tm-home-meta"><EventState event={event} t={t} /><span className="tm-eyebrow">{event.id}</span></div><h1 data-motion-title tabIndex={-1}><TerminalText>{title}</TerminalText></h1><p className="tm-eyebrow">SEOUL / TECHNO</p></div>
-    <div className="tm-home-serial tm-cell">{showPoster ? <img src={poster} alt={`${event.session} ${t('포스터', 'poster')}`} onError={() => setFailedPoster(poster)} /> : <><span className="tm-eyebrow">SESSION</span><p data-motion-title>{session}</p><span className="tm-eyebrow">{event.subtitle}</span></>}</div>
+    <div className="tm-home-title tm-cell">
+      <div data-motion-copy className="tm-home-meta"><EventState event={event} t={t} /><span className="tm-eyebrow">{event.id}</span></div>
+      <div className="tm-home-heading"><h1 data-motion-title tabIndex={-1}><TerminalText>{title}</TerminalText></h1><p className="tm-eyebrow">SEOUL / TECHNO</p></div>
+    </div>
+    <div className="tm-home-serial tm-cell">{showPoster ? <img src={poster} alt={`${event.session} ${t('포스터', 'poster')}`} onError={() => setFailedPoster(poster)} /> : <><span className="tm-eyebrow">SESSION</span><p data-motion-title>{session}</p></>}</div>
     <EventCountdown key={`${event.id}:${props.scenario}`} event={event} scenario={props.scenario} t={t} />
-    <section className="tm-home-date tm-cell" aria-label={t('일시와 장소', 'Date and venue')}><p className="tm-eyebrow">{t('일시 · 장소', 'DATE / VENUE')}</p><div><p data-motion-copy className="tm-home-day">{date[1]}.{date[2]}</p><time data-motion-copy dateTime={`${event.date}T${event.time.slice(0, 5)}:00+09:00`}>{date[0]} · {event.time}</time></div><div><h2 data-motion-copy>{event.venue}</h2><p className="tm-eyebrow">{event.district}</p></div></section>
-    <div className="tm-home-action tm-cell"><p className="tm-eyebrow">{event.status === 'ARCHIVED' ? 'ARCHIVE' : 'EVENT DETAILS'}</p><p>{event.status === 'ARCHIVED' ? t('온라인 신청 마감', 'Online requests closed') : event.status === 'LIVE' ? t('이벤트 진행 중', 'Event in progress') : t('일정과 라인업을 확인하세요.', 'Explore the event and lineup.')}</p><Action page="gate" event={event.id}>{event.status === 'ARCHIVED' ? t('아카이브 보기', 'View archive') : t('이벤트 보기', 'View event')}</Action>{event.status === 'ARCHIVED' && <a className="tm-text-link" href={href('signal')}><span>{t('다음 이벤트 소식 받기', 'Get future event updates')}</span></a>}</div>
-    <section className="tm-home-intro tm-cell"><p className="tm-eyebrow">{event.subtitle}</p><h2 data-motion-copy>{introduction}</h2></section>
+    <section className="tm-home-intro tm-cell" aria-labelledby="home-intro-title">
+      <h2 id="home-intro-title" data-motion-copy>{event.subtitle}</h2>
+      {introduction && <p data-motion-copy>{introduction}</p>}
+    </section>
+    <section className="tm-home-date tm-cell" aria-label={t('일시와 장소', 'Date and venue')}>
+      <p className="tm-eyebrow">{t('일시 · 장소', 'DATE / VENUE')}</p>
+      <div><p data-motion-copy className="tm-home-day">{date[1]}.{date[2]}</p><time data-motion-copy dateTime={`${event.date}T${event.time.slice(0, 5)}:00+09:00`}>{date[0]} · {event.time}</time></div>
+      <div><h2 data-motion-copy>{event.venue}</h2><p className="tm-eyebrow">{event.district}</p></div>
+    </section>
+    <div className="tm-home-action tm-cell">
+      <div className="tm-home-action-copy"><p className="tm-eyebrow">{event.status === 'ARCHIVED' ? 'ARCHIVE' : 'EVENT DETAILS'}</p><p>{event.status === 'ARCHIVED' ? t('온라인 신청 마감', 'Online requests closed') : event.status === 'LIVE' ? t('이벤트 진행 중', 'Event in progress') : t('일정과 라인업을 확인하세요.', 'Explore the event and lineup.')}</p></div>
+      <div className="tm-home-actions"><Action page="gate" event={event.id}>{event.status === 'ARCHIVED' ? t('아카이브 보기', 'View archive') : t('이벤트 보기', 'View event')}</Action>{event.status === 'ARCHIVED' && <a className="tm-text-link" href={href('signal')}><span>{t('다음 이벤트 소식 받기', 'Get future event updates')}</span></a>}</div>
+    </div>
   </article>;
 }
 
